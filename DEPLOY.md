@@ -54,22 +54,20 @@ On your Mac (local tree with content):
 # ? content-pack-YYYYMMDD-HHMMSS.zip (keep offline; do not commit)
 ```
 
-On Render:
+On Render (viewer only — no content editing):
 
 1. Sign in at `/admin` with `ADMIN_PASSWORD`
-2. **Import content** ? upload the zip
-3. If the pack included official/review PDFs, the portal can serve them immediately
-4. Optional: **Regenerate PDFs** (needs Pandoc/XeLaTeX on the host) then **Save as official**
-5. Optional: **Site access** ? set a view password for `/`
+2. **Import content** — upload the zip from local **Build Render import pack** (or `scripts/build_content_pack.sh`)
+3. Optional: **Site access** — set a view password for `/`
 
-Re-upload a new pack anytime after local edits. App code updates = `git push` ? redeploy (disk content persists).
+Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. App code updates = `git push` then Manual Deploy (disk content persists).
 
 ## 5. Surfaces
 
 | URL | Role |
 |-----|------|
 | `/` | Public view + downloads (optional view password) |
-| `/admin` | Edit, import, site access, rebuild |
+| `/admin` | Import content pack + site access only |
 | `/api/download/pdf?file=…` | Single PDF download |
 | `/api/download/all` | Zip of all PDFs by section folder |
 
