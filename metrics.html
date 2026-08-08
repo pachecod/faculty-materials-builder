@@ -262,6 +262,9 @@
   }
   body.viewer-mode #attach-edit-toolbar { display: none !important; }
   body:not(.viewer-mode) #attach-view-toolbar[hidden] { display: none !important; }
+  /* Never show attachment mutation controls in hosted/read view */
+  body.viewer-mode #attach-list .att-actions { display: none !important; }
+  body.viewer-mode #attach-list .att-actions button { display: none !important; }
   .section-tag,
   th.col-section {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -2534,17 +2537,26 @@ function applyModeFromConfig(cfg) {
 
 <script>
 (function () {
-  let APP = { mode: "edit", editable: true };
+  let APP = { mode: "edit", editable: false, isProduction: false };
   let currentPdf = null; // reviewRel
   let currentName = null;
   let mdDirty = false;
+
+  function canAuthor() {
+    // Local edit mode only — never treat Render (or viewer-mode) as authoring
+    return !!(APP && APP.editable && !APP.isProduction)
+      && !document.body.classList.contains("viewer-mode");
+  }
 
   async function loadConfig() {
     try {
       const r = await fetch("/api/config");
       APP = await r.json();
       applyModeFromConfig(APP);
-    } catch (e) {}
+    } catch (e) {
+      APP = { mode: "viewer", editable: false, isProduction: false };
+      applyModeFromConfig(APP);
+    }
   }
 
   function wireRenderPackExport() {
@@ -2687,7 +2699,7 @@ function applyModeFromConfig(cfg) {
   }
 
   function openEditor() {
-    if (!APP.editable) {
+    if (!canAuthor()) {
       alert("Edit is unavailable in read-only viewer mode.");
       return;
     }
@@ -3076,20 +3088,20 @@ function applyModeFromConfig(cfg) {
         + "<span class=\"att-meta\">" + (a.pages || 0) + " pages · " + a.root + "</span>"
         + (bm ? "<span class=\"" + bmClass + "\" title=\"PDF outline / bookmark title\">Bookmark: " + bm.replace(/</g, "&lt;") + "</span>" : "");
       li.appendChild(body);
-      const actions = document.createElement("div");
-      actions.className = "att-actions";
-      const folderWrap = document.createElement("span");
-      folderWrap.innerHTML = folderBtnHtml({
-        rel: a.rel,
-        title: "Open containing folder for this appended file in Finder",
-      });
-      const folderBtn = folderWrap.firstElementChild;
-      folderBtn.onclick = (ev) => {
-        ev.preventDefault();
-        revealInFinder({ rel: a.rel });
-      };
-      actions.appendChild(folderBtn);
       if (editable) {
+        const actions = document.createElement("div");
+        actions.className = "att-actions";
+        const folderWrap = document.createElement("span");
+        folderWrap.innerHTML = folderBtnHtml({
+          rel: a.rel,
+          title: "Open containing folder for this appended file in Finder",
+        });
+        const folderBtn = folderWrap.firstElementChild;
+        folderBtn.onclick = (ev) => {
+          ev.preventDefault();
+          revealInFinder({ rel: a.rel });
+        };
+        actions.appendChild(folderBtn);
         const mkBtn = (label, title, fn, cls) => {
           const b = document.createElement("button");
           b.type = "button";
@@ -3111,8 +3123,8 @@ function applyModeFromConfig(cfg) {
         actions.appendChild(bmBtn);
         actions.appendChild(ren);
         actions.appendChild(del);
+        li.appendChild(actions);
       }
-      li.appendChild(actions);
       ul.appendChild(li);
     });
   }
@@ -3198,7 +3210,10 @@ function applyModeFromConfig(cfg) {
       return;
     }
     openSidePanel("attach");
-    setAttachModeUi(!!APP.editable);
+    // Re-fetch config so we never trust a stale APP.editable=true default
+    await loadConfig();
+    const authoring = canAuthor();
+    setAttachModeUi(authoring);
     const intro = document.getElementById("attach-intro");
     const r = await fetch("/api/packet?pdf=" + encodeURIComponent(currentPdf));
     const data = await r.json();
@@ -3207,7 +3222,7 @@ function applyModeFromConfig(cfg) {
     if (intro) {
       if (!roots.length) {
         intro.textContent = "This packet is narrative-only — nothing is appended after the markdown.";
-      } else if (APP.editable) {
+      } else if (authoring) {
         intro.textContent = "Add, rename, reorder, or edit Bookmark titles (PDF outline). Rebuild preview to refresh the PDF.";
       } else {
         intro.textContent = "Files appended after the markdown narrative (read-only).";
@@ -3222,7 +3237,7 @@ function applyModeFromConfig(cfg) {
         sel.appendChild(o);
       });
     }
-    renderAttachList(data.attachments || [], { roots, editable: !!APP.editable });
+    renderAttachList(data.attachments || [], { roots, editable: authoring });
   }
 
   window.__popOpenAppended = () => { openAttachments(); };
