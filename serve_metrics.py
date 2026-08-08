@@ -154,6 +154,37 @@ _import_lock = threading.Lock()
 _import_state = {"running": False, "log": "", "ok": None}
 
 
+def ensure_data_dirs() -> dict:
+    """Create persistent disk dirs (gunicorn never calls main())."""
+    info = {
+        "useDataLayout": USE_DATA_LAYOUT,
+        "publish": str(PUBLISH),
+        "contentRoot": str(CONTENT_ROOT),
+        "review": str(REVIEW),
+        "official": str(OFFICIAL),
+        "writable": False,
+        "error": None,
+    }
+    if not USE_DATA_LAYOUT:
+        info["writable"] = os.access(CONTENT_ROOT, os.W_OK)
+        return info
+    try:
+        for path in (PUBLISH, CONTENT_ROOT, REVIEW, OFFICIAL, CONTENT_DRAFTS, PUBLISH / "pdfs"):
+            path.mkdir(parents=True, exist_ok=True)
+        probe = PUBLISH / ".write_test"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        info["writable"] = True
+    except Exception as exc:
+        info["error"] = str(exc)
+        info["writable"] = False
+    return info
+
+
+# Important on Render: create /data subdirs when the worker boots
+_DATA_DIR_STATUS = ensure_data_dirs()
+
+
 def is_production() -> bool:
     return POP_MODE == "production"
 
@@ -1579,6 +1610,21 @@ def _apply_content_pack_extract(stage: Path) -> dict:
     return stats
 
 
+@app.get("/api/admin/storage")
+@require_admin
+def api_admin_storage():
+    status = ensure_data_dirs()
+    status["officialPdfCount"] = (
+        sum(1 for _ in OFFICIAL.rglob("*.pdf")) if OFFICIAL.is_dir() else 0
+    )
+    status["reviewPdfCount"] = (
+        sum(1 for _ in REVIEW.rglob("*.pdf")) if REVIEW.is_dir() else 0
+    )
+    status["hasContent"] = content_has_sources()
+    status["hasPdfs"] = content_has_pdfs()
+    return jsonify({"ok": True, **status})
+
+
 @app.post("/api/admin/import-content")
 @require_admin
 def api_import_content():
@@ -1589,6 +1635,19 @@ def api_import_content():
         return jsonify({"ok": False, "error": "Missing file"}), 400
     if not f.filename.lower().endswith(".zip"):
         return jsonify({"ok": False, "error": "Upload a .zip content pack"}), 400
+    disk = ensure_data_dirs()
+    if USE_DATA_LAYOUT and not disk.get("writable"):
+        return jsonify(
+            {
+                "ok": False,
+                "error": (
+                    "Persistent disk not writable at "
+                    f"{PUBLISH}. In Render: add a Disk mounted at /data, set "
+                    "PUBLISH_DATA_ROOT=/data, then Manual Deploy, then retry import. "
+                    f"Detail: {disk.get('error')}"
+                ),
+            }
+        ), 500
     with _import_lock:
         if _import_state.get("running"):
             return jsonify({"ok": False, "error": "Import already running"}), 409

@@ -1125,6 +1125,7 @@
       <section class="panel admin-only edit-only" id="content-import">
         <h2>Import content</h2>
         <p class="hint">Upload a content-pack zip built locally with <code>scripts/build_content_pack.sh</code> (markdown + attachments; may include PDFs). Does not go through GitHub.</p>
+        <div class="status-box" id="disk-status" hidden></div>
         <div class="import-form">
           <input type="file" id="content-pack-input" accept=".zip,application/zip">
           <button type="button" id="content-pack-upload">Upload content pack</button>
@@ -3273,6 +3274,21 @@ function applyModeFromConfig(cfg) {
     if (currentPdf) refreshPromoteButton(currentPdf);
   };
 
+  async function refreshStorageStatus() {
+    const el = document.getElementById("disk-status");
+    if (!el) return;
+    try {
+      const r = await fetch("/api/admin/storage");
+      const data = await r.json();
+      if (!data.ok) return;
+      el.hidden = false;
+      el.className = "status-box " + (data.writable ? "ok" : "err");
+      el.textContent = data.writable
+        ? `Disk OK — official PDFs: ${data.officialPdfCount || 0}, review PDFs: ${data.reviewPdfCount || 0}`
+        : `Disk NOT writable (${data.publish || "?"}): ${data.error || "unknown error"}`;
+    } catch (e) {}
+  }
+
   async function wireSiteAccess() {
     const status = document.getElementById("view-pw-status");
     const msg = document.getElementById("view-pw-msg");
@@ -3360,6 +3376,7 @@ function applyModeFromConfig(cfg) {
         }
         if (data.ok && typeof loadLiveInventory === "function") await loadLiveInventory();
         await loadConfig();
+        await refreshStorageStatus();
       } catch (err) {
         if (status) {
           status.className = "status-box err";
@@ -3379,6 +3396,7 @@ function applyModeFromConfig(cfg) {
     }
     await wireSiteAccess();
     wireContentImport();
+    if (document.body.classList.contains("admin-surface")) await refreshStorageStatus();
     restoreSideLayout();
     wireSideResize();
     const frame = document.getElementById("viewer-frame");
