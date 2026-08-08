@@ -21,7 +21,7 @@ git status   # review: no .env, no narrative folders, no PDFs
 git commit -m "Initial app-only PoP Final Edit dashboard"
 
 # Create PRIVATE remote (do not use --public)
-gh repo create pop-renewal-final-edit --private --source=. --remote=origin --push
+gh repo create faculty-materials-builder --private --source=. --remote=origin --push
 ```
 
 While the repo is still private, open GitHub and confirm the file tree has no content or secrets. Optionally:
