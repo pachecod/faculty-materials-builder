@@ -293,10 +293,23 @@
     font-size: 0.72rem;
     letter-spacing: 0;
   }
-  tr.row-complete td { background: var(--row-complete); }
-  tr.row-partial td { background: var(--row-partial); }
-  tr.row-none-need td { background: var(--row-none-need); }
-  tr.row-none-ok td { background: var(--row-none-ok); }
+  tr.row-complete { background: var(--row-complete); }
+  tr.row-partial { background: var(--row-partial); }
+  tr.row-none-need { background: var(--row-none-need); }
+  tr.row-none-ok { background: var(--row-none-ok); }
+  tr.row-complete > td { background: var(--row-complete); }
+  tr.row-partial > td { background: var(--row-partial); }
+  tr.row-none-need > td { background: var(--row-none-need); }
+  tr.row-none-ok > td { background: var(--row-none-ok); }
+  /* Keep Pages (and other trailing cells) painted when middle cols are display:none */
+  body.viewer-mode #pdf-tbody tr.row-complete > td.num,
+  body.viewer-mode #pdf-tbody tr.row-complete > td.appended-col { background: var(--row-complete); }
+  body.viewer-mode #pdf-tbody tr.row-partial > td.num,
+  body.viewer-mode #pdf-tbody tr.row-partial > td.appended-col { background: var(--row-partial); }
+  body.viewer-mode #pdf-tbody tr.row-none-need > td.num,
+  body.viewer-mode #pdf-tbody tr.row-none-need > td.appended-col { background: var(--row-none-need); }
+  body.viewer-mode #pdf-tbody tr.row-none-ok > td.num,
+  body.viewer-mode #pdf-tbody tr.row-none-ok > td.appended-col { background: var(--row-none-ok); }
   a.file-link {
     cursor: pointer;
     color: var(--link);
@@ -392,6 +405,7 @@
   body.viewer-mode .order-col { display: none !important; }
   body.viewer-mode .need-col,
   body.viewer-mode .level-col { display: none !important; }
+  body.viewer-mode .col-section { display: none !important; }
   /* Appended column/UI: keep for local edit + production /admin; hide public viewers */
   body.viewer-mode:not(.admin-surface) .appended-col { display: none !important; }
   body.viewer-mode:not(.admin-surface) #btn-attach { display: none !important; }
@@ -2020,6 +2034,18 @@ async function movePacketInSection(file, delta) {
   }
 }
 
+/** Section-head rows always span the full 7-col colgroup (hidden cols collapse). */
+function pdfListColSpan() {
+  return 7;
+}
+
+/** Footer label colspan: columns before Pages. */
+function pdfTotalLabelColSpan() {
+  if (!document.body.classList.contains("viewer-mode")) return 3; // file, appended, section
+  // Viewer: section/need/level/order hidden; optional appended on /admin
+  return document.body.classList.contains("admin-surface") ? 2 : 1;
+}
+
 function renderPdfRows(pdfs) {
   const filtered = filterPdfs(pdfs);
   const viewEl = document.getElementById("filter-view");
@@ -2036,13 +2062,14 @@ function renderPdfRows(pdfs) {
       : `Showing ${fmt(filtered.length)} of ${fmt(pdfs.length)}`;
 
   let bodyHtml;
+  const listColSpan = pdfListColSpan();
   if (bySection) {
     bodyHtml = groupPdfsBySection(filtered).map(([sectionId, rows]) => {
       const pages = rows.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
       const label = sectionLabel(sectionId);
       return `
         <tr class="section-head">
-          <td colspan="${document.body.classList.contains("viewer-mode") ? 3 : 7}">
+          <td colspan="${listColSpan}">
             ${label}
             <span class="section-head-meta">${fmt(rows.length)} file${rows.length === 1 ? "" : "s"} · ${fmt(pages)} pg</span>
           </td>
@@ -2054,6 +2081,8 @@ function renderPdfRows(pdfs) {
     bodyHtml = filtered.map(r => pdfRowHtml(r, { showSection: true })).join("");
   }
   document.getElementById("pdf-tbody").innerHTML = bodyHtml;
+  const totalLabel = document.getElementById("pdf-total-label");
+  if (totalLabel) totalLabel.colSpan = pdfTotalLabelColSpan();
 
   const pagesTally = filtered.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
   const needYes = filtered.filter(r => r.needContent === "Yes").length;
