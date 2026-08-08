@@ -1,13 +1,13 @@
-# Scaffold only — do not auto-deploy. Create resources when you are ready.
-# Connect a PRIVATE GitHub repo, set secrets in the Render Dashboard, then deploy.
-# autoDeploy is false so git pushes never publish unexpectedly.
+# Connect a PRIVATE GitHub repo, set secrets in the Render Dashboard.
+# autoDeploy: true — app code updates on push to the linked branch.
+# Content still lives on the /data disk via /admin import (not git).
 
 services:
   - type: web
     name: pop-renewal-viewer
     runtime: python
     plan: starter
-    autoDeploy: false
+    autoDeploy: true
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn serve_metrics:app --bind 0.0.0.0:$PORT
     disk:

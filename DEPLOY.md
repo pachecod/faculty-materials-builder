@@ -61,7 +61,7 @@ On Render (viewer only — no content editing):
 3. To replace everything cleanly (remove orphans from older packs): check **Wipe all existing content… before importing**, or use **Wipe all content…** then import
 4. Optional: **Site access** — set a view password for `/`
 
-Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. Default import merges by path; use wipe when you need a full replace. App code updates = `git push` then Manual Deploy (disk content persists).
+Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. Default import merges by path; use wipe when you need a full replace. App code updates = `git push` (autodeploy); disk content persists across deploys.
 
 ## 5. Surfaces
 
