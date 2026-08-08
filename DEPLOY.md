@@ -58,9 +58,10 @@ On Render (viewer only — no content editing):
 
 1. Sign in at `/admin` with `ADMIN_PASSWORD`
 2. **Import content** — upload the zip from local **Build Render import pack** (or `scripts/build_content_pack.sh`)
-3. Optional: **Site access** — set a view password for `/`
+3. To replace everything cleanly (remove orphans from older packs): check **Wipe all existing content… before importing**, or use **Wipe all content…** then import
+4. Optional: **Site access** — set a view password for `/`
 
-Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. App code updates = `git push` then Manual Deploy (disk content persists).
+Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. Default import merges by path; use wipe when you need a full replace. App code updates = `git push` then Manual Deploy (disk content persists).
 
 ## 5. Surfaces
 

@@ -908,11 +908,20 @@ def serve_pdfs(subpath: str):
     return send_from_directory(path.parent, path.name)
 
 
+def _safe_pdf_under(root: Path, subpath: str) -> Path | None:
+    rel = (subpath or "").strip().lstrip("/")
+    if not rel or ".." in Path(rel).parts:
+        return None
+    path = root / rel
+    return path if path.is_file() else None
+
+
 @app.get("/0_Drafts/_pdf_review/<path:subpath>")
 @require_viewer_auth
 def review_files(subpath: str):
-    # Legacy URL: serve official when present, else review / publish pdfs
-    path = resolve_viewable_pdf(subpath)
+    # Always serve the working preview from _pdf_review (rebuild target).
+    # Do not fall through to _official — that hid fresh rebuilds after Save as official.
+    path = _safe_pdf_under(REVIEW, subpath)
     if not path:
         return jsonify({"ok": False, "error": "PDF not found"}), 404
     return send_from_directory(path.parent, path.name)
@@ -921,7 +930,7 @@ def review_files(subpath: str):
 @app.get("/0_Drafts/_official/<path:subpath>")
 @require_viewer_auth
 def official_files(subpath: str):
-    path = resolve_viewable_pdf(subpath)
+    path = _safe_pdf_under(OFFICIAL, subpath)
     if not path:
         return jsonify({"ok": False, "error": "PDF not found"}), 404
     return send_from_directory(path.parent, path.name)
@@ -1752,6 +1761,60 @@ def api_build_content_pack():
     )
 
 
+def _clear_directory_contents(path: Path) -> int:
+    """Delete everything inside path (not the directory itself). Returns entry count."""
+    if not path.is_dir():
+        return 0
+    removed = 0
+    for child in list(path.iterdir()):
+        if child.is_dir() and not child.is_symlink():
+            shutil.rmtree(child)
+        else:
+            child.unlink(missing_ok=True)
+        removed += 1
+    return removed
+
+
+def wipe_hosted_content() -> dict:
+    """Remove imported content on the persistent data disk (Render).
+
+    Keeps site_auth.json and the /data mount itself. Refuses to run against the
+    local authoring tree (no PUBLISH_DATA_ROOT) so a mistaken click cannot delete
+    the Mac working copy.
+    """
+    if not USE_DATA_LAYOUT:
+        raise RuntimeError(
+            "Wipe is only available when PUBLISH_DATA_ROOT is set (Render /data). "
+            "It will not wipe a local authoring install."
+        )
+    disk = ensure_data_dirs()
+    if not disk.get("writable"):
+        raise RuntimeError(
+            f"Persistent disk not writable at {PUBLISH}: {disk.get('error')}"
+        )
+
+    removed = {
+        "workspaceEntries": _clear_directory_contents(CONTENT_ROOT),
+        "reviewEntries": _clear_directory_contents(REVIEW),
+        "officialEntries": _clear_directory_contents(OFFICIAL),
+        "publishPdfEntries": _clear_directory_contents(PUBLISH / "pdfs"),
+        "metaFiles": 0,
+    }
+    for name in (
+        "metrics_status.json",
+        "inventory.json",
+        "manifest.json",
+        "status.json",
+    ):
+        meta = PUBLISH / name
+        if meta.is_file():
+            meta.unlink()
+            removed["metaFiles"] += 1
+
+    ensure_data_dirs()
+    return removed
+
+
 @app.get("/api/admin/storage")
 @require_admin
 def api_admin_storage():
@@ -1764,7 +1827,42 @@ def api_admin_storage():
     )
     status["hasContent"] = content_has_sources()
     status["hasPdfs"] = content_has_pdfs()
+    status["canWipeContent"] = bool(USE_DATA_LAYOUT)
     return jsonify({"ok": True, **status})
+
+
+@app.post("/api/admin/wipe-content")
+@require_admin
+def api_wipe_content():
+    """Delete all imported content on the Render disk. Keeps view-password auth."""
+    global _import_state
+    data = request.get_json(silent=True) or {}
+    confirm = (data.get("confirm") or "").strip()
+    if confirm != "WIPE":
+        return jsonify(
+            {
+                "ok": False,
+                "error": 'Confirmation required: send {"confirm": "WIPE"}',
+            }
+        ), 400
+    with _import_lock:
+        if _import_state.get("running"):
+            return jsonify({"ok": False, "error": "Import already running"}), 409
+        try:
+            removed = wipe_hosted_content()
+        except Exception as exc:
+            return jsonify({"ok": False, "error": str(exc)}), 400
+        log = (
+            "Wiped hosted content.\n"
+            f"Workspace entries removed: {removed['workspaceEntries']}\n"
+            f"Review PDF tree entries: {removed['reviewEntries']}\n"
+            f"Official PDF tree entries: {removed['officialEntries']}\n"
+            f"publish/pdfs entries: {removed['publishPdfEntries']}\n"
+            f"Meta files removed: {removed['metaFiles']}\n"
+            "Site access password (if set) was kept. Upload a new content pack next."
+        )
+        _import_state = {"running": False, "log": log, "ok": True, "wiped": removed}
+    return jsonify({"ok": True, "removed": removed, "log": log})
 
 
 @app.post("/api/admin/import-content")
@@ -1777,6 +1875,12 @@ def api_import_content():
         return jsonify({"ok": False, "error": "Missing file"}), 400
     if not f.filename.lower().endswith(".zip"):
         return jsonify({"ok": False, "error": "Upload a .zip content pack"}), 400
+    wipe_first = (request.form.get("wipe") or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     disk = ensure_data_dirs()
     if USE_DATA_LAYOUT and not disk.get("writable"):
         return jsonify(
@@ -1796,6 +1900,17 @@ def api_import_content():
         _import_state = {"running": True, "log": "Receiving upload…\n", "ok": None}
 
     try:
+        wipe_log = ""
+        if wipe_first:
+            removed = wipe_hosted_content()
+            wipe_log = (
+                "Wiped existing content first.\n"
+                f"  workspace={removed['workspaceEntries']} "
+                f"review={removed['reviewEntries']} "
+                f"official={removed['officialEntries']} "
+                f"pdfs={removed['publishPdfEntries']} "
+                f"meta={removed['metaFiles']}\n"
+            )
         with tempfile.TemporaryDirectory(prefix="pop-pack-") as tmp:
             tmp_path = Path(tmp)
             zip_path = tmp_path / "pack.zip"
@@ -1822,12 +1937,13 @@ def api_import_content():
                     shutil.copy2(src, dest)
                     stats["meta"] += 1
             log = (
-                f"Extracted {len(written)} zip members.\n"
+                wipe_log
+                + f"Extracted {len(written)} zip members.\n"
                 f"Sources/files: {stats['sources']}\n"
                 f"Review PDFs: {stats['reviewPdfs']}\n"
                 f"Official PDFs: {stats['officialPdfs']}\n"
                 f"Meta files: {stats['meta']}\n"
-                "Import complete. Run Rebuild if you need to regenerate PDFs from markdown."
+                "Import complete."
             )
             _import_state = {"running": False, "log": log, "ok": True, "stats": stats}
             return jsonify({"ok": True, "stats": stats, "log": log})

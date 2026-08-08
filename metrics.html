@@ -1163,11 +1163,16 @@
 
       <section class="panel" id="content-import">
         <h2>Import content</h2>
-        <p class="hint">Upload a content-pack zip from a local install (Build Render import pack). Updates what visitors see. Does not go through GitHub.</p>
+        <p class="hint">Upload a content-pack zip from a local install (Build Render import pack). By default this merges/overwrites by path and leaves orphan files. Use wipe when you want a clean replace. Does not go through GitHub.</p>
         <div class="status-box" id="disk-status" hidden></div>
         <div class="import-form">
           <input type="file" id="content-pack-input" accept=".zip,application/zip">
+          <label id="content-pack-wipe-label" class="hint" style="display:none;gap:.4rem;align-items:flex-start">
+            <input type="checkbox" id="content-pack-wipe-first">
+            <span>Wipe all existing content on this server before importing (keeps view password)</span>
+          </label>
           <button type="button" id="content-pack-upload">Upload content pack</button>
+          <button type="button" id="content-wipe" class="secondary" style="display:none;background:#7f1d1d">Wipe all content…</button>
         </div>
         <div class="status-box" id="content-pack-status" hidden></div>
       </section>
@@ -3357,7 +3362,7 @@ function applyModeFromConfig(cfg) {
       if (status) status.textContent = s.log || (s.ok ? "Done" : "Failed");
       if (s.ok) {
         await finishRebuildModal(true, "Done — refreshing preview…");
-        document.getElementById("viewer-frame").src = pdfUrl(currentPdf);
+        document.getElementById("viewer-frame").src = pdfUrl(currentPdf, { bust: true });
         showPreviewOnly();
         if (typeof loadLiveInventory === "function") await loadLiveInventory();
         hideRebuildModal();
@@ -3407,6 +3412,11 @@ function applyModeFromConfig(cfg) {
       el.textContent = data.writable
         ? `Disk OK — official PDFs: ${data.officialPdfCount || 0}, review PDFs: ${data.reviewPdfCount || 0}`
         : `Disk NOT writable (${data.publish || "?"}): ${data.error || "unknown error"}`;
+      const canWipe = !!data.canWipeContent;
+      const wipeLabel = document.getElementById("content-pack-wipe-label");
+      const wipeBtn = document.getElementById("content-wipe");
+      if (wipeLabel) wipeLabel.style.display = canWipe ? "flex" : "none";
+      if (wipeBtn) wipeBtn.style.display = canWipe ? "" : "none";
     } catch (e) {}
   }
 
@@ -3473,21 +3483,82 @@ function applyModeFromConfig(cfg) {
   function wireContentImport() {
     const input = document.getElementById("content-pack-input");
     const btn = document.getElementById("content-pack-upload");
+    const wipeBtn = document.getElementById("content-wipe");
+    const wipeFirst = document.getElementById("content-pack-wipe-first");
     const status = document.getElementById("content-pack-status");
     if (!btn || !input) return;
+
+    if (wipeBtn) {
+      wipeBtn.onclick = async () => {
+        const ok = confirm(
+          "Delete ALL imported content on this server (sources + PDFs)?\n\n"
+          + "This cannot be undone. Site view password is kept.\n\n"
+          + "Click OK, then type WIPE in the next prompt."
+        );
+        if (!ok) return;
+        const typed = prompt('Type WIPE to confirm full content wipe:');
+        if ((typed || "").trim() !== "WIPE") {
+          alert("Wipe cancelled.");
+          return;
+        }
+        if (status) {
+          status.hidden = false;
+          status.className = "status-box";
+          status.textContent = "Wiping hosted content…";
+        }
+        wipeBtn.disabled = true;
+        btn.disabled = true;
+        try {
+          const r = await fetch("/api/admin/wipe-content", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ confirm: "WIPE" }),
+          });
+          const data = await r.json();
+          if (status) {
+            status.className = "status-box " + (data.ok ? "ok" : "err");
+            status.textContent = data.ok ? (data.log || "Wipe complete.") : (data.error || "Wipe failed");
+          }
+          if (data.ok && typeof loadLiveInventory === "function") await loadLiveInventory();
+          await loadConfig();
+          await refreshStorageStatus();
+        } catch (err) {
+          if (status) {
+            status.className = "status-box err";
+            status.textContent = String(err.message || err);
+          }
+        } finally {
+          wipeBtn.disabled = false;
+          btn.disabled = false;
+        }
+      };
+    }
+
     btn.onclick = async () => {
       if (!input.files || !input.files[0]) {
         alert("Choose a content-pack .zip first.");
         return;
       }
+      const doWipe = !!(wipeFirst && wipeFirst.checked);
+      if (doWipe) {
+        const ok = confirm(
+          "Wipe all existing content on this server, then import this pack?\n\n"
+          + "Orphan files from older imports will be removed. View password is kept."
+        );
+        if (!ok) return;
+      }
       const fd = new FormData();
       fd.append("file", input.files[0]);
+      if (doWipe) fd.append("wipe", "1");
       if (status) {
         status.hidden = false;
         status.className = "status-box";
-        status.textContent = "Uploading and extracting…";
+        status.textContent = doWipe
+          ? "Wiping, then uploading and extracting…"
+          : "Uploading and extracting…";
       }
       btn.disabled = true;
+      if (wipeBtn) wipeBtn.disabled = true;
       try {
         const r = await fetch("/api/admin/import-content", { method: "POST", body: fd });
         const data = await r.json();
@@ -3505,6 +3576,7 @@ function applyModeFromConfig(cfg) {
         }
       } finally {
         btn.disabled = false;
+        if (wipeBtn) wipeBtn.disabled = false;
       }
     };
   }

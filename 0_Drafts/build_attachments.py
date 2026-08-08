@@ -342,9 +342,11 @@ def course_sources(folder, tmpdir, key):
 
 
 def append_evidence_categories(tmpdir, force=False):
-    """Append category folder PDFs into cover PDFs. `force` is unused; a fresh
-    pandoc export overwrites the cover, after which already_appended is false."""
-    del force
+    """Append category folder PDFs into cover PDFs.
+
+    When force=True (explicit --evidence after a fresh export), skip the
+    already_appended guard so exhibit list changes are applied.
+    """
     for folder_name, pdf_name in EVIDENCE_CATEGORIES:
         packet = EVIDENCE_PACKET_DIR / pdf_name
         folder = EVIDENCE_ROOT / folder_name
@@ -357,7 +359,7 @@ def append_evidence_categories(tmpdir, force=False):
         if not sources:
             print(f"  skip   {pdf_name}: no PDFs in {folder_name}/")
             continue
-        if already_appended(packet):
+        if not force and already_appended(packet):
             print(f"  skip   {pdf_name}: attachment already appended")
             continue
         before, after = append(packet, sources, tmpdir)
@@ -366,8 +368,11 @@ def append_evidence_categories(tmpdir, force=False):
 
 
 def append_creative_work(tmpdir, force=False):
-    """Append exhibit PDFs from the Creative Work folder into that packet."""
-    del force
+    """Append exhibit PDFs from the Creative Work folder into that packet.
+
+    When force=True (explicit --creative-work after a fresh export), skip the
+    already_appended guard so removing/adding exhibits is reflected.
+    """
     packet = CREATIVE_WORK_PACKET
     if not packet.is_file():
         print("  skip   Creative Work: no packet PDF in _pdf_review")
@@ -377,7 +382,7 @@ def append_creative_work(tmpdir, force=False):
     if not sources:
         print("  skip   Creative Work: no exhibit PDFs found")
         return
-    if already_appended(packet):
+    if not force and already_appended(packet):
         print(f"  skip   {packet.name}: attachment already appended")
         return
     before, after = append(packet, sources, tmpdir)
