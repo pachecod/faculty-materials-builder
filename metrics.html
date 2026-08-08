@@ -778,8 +778,9 @@
   }
   body.viewer-mode .edit-only { display: none !important; }
   body:not(.viewer-mode) .viewer-only { display: none !important; }
-  body.viewer-mode .admin-only { display: none !important; }
   body:not(.admin-surface) .admin-only { display: none !important; }
+  body:not(.local-edit) .local-edit-only { display: none !important; }
+  body:not(.production-admin) .production-admin-only { display: none !important; }
   #mode-banner {
     display: none; background: #1e3a5f; color: #dbeafe; text-align: center;
     padding: .4rem; font-size: .85rem;
@@ -1058,7 +1059,21 @@
     </div>
 
 
-    <div class="tools-grid edit-only">
+    <div class="tools-grid production-admin-only admin-only">
+      <section class="panel" id="local-edit-notice">
+        <h2>Editing</h2>
+        <p class="hint">
+          This hosted site is a <strong>viewer</strong>. You can update what visitors see (import a content pack, set a view password),
+          but you cannot edit markdown or rebuild PDFs here.
+        </p>
+        <p class="hint">
+          To edit content, install and run a local copy of this app with <code>POP_MODE=edit</code>,
+          rebuild PDFs on your machine, then use <strong>Build Render import pack</strong> locally and upload it below.
+        </p>
+      </section>
+    </div>
+
+    <div class="tools-grid edit-only local-edit-only">
       <section class="panel" id="folder-dump">
         <h2>Folder dump</h2>
         <p class="hint">Drag one or more <strong>PDFs</strong> of the same kind here, choose what they are, then save. Course items need a class; correspondence goes straight into Other Evidence folders.</p>
@@ -1106,7 +1121,19 @@
         <div class="status-box" id="regen-status" hidden></div>
       </section>
 
-      <section class="panel admin-only edit-only" id="site-access">
+      <section class="panel" id="render-pack">
+        <h2>Build Render import pack</h2>
+        <p class="hint">
+          Package the current local PDFs and sources into a zip for the hosted viewer.
+          Download it, then upload under <strong>Import content</strong> on the Render <code>/admin</code> site.
+        </p>
+        <button type="button" id="build-render-pack">Build &amp; download import pack</button>
+        <div class="status-box" id="render-pack-status" hidden></div>
+      </section>
+    </div>
+
+    <div class="tools-grid admin-only">
+      <section class="panel" id="site-access">
         <h2>Site access</h2>
         <p class="hint">Optional password for the public view site (<code>/</code>). Admins always bypass it. Leave cleared for an open view portal.</p>
         <div class="site-access-form">
@@ -1122,9 +1149,9 @@
         <div class="status-box" id="view-pw-msg" hidden></div>
       </section>
 
-      <section class="panel admin-only edit-only" id="content-import">
+      <section class="panel" id="content-import">
         <h2>Import content</h2>
-        <p class="hint">Upload a content-pack zip built locally with <code>scripts/build_content_pack.sh</code> (markdown + attachments; may include PDFs). Does not go through GitHub.</p>
+        <p class="hint">Upload a content-pack zip from a local install (Build Render import pack). Updates what visitors see. Does not go through GitHub.</p>
         <div class="status-box" id="disk-status" hidden></div>
         <div class="import-form">
           <input type="file" id="content-pack-input" accept=".zip,application/zip">
@@ -2437,19 +2464,28 @@ async function loadLiveInventory() {
 function applyModeFromConfig(cfg) {
   if (!cfg) return;
   const onAdmin = location.pathname.startsWith("/admin");
-  const productionView = !!(cfg.isProduction && !onAdmin);
-  const editableHere = !!(cfg.editable && !productionView);
+  // Hosted Render: always view-mode for content; local edit mode is the only authoring UI
+  const editableHere = !!cfg.editable && !cfg.isProduction;
   if (!editableHere) document.body.classList.add("viewer-mode");
   else document.body.classList.remove("viewer-mode");
-  if (onAdmin || (!cfg.isProduction && cfg.editable)) {
-    document.body.classList.add("admin-surface");
-  } else {
-    document.body.classList.remove("admin-surface");
-  }
+
+  if (editableHere) document.body.classList.add("local-edit");
+  else document.body.classList.remove("local-edit");
+
+  // Hosted /admin only: import + site access (not content editing)
+  const showAdminOps = !!(cfg.isProduction && onAdmin && cfg.isAdmin);
+  if (showAdminOps) document.body.classList.add("admin-surface");
+  else document.body.classList.remove("admin-surface");
+
+  if (showAdminOps) document.body.classList.add("production-admin");
+  else document.body.classList.remove("production-admin");
+
   const banner = document.getElementById("mode-banner");
   if (banner) {
-    if (cfg.isProduction && !onAdmin) {
-      banner.textContent = "Read-only portal — Preview and download. Admins use /admin.";
+    if (cfg.isProduction && onAdmin) {
+      banner.textContent = "Viewer admin — import packs and site access only. Edit content on a local install.";
+    } else if (cfg.isProduction) {
+      banner.textContent = "Read-only portal — Preview and download. Admins use /admin for import and site access.";
     } else if (!editableHere) {
       banner.textContent = "Read-only viewer — Preview and download. Local editing happens in edit mode.";
     }
@@ -2458,8 +2494,8 @@ function applyModeFromConfig(cfg) {
   if (emptyHint) {
     emptyHint.hidden = !!cfg.hasPdfs;
     if (!cfg.hasPdfs) {
-      emptyHint.textContent = onAdmin
-        ? "No PDFs yet — import a content pack, then Rebuild / Save as official."
+      emptyHint.textContent = (cfg.isProduction && onAdmin)
+        ? "No PDFs yet — upload a content pack built on your local install."
         : "No PDFs published yet.";
     }
   }
@@ -2493,22 +2529,59 @@ function applyModeFromConfig(cfg) {
       const r = await fetch("/api/config");
       APP = await r.json();
       applyModeFromConfig(APP);
-      const hint = document.getElementById("regen-hint");
-      const regenRun = document.getElementById("regen-run");
-      const rebuildBtn = document.getElementById("btn-rebuild");
-      if (APP.pdfRebuildAvailable === false) {
-        if (hint) {
-          hint.innerHTML = "PDF rebuild needs Pandoc/XeLaTeX, which are not installed on this host. "
-            + "<strong>Rebuild locally</strong>, then run <code>scripts/build_content_pack.sh</code> "
-            + "and re-upload under Import content.";
-        }
-        if (regenRun) regenRun.disabled = true;
-        if (rebuildBtn) {
-          rebuildBtn.disabled = true;
-          rebuildBtn.title = "Rebuild locally, then re-upload a content pack";
-        }
-      }
     } catch (e) {}
+  }
+
+  function wireRenderPackExport() {
+    const btn = document.getElementById("build-render-pack");
+    const status = document.getElementById("render-pack-status");
+    if (!btn) return;
+    btn.onclick = async () => {
+      if (status) {
+        status.hidden = false;
+        status.className = "status-box";
+        status.textContent = "Building import pack (may take a minute)…";
+      }
+      btn.disabled = true;
+      try {
+        const r = await fetch("/api/build-content-pack", { method: "POST" });
+        if (!r.ok) {
+          let msg = "Build failed";
+          try {
+            const data = await r.json();
+            msg = data.error || data.log || msg;
+          } catch (e) {}
+          if (status) {
+            status.className = "status-box err";
+            status.textContent = msg;
+          }
+          return;
+        }
+        const blob = await r.blob();
+        const disp = r.headers.get("Content-Disposition") || "";
+        const m = disp.match(/filename="?([^"]+)"?/i);
+        const name = (m && m[1]) || ("content-pack-" + Date.now() + ".zip");
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        if (status) {
+          status.className = "status-box ok";
+          status.textContent = "Downloaded " + name + ". Upload it on Render /admin → Import content.";
+        }
+      } catch (err) {
+        if (status) {
+          status.className = "status-box err";
+          status.textContent = String(err.message || err);
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    };
   }
 
   function pdfUrl(rel) {
@@ -3411,6 +3484,7 @@ function applyModeFromConfig(cfg) {
     }
     await wireSiteAccess();
     wireContentImport();
+    wireRenderPackExport();
     if (document.body.classList.contains("admin-surface")) await refreshStorageStatus();
     restoreSideLayout();
     wireSideResize();

@@ -199,6 +199,12 @@ def is_admin_session() -> bool:
 
 
 def can_edit() -> bool:
+    """Authoring (markdown, rebuild, attachments) — local edit mode only."""
+    return POP_MODE == "edit"
+
+
+def can_manage_viewer() -> bool:
+    """Viewer ops: import pack, view password. Production admin or local edit."""
     if POP_MODE == "edit":
         return True
     if is_production():
@@ -257,8 +263,17 @@ def require_edit(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if not can_edit():
-            if is_production() and not is_admin_session():
-                return jsonify({"ok": False, "error": "Admin login required"}), 401
+            if is_production():
+                return jsonify(
+                    {
+                        "ok": False,
+                        "error": (
+                            "Content editing is not available on the hosted viewer. "
+                            "Install and run this app locally (POP_MODE=edit) to edit, "
+                            "rebuild PDFs, then upload a content pack from /admin."
+                        ),
+                    }
+                ), 403
             return jsonify({"ok": False, "error": "Read-only viewer mode"}), 403
         return fn(*args, **kwargs)
 
@@ -266,19 +281,17 @@ def require_edit(fn):
 
 
 def require_admin(fn):
+    """Viewer-management ops (import, site access) — not content authoring."""
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        if not is_production():
-            # Local edit/viewer: treat as admin for ops APIs when editable
-            if POP_MODE == "edit":
-                return fn(*args, **kwargs)
-            return jsonify({"ok": False, "error": "Admin only in production"}), 403
-        if not ADMIN_PASSWORD:
+        if not can_manage_viewer():
+            if is_production() and not is_admin_session():
+                if request.path.startswith("/api/"):
+                    return jsonify({"ok": False, "error": "Admin login required"}), 401
+                return redirect("/admin/login")
+            return jsonify({"ok": False, "error": "Admin only"}), 403
+        if is_production() and not ADMIN_PASSWORD:
             return jsonify({"ok": False, "error": "ADMIN_PASSWORD not configured"}), 503
-        if not is_admin_session():
-            if request.path.startswith("/api/"):
-                return jsonify({"ok": False, "error": "Admin login required"}), 401
-            return redirect("/admin/login")
         return fn(*args, **kwargs)
 
     return wrapper
@@ -825,7 +838,7 @@ def api_config():
         {
             "mode": POP_MODE,
             "editable": can_edit(),
-            "isAdmin": is_admin_session() or POP_MODE == "edit",
+            "isAdmin": can_manage_viewer(),
             "isProduction": is_production(),
             "authRequired": bool(
                 is_viewer()
@@ -837,7 +850,8 @@ def api_config():
             "hasContent": content_has_sources(),
             "hasPdfs": content_has_pdfs(),
             "adminPath": "/admin" if is_production() else "/",
-            "pdfRebuildAvailable": _pdf_toolchain_ok()[0],
+            "pdfRebuildAvailable": _pdf_toolchain_ok()[0] if can_edit() else False,
+            "contentPackExportAvailable": can_edit(),
         }
     )
 
@@ -1640,6 +1654,40 @@ def _apply_content_pack_extract(stage: Path) -> dict:
             shutil.copy2(item, dest)
             stats["sources"] += 1
     return stats
+
+
+@app.post("/api/build-content-pack")
+@require_edit
+def api_build_content_pack():
+    """Local edit only: build a Render import zip and return it for download."""
+    script = BASE / "scripts" / "build_content_pack.sh"
+    if not script.is_file():
+        return jsonify({"ok": False, "error": "build_content_pack.sh missing"}), 500
+    out_dir = BASE / "publish"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    out_path = out_dir / f"content-pack-{stamp}.zip"
+    try:
+        proc = subprocess.run(
+            ["bash", str(script), str(out_path)],
+            cwd=str(BASE),
+            capture_output=True,
+            text=True,
+            timeout=60 * 20,
+        )
+    except subprocess.TimeoutExpired:
+        return jsonify({"ok": False, "error": "Content pack build timed out"}), 504
+    if proc.returncode != 0 or not out_path.is_file():
+        detail = ((proc.stderr or "") + "\n" + (proc.stdout or "")).strip()[-1500:]
+        return jsonify(
+            {"ok": False, "error": "Content pack build failed", "log": detail}
+        ), 500
+    return send_file(
+        out_path,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=out_path.name,
+    )
 
 
 @app.get("/api/admin/storage")

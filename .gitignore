@@ -64,6 +64,7 @@ publish/_official/
 # Offline content packs (never commit)
 content-pack*.zip
 *.content-pack.zip
+publish/content-pack*.zip
 
 # Local data-root mirrors
 /data/
