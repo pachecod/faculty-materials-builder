@@ -1,0 +1,3528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</title>
+<style>
+  :root {
+    --ink: #1c1917;
+    --muted: #57534e;
+    --line: #e7e5e4;
+    --bg: #fafaf9;
+    --panel: #ffffff;
+    --accent: #0f3d2e;
+    --accent-soft: #e8f0ec;
+    --bar: #1d6b4f;
+    --link: #0f3d2e;
+    --row-complete: #dcfce7;
+    --row-partial: #fef9c3;
+    --row-none-need: #fecaca;
+    --row-none-ok: #fde047;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #e8f0ec 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #f5efe6 0%, transparent 50%),
+      var(--bg);
+    min-height: 100vh;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 1.75rem 1.25rem 3rem; }
+  header { margin-bottom: 1.25rem; }
+  h1 {
+    font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0 0 0.3rem;
+    letter-spacing: -0.02em; color: var(--accent);
+  }
+
+  /* Top two-column layout: tally | list */
+  .top-grid {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    margin-bottom: 2rem;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1rem;
+  }
+  .panel h2 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+    color: var(--accent);
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+  }
+  .stat {
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    padding: 0.7rem 0.75rem;
+  }
+  .stat .n {
+    font-size: 1.55rem; font-weight: 700; color: var(--accent); line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin-top: 0.25rem;
+  }
+  .hint {
+    color: var(--muted); font-size: 0.85rem; margin: 0 0 0.75rem;
+  }
+  .legend {
+    display: flex; flex-direction: column; gap: 0.4rem;
+    margin: 0 0 0.85rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.72rem; color: var(--muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .swatch {
+    width: 0.85rem; height: 0.85rem; border: 1px solid rgba(0,0,0,0.08); flex: 0 0 auto;
+  }
+  .swatch.complete { background: var(--row-complete); }
+  .swatch.partial { background: var(--row-partial); }
+  .swatch.none-need { background: var(--row-none-need); }
+  .swatch.none-ok { background: var(--row-none-ok); }
+  .bars { display: flex; flex-direction: column; gap: 0.45rem; }
+  .bar-row {
+    display: grid; grid-template-columns: 1fr;
+    gap: 0.15rem; font-size: 0.82rem;
+  }
+  .bar-row .label-row {
+    display: flex; justify-content: space-between; gap: 0.5rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.72rem; color: var(--muted);
+  }
+  .bar-track { height: 8px; background: #eceae6; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--bar); }
+
+  .list-panel { min-width: 0; }
+  .list-panel .table-wrap {
+    border-top: 1px solid var(--line);
+    margin: 0.75rem -1rem -1rem;
+  }
+  .list-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem 0.75rem;
+    align-items: end;
+    margin: 0.65rem 0 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.78rem;
+  }
+  .list-filters label {
+    display: grid;
+    gap: 0.2rem;
+    color: var(--muted);
+    min-width: 8.5rem;
+  }
+  .list-filters select {
+    font: inherit;
+    padding: 0.35rem 0.45rem;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .filter-count {
+    margin-left: auto;
+    align-self: center;
+    color: var(--muted);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  #pdf-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 52rem;
+  }
+  th, td { text-align: left; padding: 0.4rem 0.45rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  #pdf-tbody td.appended-col,
+  #pdf-tbody td.num { vertical-align: middle; }
+  th {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.65rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); background: #f5f5f4; white-space: normal;
+    position: sticky; top: 0; z-index: 1;
+    line-height: 1.25;
+  }
+  td.num {
+    text-align: right; font-variant-numeric: tabular-nums;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; white-space: nowrap;
+    width: 4.25rem;
+  }
+  tfoot td { font-weight: 700; background: var(--accent-soft); border-top: 1px solid var(--line); position: sticky; bottom: 0; }
+  th.file,
+  td.file {
+    width: 24rem;
+    min-width: 24rem;
+    max-width: 24rem;
+    overflow: visible;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .list-panel .table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+  #pdf-tbody tr,
+  #pdf-tbody td { overflow: visible; }
+  th.appended-col,
+  td.appended-col {
+    width: 4.25rem;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    font-size: 0.65rem;
+  }
+  .appended-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    min-width: 2rem;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid #86efac;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #166534;
+    font: 700 0.72rem/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    cursor: pointer;
+  }
+  .appended-btn:hover { background: #bbf7d0; }
+  .appended-btn.is-empty {
+    border-color: #d6d3d1;
+    background: #f5f5f4;
+    color: #a8a29e;
+    font-weight: 500;
+    cursor: default;
+  }
+  .appended-btn.n-a {
+    border-color: transparent;
+    background: transparent;
+    color: #a8a29e;
+    cursor: default;
+    font-weight: 500;
+  }
+  .attach-intro {
+    padding: 0.55rem 0.75rem;
+    background: #292524;
+    color: #d6d3d1;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    border-bottom: 1px solid #44403c;
+  }
+  #attach-list li {
+    flex-wrap: wrap;
+  }
+  #attach-list li .att-body { flex: 1; min-width: 8rem; }
+  #attach-list li .att-meta {
+    display: block;
+    color: #a8a29e;
+    font-size: 0.72rem;
+    margin-top: 0.15rem;
+  }
+  #attach-list li .att-main { color: #fafaf9; word-break: break-word; }
+  #attach-list li .att-bookmark {
+    display: block;
+    color: #93c5fd;
+    font-size: 0.72rem;
+    margin-top: 0.2rem;
+  }
+  #attach-list li .att-bookmark.is-custom { color: #86efac; }
+  #attach-list li .att-actions {
+    display: flex; gap: .25rem; flex-wrap: wrap; margin-left: auto;
+  }
+  #attach-list li .att-actions button {
+    margin-left: 0;
+    background: #44403c;
+    color: #fafaf9;
+    border: 0;
+    border-radius: 4px;
+    padding: .2rem .45rem;
+    cursor: pointer;
+    font-size: .72rem;
+  }
+  #attach-list li .att-actions button:hover { background: #57534e; }
+  #attach-list li .att-actions button.danger { background: #7f1d1d; }
+  #attach-list li .att-actions button:disabled {
+    opacity: .35; cursor: default;
+  }
+  body.viewer-mode #attach-edit-toolbar { display: none !important; }
+  body:not(.viewer-mode) #attach-view-toolbar[hidden] { display: none !important; }
+  .section-tag,
+  th.col-section {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.68rem; color: var(--muted);
+    width: 11rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #pdf-table.view-section .col-section { display: none; }
+  tr.section-head td {
+    background: #1c1917;
+    color: #fafaf9;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.55rem 0.65rem;
+    border-bottom: 1px solid #44403c;
+    vertical-align: middle;
+  }
+  tr.section-head .section-head-meta {
+    font-weight: 500;
+    color: #a8a29e;
+    margin-left: 0.65rem;
+    font-size: 0.72rem;
+    letter-spacing: 0;
+  }
+  tr.row-complete td { background: var(--row-complete); }
+  tr.row-partial td { background: var(--row-partial); }
+  tr.row-none-need td { background: var(--row-none-need); }
+  tr.row-none-ok td { background: var(--row-none-ok); }
+  a.file-link {
+    cursor: pointer;
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+    display: inline;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  a.file-link:hover { color: #145c45; }
+  .file-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .file-name-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .icon-btn,
+  .folder-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 1px solid #d6d3d1;
+    border-radius: 4px;
+    background: #fafaf9;
+    color: #57534e;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .icon-btn:hover,
+  .folder-btn:hover { background: #e7e5e4; color: #1c1917; border-color: #a8a29e; }
+  .icon-btn svg,
+  .folder-btn svg { width: .78rem; height: .78rem; display: block; pointer-events: none; }
+  .viewer-bar .folder-btn {
+    width: 2rem;
+    height: 2rem;
+    background: #44403c;
+    border-color: #57534e;
+    color: #e7e5e4;
+  }
+  .viewer-bar .folder-btn:hover { background: #57534e; color: #fff; }
+  #attach-list li .att-actions .folder-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    background: #44403c;
+    border-color: #57534e;
+    color: #e7e5e4;
+    margin-left: 0;
+  }
+  .file-name-row .row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex: 0 0 auto;
+  }
+  th.order-col,
+  td.order-col {
+    width: 3.5rem;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  td.order-col .order-actions {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+  }
+  .icon-btn.order-btn {
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .icon-btn.order-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  body.viewer-mode .order-col { display: none !important; }
+  body.viewer-mode .need-col,
+  body.viewer-mode .level-col { display: none !important; }
+  /* Viewer: full-width page; File column takes all leftover space (width:100% trick) */
+  body.viewer-mode .wrap {
+    max-width: none;
+    width: 100%;
+  }
+  body.viewer-mode .top-grid {
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  }
+  body.viewer-mode .list-panel,
+  body.viewer-mode .list-panel .table-wrap,
+  body.viewer-mode #pdf-table {
+    width: 100%;
+    max-width: none;
+  }
+  body.viewer-mode #pdf-table {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+  body.viewer-mode #pdf-table col.col-file { width: 100%; }
+  body.viewer-mode #pdf-table col.col-appended { width: 5.5rem; }
+  body.viewer-mode #pdf-table col.col-section { width: 0; }
+  body.viewer-mode #pdf-table col.col-pages { width: 4.5rem; }
+  body.viewer-mode #pdf-table col.col-need,
+  body.viewer-mode #pdf-table col.col-level,
+  body.viewer-mode #pdf-table col.col-order { width: 0; }
+  body.viewer-mode th.file,
+  body.viewer-mode td.file {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  body.viewer-mode th.appended-col,
+  body.viewer-mode td.appended-col {
+    width: 5.5rem !important;
+    max-width: 5.5rem !important;
+  }
+  body.viewer-mode #pdf-table th.col-pages,
+  body.viewer-mode #pdf-table td.num {
+    width: 4.5rem !important;
+    max-width: 4.5rem !important;
+  }
+  .excl-note {
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .updated-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #166534;
+    background: #bbf7d0;
+    border: 1px solid #86efac;
+    padding: 0.1rem 0.35rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .updated-badge .dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: #16a34a;
+  }
+  tr.row-excluded td { opacity: 0.9; }
+  select.status-select {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.3rem;
+    border: 1px solid rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.75);
+    color: var(--ink);
+    max-width: 100%;
+  }
+  select.status-select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  select.status-select.saving { opacity: 0.55; }
+
+  footer {
+    margin-top: 2rem; padding-top: 0.85rem; border-top: 1px solid var(--line);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.75rem; color: var(--muted);
+  }
+
+  /* In-page PDF viewer */
+  #viewer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: #1c1917;
+    flex-direction: column;
+  }
+  #viewer.is-open { display: flex; }
+  body.viewer-open { overflow: hidden; }
+  .viewer-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    background: #292524;
+    color: #fafaf9;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.85rem;
+  }
+  .viewer-bar .title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .viewer-bar button,
+  .viewer-bar a.bar-btn {
+    appearance: none;
+    border: 1px solid #57534e;
+    background: #44403c;
+    color: #fafaf9;
+    padding: 0.35rem 0.7rem;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .viewer-bar .bar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .viewer-bar .bar-btn svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 auto;
+    display: block;
+    pointer-events: none;
+  }
+  .viewer-bar button:hover,
+  .viewer-bar a.bar-btn:hover { background: #57534e; }
+  .viewer-bar button.primary {
+    background: #e8f0ec;
+    color: var(--accent);
+    border-color: #e8f0ec;
+    font-weight: 600;
+  }
+
+  /* Viewer body: PDF + resizable side panel */
+  #viewer-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    --side-width: 42%;
+  }
+  #viewer-frame {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    border: 0;
+    background: #44403c;
+  }
+  #side-splitter {
+    display: none;
+    flex: 0 0 6px;
+    cursor: col-resize;
+    background: #44403c;
+    position: relative;
+    z-index: 2;
+  }
+  #side-splitter:hover,
+  #viewer-body.is-resizing #side-splitter { background: #1d4ed8; }
+  #side-splitter::after {
+    content: "";
+    position: absolute;
+    inset: 0 -4px;
+  }
+  #viewer-body.side-open:not(.side-collapsed) #side-splitter { display: block; }
+  #viewer-body.is-resizing { cursor: col-resize; user-select: none; }
+  #viewer-body.is-resizing #viewer-frame { pointer-events: none; }
+
+  #side-panel {
+    display: none;
+    flex: 0 0 var(--side-width);
+    flex-direction: column;
+    min-width: 0;
+    max-width: 85%;
+    background: #1c1917;
+    border-left: 1px solid #44403c;
+    position: relative;
+  }
+  #viewer-body.side-open #side-panel { display: flex; }
+  #viewer-body.side-collapsed #side-panel {
+    flex-basis: 2.5rem;
+    max-width: 2.5rem;
+    min-width: 2.5rem;
+  }
+
+  #side-rail-btn {
+    display: none;
+    flex: 1;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    border: 0;
+    background: #292524;
+    color: #e7e5e4;
+    cursor: pointer;
+    font: 600 12px/1.2 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: .06em;
+    padding: .5rem 0;
+  }
+  #side-rail-btn:hover { background: #1d4ed8; color: #fff; }
+  #viewer-body.side-collapsed #side-rail-btn { display: flex; }
+  #viewer-body.side-collapsed #editor-panel,
+  #viewer-body.side-collapsed #attach-panel { display: none !important; }
+
+  #editor-panel, #attach-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: #1c1917;
+  }
+  #editor-panel.is-open, #attach-panel.is-open { display: flex; }
+  #editor-panel textarea {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    resize: none;
+    padding: 1rem;
+    font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #0c0a09;
+    color: #fafaf9;
+    box-sizing: border-box;
+  }
+  .panel-toolbar {
+    display: flex; gap: .4rem; flex-wrap: wrap; align-items: center;
+    padding: .5rem .75rem; background: #292524; border-bottom: 1px solid #44403c;
+  }
+  .panel-toolbar button {
+    background: #44403c; color: #fafaf9; border: 0; border-radius: 6px;
+    padding: .35rem .7rem; cursor: pointer; font: inherit;
+  }
+  .panel-toolbar button.primary { background: #1d4ed8; }
+  .panel-toolbar button.side-collapse-btn { background: #57534e; }
+  .panel-toolbar .hint { color: #a8a29e; font-size: .8rem; margin-left: auto; }
+  #md-format-bar {
+    display: flex; gap: .25rem; flex-wrap: wrap; align-items: center;
+    padding: .35rem .6rem; background: #1c1917; border-bottom: 1px solid #44403c;
+  }
+  #md-format-bar button {
+    background: #292524; color: #e7e5e4; border: 1px solid #44403c; border-radius: 5px;
+    min-width: 2rem; padding: .28rem .45rem; cursor: pointer;
+    font: 600 12px/1.2 ui-sans-serif, system-ui, sans-serif;
+  }
+  #md-format-bar button:hover { background: #44403c; border-color: #78716c; }
+  #md-format-bar button:active { background: #1d4ed8; border-color: #1d4ed8; }
+  #md-format-bar .sep {
+    width: 1px; height: 1.25rem; background: #44403c; margin: 0 .2rem;
+  }
+  #md-format-bar .fmt-label {
+    color: #78716c; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase;
+    margin-right: .15rem;
+  }
+  #md-save-status {
+    color: #86efac; font-size: .8rem; min-height: 1.1em;
+  }
+  #md-save-status.is-error { color: #fca5a5; }
+  #md-link-dialog {
+    display: none;
+    padding: .65rem .75rem;
+    background: #292524;
+    border-bottom: 1px solid #44403c;
+    gap: .5rem;
+    flex-wrap: wrap;
+    align-items: end;
+  }
+  #md-link-dialog.is-open { display: flex; }
+  #md-link-dialog label {
+    display: flex; flex-direction: column; gap: .2rem;
+    color: #a8a29e; font-size: .75rem; flex: 1; min-width: 10rem;
+  }
+  #md-link-dialog input {
+    background: #0c0a09; color: #fafaf9; border: 1px solid #57534e;
+    border-radius: 5px; padding: .4rem .5rem; font: 13px/1.3 ui-sans-serif, system-ui, sans-serif;
+  }
+  #md-link-dialog .link-actions { display: flex; gap: .35rem; align-items: center; }
+  #md-link-dialog button {
+    background: #44403c; color: #fafaf9; border: 0; border-radius: 6px;
+    padding: .4rem .7rem; cursor: pointer; font: inherit;
+  }
+  #md-link-dialog button.primary { background: #1d4ed8; }
+  #attach-list { list-style: none; margin: 0; padding: .75rem; overflow: auto; flex: 1; color: #e7e5e4; }
+  #attach-list li {
+    display: flex; gap: .5rem; align-items: center; padding: .4rem 0;
+    border-bottom: 1px solid #292524; font-size: .9rem;
+  }
+  #attach-list li button { margin-left: auto; background: #7f1d1d; color: #fff; border: 0; border-radius: 4px; padding: .2rem .5rem; cursor: pointer; }
+  #btn-promote {
+    position: relative;
+  }
+  #btn-promote .promote-icon {
+    position: relative;
+    display: inline-flex;
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: 0 0 auto;
+  }
+  #btn-promote .promote-icon > svg.disk {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #btn-promote .promote-star {
+    position: absolute;
+    right: -0.28rem;
+    top: -0.32rem;
+    width: 0.62rem;
+    height: 0.62rem;
+    color: #fde047;
+    filter: drop-shadow(0 0 1px #1c1917);
+    pointer-events: none;
+  }
+  #btn-promote .promote-star svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #btn-promote.is-stale .promote-star { color: #fdba74; }
+  #btn-promote.has-official {
+    border-color: #a16207;
+  }
+  #btn-promote.is-stale {
+    border-color: #c2410c;
+  }
+  #btn-promote[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 13rem;
+    max-width: 20rem;
+    padding: .4rem .55rem;
+    border-radius: 6px;
+    background: #1c1917;
+    color: #fafaf9;
+    font-size: .72rem;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .12s ease;
+    z-index: 120;
+  }
+  #btn-promote[data-tip]::before {
+    content: "";
+    position: absolute;
+    right: .55rem;
+    top: calc(100% + 1px);
+    border: 5px solid transparent;
+    border-bottom-color: #1c1917;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .12s ease;
+    z-index: 120;
+  }
+  #btn-promote[data-tip]:hover::after,
+  #btn-promote[data-tip]:hover::before,
+  #btn-promote[data-tip]:focus-visible::after,
+  #btn-promote[data-tip]:focus-visible::before {
+    opacity: 1;
+    visibility: visible;
+  }
+  body.viewer-mode .edit-only { display: none !important; }
+  body:not(.viewer-mode) .viewer-only { display: none !important; }
+  body.viewer-mode .admin-only { display: none !important; }
+  body:not(.admin-surface) .admin-only { display: none !important; }
+  #mode-banner {
+    display: none; background: #1e3a5f; color: #dbeafe; text-align: center;
+    padding: .4rem; font-size: .85rem;
+  }
+  body.viewer-mode #mode-banner { display: block; }
+  .list-toolbar {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+    margin: 0 0 0.75rem;
+  }
+  .list-toolbar .bar-btn {
+    text-decoration: none; display: inline-flex; align-items: center;
+  }
+  .site-access-form, .import-form {
+    display: grid; gap: 0.55rem; font-size: 0.85rem;
+  }
+  .site-access-form input[type="password"],
+  .import-form input[type="file"] {
+    font: inherit; padding: 0.4rem 0.5rem; width: 100%; box-sizing: border-box;
+  }
+
+  #rebuild-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(28, 25, 23, 0.62);
+    backdrop-filter: blur(2px);
+  }
+  #rebuild-modal[hidden] { display: none !important; }
+  .rebuild-modal-card {
+    width: min(26rem, 100%);
+    background: #fafaf9;
+    color: #1c1917;
+    border: 1px solid #d6d3d1;
+    border-radius: 10px;
+    padding: 1.25rem 1.35rem 1.15rem;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .rebuild-modal-card h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+  .rebuild-modal-file {
+    margin: 0.35rem 0 1rem;
+    font-size: 0.82rem;
+    color: #57534e;
+    word-break: break-word;
+  }
+  .rebuild-progress {
+    height: 0.55rem;
+    background: #e7e5e4;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .rebuild-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #145c45, #1d7a5a);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+  }
+  #rebuild-modal.is-indeterminate .rebuild-progress-bar {
+    width: 38% !important;
+    transition: none;
+    animation: rebuild-indeterminate 1.15s ease-in-out infinite;
+  }
+  @keyframes rebuild-indeterminate {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(280%); }
+  }
+  .rebuild-modal-status {
+    margin: 0.7rem 0 0;
+    font-size: 0.78rem;
+    color: #44403c;
+    min-height: 1.2em;
+  }
+  body.rebuild-busy { overflow: hidden; }
+
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .dropzone {
+    border: 2px dashed #a8a29e;
+    background: #fafaf9;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: var(--muted);
+    transition: border-color 0.15s, background 0.15s;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    cursor: pointer;
+  }
+  .dropzone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .dropzone strong { color: var(--ink); font-size: 1.05rem; }
+  .dump-form {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.85rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.85rem;
+  }
+  .dump-form label {
+    display: grid;
+    gap: 0.25rem;
+    color: var(--muted);
+  }
+  .dump-form select, .dump-form button, .regen-form button, .regen-form select {
+    font: inherit;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .dump-form button, .regen-form button {
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .dump-form button:disabled, .regen-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .dump-form button.secondary, .regen-form button.secondary {
+    background: #fff;
+    color: var(--accent);
+  }
+  .file-chosen {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    word-break: break-all;
+  }
+  .status-box {
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    background: #f5f5f4;
+    border: 1px solid var(--line);
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    white-space: pre-wrap;
+    max-height: 220px;
+    overflow: auto;
+    color: #292524;
+  }
+  .status-box.ok { border-color: #86efac; background: #f0fdf4; }
+  .status-box.err { border-color: #fca5a5; background: #fef2f2; }
+  .regen-form {
+    display: grid;
+    gap: 0.65rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.85rem;
+  }
+  @media (max-width: 900px) {
+    .top-grid, .tools-grid { grid-template-columns: 1fr; }
+    .top-grid .list-panel { order: -1; }
+  }
+
+</style>
+</head>
+<body>
+  <div id="mode-banner">Read-only viewer — Preview and download. Editing is on /admin (production) or local edit mode.</div>
+  <div class="wrap" id="dashboard">
+    <header>
+      <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
+    </header>
+
+    <div class="top-grid">
+      <aside class="panel tally-panel">
+        <h2>Tally</h2>
+        <p class="hint">Total pages exclude the full book packet.</p>
+        <div class="hero-stats" id="hero"></div>
+        <div class="legend edit-only">
+          <span><i class="swatch complete"></i> Complete</span>
+          <span><i class="swatch partial"></i> Partial (Need Yes or No)</span>
+          <span><i class="swatch none-need"></i> No Content + Need Yes</span>
+          <span><i class="swatch none-ok"></i> No Content + Need No</span>
+        </div>
+        <div class="bars" id="section-bars"></div>
+      </aside>
+
+      <section class="panel list-panel" id="metric-pdf-export">
+        <h2>PDF list</h2>
+        <p class="hint">Click a file name to view here. Hover a file name to see its source markdown path. Scroll the page to browse the full list.</p>
+        <div class="list-toolbar">
+          <a class="bar-btn" id="btn-download-all" href="/api/download/all">Download all PDFs</a>
+          <span class="hint" id="empty-pdf-hint" hidden>No PDFs published yet.</span>
+        </div>
+        <div class="list-filters" id="list-filters">
+          <label>Show
+            <select id="filter-show" aria-label="Show filter">
+              <option value="all" selected>Show all</option>
+              <option value="updated">Updated</option>
+              <option value="row-complete">Green — Complete</option>
+              <option value="row-partial">Yellow — Partial</option>
+              <option value="row-none-need">Red — No Content + Need Yes</option>
+              <option value="row-none-ok">Amber — No Content + Need No</option>
+            </select>
+          </label>
+          <label class="edit-only need-col">Need Content
+            <select id="filter-need" aria-label="Need Content filter">
+              <option value="all" selected>All</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </label>
+          <label class="edit-only level-col">Level of Content
+            <select id="filter-level" aria-label="Level of Content filter">
+              <option value="all" selected>All</option>
+              <option value="Complete">Complete</option>
+              <option value="Partial">Partial</option>
+              <option value="No Content">No Content</option>
+            </select>
+          </label>
+          <label>View
+            <select id="filter-view" aria-label="List view">
+              <option value="list">List</option>
+              <option value="section" selected>By section</option>
+            </select>
+          </label>
+          <span class="filter-count" id="filter-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table id="pdf-table">
+            <colgroup>
+              <col class="col-file">
+              <col class="col-appended">
+              <col class="col-section">
+              <col class="col-pages">
+              <col class="col-need">
+              <col class="col-level">
+              <col class="col-order">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="file">File</th>
+                <th class="appended-col" title="PDF (and teaching-examples) files appended after the markdown narrative">Appended</th>
+                <th class="col-section">Section</th>
+                <th class="col-pages" style="text-align:right">Pages</th>
+                <th class="need-col">Need Content</th>
+                <th class="level-col">Level of Content</th>
+                <th class="order-col" title="Reorder within section">Order</th>
+              </tr>
+            </thead>
+            <tbody id="pdf-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" id="pdf-total-label">Total (excl. book)</td>
+                <td class="num" id="pdf-total"></td>
+                <td class="need-col" id="need-summary"></td>
+                <td class="level-col" id="level-summary"></td>
+                <td class="order-col"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+    </div>
+
+
+    <div class="tools-grid edit-only">
+      <section class="panel" id="folder-dump">
+        <h2>Folder dump</h2>
+        <p class="hint">Drag one or more <strong>PDFs</strong> of the same kind here, choose what they are, then save. Course items need a class; correspondence goes straight into Other Evidence folders.</p>
+        <div class="dropzone" id="dropzone" tabindex="0">
+          <strong>Drop PDF(s) here</strong>
+          <span>or click to choose files</span>
+          <span class="file-chosen" id="chosen-file">No file selected</span>
+        </div>
+        <input type="file" id="file-input" accept="application/pdf,.pdf" multiple hidden>
+        <div class="dump-form">
+          <label>Kind of file
+            <select id="dump-kind">
+              <option value="">Select…</option>
+              <option value="syllabus">Syllabus</option>
+              <option value="teaching_examples">Teaching example</option>
+              <option value="student_work">Student work example</option>
+              <option value="assessments">Assessment (e.g. OIRA section PDF)</option>
+              <option value="other">Other course materials</option>
+              <option value="student_correspondence">Student correspondence</option>
+              <option value="profession_correspondence">Professional / industry correspondence</option>
+            </select>
+          </label>
+          <label id="dump-course-label">Class
+            <select id="dump-course">
+              <option value="">Select…</option>
+            </select>
+          </label>
+          <button type="button" id="dump-save" disabled>Save into folder</button>
+        </div>
+        <div class="status-box" id="dump-status" hidden></div>
+      </section>
+
+      <section class="panel" id="regenerate">
+        <h2>Regenerate PDFs</h2>
+        <p class="hint">Runs the same export used from Cursor (<code>0_Drafts/export_pdfs.sh</code>): rebuild changed narratives and re-append syllabi, teaching examples, assessments, and exhibits.</p>
+        <div class="regen-form">
+          <label>Mode
+            <select id="regen-mode">
+              <option value="incremental">Incremental (only what changed)</option>
+              <option value="full">Full rebuild (slower)</option>
+            </select>
+          </label>
+          <button type="button" id="regen-run">Regenerate PDFs</button>
+        </div>
+        <div class="status-box" id="regen-status" hidden></div>
+      </section>
+
+      <section class="panel admin-only edit-only" id="site-access">
+        <h2>Site access</h2>
+        <p class="hint">Optional password for the public view site (<code>/</code>). Admins always bypass it. Leave cleared for an open view portal.</p>
+        <div class="site-access-form">
+          <p id="view-pw-status" class="hint">Checking…</p>
+          <label>New view password
+            <input type="password" id="view-pw-input" autocomplete="new-password" placeholder="Set or change">
+          </label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button type="button" id="view-pw-save">Save view password</button>
+            <button type="button" id="view-pw-clear">Clear view password</button>
+          </div>
+        </div>
+        <div class="status-box" id="view-pw-msg" hidden></div>
+      </section>
+
+      <section class="panel admin-only edit-only" id="content-import">
+        <h2>Import content</h2>
+        <p class="hint">Upload a content-pack zip built locally with <code>scripts/build_content_pack.sh</code> (markdown + attachments; may include PDFs). Does not go through GitHub.</p>
+        <div class="import-form">
+          <input type="file" id="content-pack-input" accept=".zip,application/zip">
+          <button type="button" id="content-pack-upload">Upload content pack</button>
+        </div>
+        <div class="status-box" id="content-pack-status" hidden></div>
+      </section>
+    </div>
+
+    <footer>
+      Final Edit app · <code>python3 serve_metrics.py</code> → <code>http://127.0.0.1:8765/</code> · Edit here or in Cursor, then Rebuild preview · Save as official when ready
+    </footer>
+  </div>
+
+  <div id="viewer" aria-hidden="true">
+    <div class="viewer-bar">
+      <button type="button" class="primary" id="back-to-list">← Back to list</button>
+      <div class="title" id="viewer-title">PDF</div>
+      <button type="button" class="bar-btn" id="btn-preview" title="Show PDF preview">Preview</button>
+      <button type="button" class="bar-btn edit-only" id="btn-edit" title="Edit source markdown">Edit</button>
+      <button type="button" class="folder-btn icon-btn" id="btn-reveal-pdf" title="Open containing folder for this PDF in Finder" aria-label="Open containing folder for this PDF in Finder"></button>
+      <button type="button" class="bar-btn" id="btn-attach" title="Show files appended into this packet PDF after the markdown narrative">Appended files</button>
+      <button type="button" class="bar-btn edit-only" id="btn-rebuild" title="Regenerate the full working PDF for this packet (markdown + appendices) into _pdf_review. Does not mark it official.">Rebuild preview</button>
+      <button type="button" class="bar-btn edit-only" id="btn-promote" data-tip="Save as official — not saved yet.">Save as official</button>
+      <a class="bar-btn" id="btn-download-pdf" href="#" download>Download PDF</a>
+      <a class="bar-btn" id="open-external" href="#" target="_blank" rel="noopener">Open in new tab</a>
+    </div>
+    <div id="viewer-body">
+      <iframe id="viewer-frame" title="PDF viewer"></iframe>
+      <div id="side-splitter" title="Drag to resize editor" role="separator" aria-orientation="vertical" aria-label="Resize editor"></div>
+      <aside id="side-panel" aria-label="Side panel">
+        <button type="button" id="side-rail-btn" title="Expand editor">Markdown</button>
+        <div id="editor-panel" aria-hidden="true">
+          <div class="panel-toolbar">
+            <button type="button" class="primary" id="md-save">Save markdown</button>
+            <button type="button" id="md-reload">Reload</button>
+            <button type="button" class="side-collapse-btn" id="md-collapse" title="Minimize editor to the side">Minimize</button>
+            <span id="md-save-status" aria-live="polite"></span>
+            <span class="hint" id="md-path"></span>
+          </div>
+          <div id="md-format-bar" role="toolbar" aria-label="Markdown formatting">
+            <span class="fmt-label">Format</span>
+            <button type="button" data-md="bold" title="Bold (Cmd/Ctrl+B)"><b>B</b></button>
+            <button type="button" data-md="italic" title="Italic (Cmd/Ctrl+I)"><i>I</i></button>
+            <button type="button" data-md="code" title="Inline code">&lt;/&gt;</button>
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" data-md="h1" title="Heading 1">H1</button>
+            <button type="button" data-md="h2" title="Heading 2">H2</button>
+            <button type="button" data-md="h3" title="Heading 3">H3</button>
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" data-md="ul" title="Bullet list">• List</button>
+            <button type="button" data-md="ol" title="Numbered list">1. List</button>
+            <button type="button" data-md="quote" title="Block quote">&gt; Quote</button>
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" data-md="link" title="Insert or edit link (Cmd/Ctrl+K)">Link</button>
+            <button type="button" data-md="unlink" title="Remove link markup, keep text">Unlink</button>
+            <button type="button" data-md="hreflink" title="Turn selected URL into a markdown link">URL-&gt;Link</button>
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" data-md="hr" title="Horizontal rule">HR</button>
+            <button type="button" data-md="codeblock" title="Fenced code block">{ }</button>
+          </div>
+          <div id="md-link-dialog" aria-label="Link editor">
+            <label>Link text
+              <input type="text" id="md-link-text" placeholder="Display text" autocomplete="off">
+            </label>
+            <label>URL
+              <input type="url" id="md-link-url" placeholder="https://..." autocomplete="off">
+            </label>
+            <div class="link-actions">
+              <button type="button" class="primary" id="md-link-apply">Apply link</button>
+              <button type="button" id="md-link-cancel">Cancel</button>
+            </div>
+          </div>
+          <textarea id="md-editor" spellcheck="false"></textarea>
+        </div>
+        <div id="attach-panel" aria-hidden="true">
+          <div class="attach-intro" id="attach-intro">
+            Files below are appended after the markdown narrative when you Rebuild preview.
+          </div>
+          <div class="panel-toolbar edit-only" id="attach-edit-toolbar">
+            <label class="hint">Add to
+              <select id="attach-root"></select>
+            </label>
+            <input type="file" id="attach-file" accept=".pdf,.md" multiple>
+            <button type="button" class="primary" id="attach-upload">Upload</button>
+            <button type="button" class="side-collapse-btn" id="attach-collapse" title="Minimize panel to the side">Minimize</button>
+            <span class="hint">Remove moves files to _removed/</span>
+          </div>
+          <div class="panel-toolbar" id="attach-view-toolbar" hidden>
+            <button type="button" class="side-collapse-btn" id="attach-collapse-view" title="Minimize panel to the side">Minimize</button>
+            <span class="hint">Read-only list of appended exhibits</span>
+          </div>
+          <ul id="attach-list"></ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="rebuild-modal" hidden aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="rebuild-modal-title" aria-describedby="rebuild-modal-status">
+    <div class="rebuild-modal-card">
+      <h3 id="rebuild-modal-title">Generating preview…</h3>
+      <p class="rebuild-modal-file" id="rebuild-modal-file"></p>
+      <div class="rebuild-progress" id="rebuild-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="true">
+        <div class="rebuild-progress-bar" id="rebuild-progress-bar"></div>
+      </div>
+      <p class="rebuild-modal-status" id="rebuild-modal-status">Starting…</p>
+    </div>
+  </div>
+
+<script>
+const METRICS = {
+  pdfExport: {
+  "generated": "2026-07-31 12:57",
+  "source": "0_Drafts/_pdf_review",
+  "totals": {
+    "pdfs": 34,
+    "pages": 458,
+    "needContentYes": 13,
+    "needContentNo": 21,
+    "levelComplete": 21,
+    "levelPartial": 3,
+    "levelNone": 10,
+    "pagesRaw": 684,
+    "pagesExcluded": 226,
+    "pageTotalNote": "Excludes Other_Evidence_of_Impact.pdf (full book packet)"
+  },
+  "sections": [
+    {
+      "id": "1_Candidate_Information",
+      "label": "1 Candidate Information",
+      "pages": 18,
+      "count": 3
+    },
+    {
+      "id": "2_Teaching",
+      "label": "2 Teaching",
+      "pages": 378,
+      "count": 8
+    },
+    {
+      "id": "3_Service",
+      "label": "3 Service",
+      "pages": 15,
+      "count": 6
+    },
+    {
+      "id": "4_Connections_to_the_Profession",
+      "label": "4 Connections to the Profession",
+      "pages": 33,
+      "count": 6
+    },
+    {
+      "id": "5_Other_Evidence_of_Impact",
+      "label": "5 Other Evidence of Impact",
+      "pages": 236,
+      "count": 7
+    },
+    {
+      "id": "_extras_scaffolds",
+      "label": " extras scaffolds",
+      "pages": 4,
+      "count": 4
+    }
+  ],
+  "pdfs": [
+    {
+      "file": "1_Candidate_Information/Pacheco_Daniel_CV.pdf",
+      "name": "Pacheco_Daniel_CV.pdf",
+      "section": "1_Candidate_Information",
+      "pages": 13,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "1_Candidate Information/2_Curriculum Vitae/Pacheco_Daniel_CV.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/1_Candidate Information/2_Curriculum Vitae/Pacheco_Daniel_CV.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/1_Candidate Information/2_Curriculum Vitae"
+    },
+    {
+      "file": "1_Candidate_Information/Pacheco_Daniel_Personal_Statement.pdf",
+      "name": "Pacheco_Daniel_Personal_Statement.pdf",
+      "section": "1_Candidate_Information",
+      "pages": 4,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "1_Candidate Information/1_Personal Statement/Personal_Statement.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/1_Candidate Information/1_Personal Statement/Personal_Statement.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/1_Candidate Information/1_Personal Statement"
+    },
+    {
+      "file": "1_Candidate_Information/Pacheco_Daniel_Teaching_Schedule.pdf",
+      "name": "Pacheco_Daniel_Teaching_Schedule.pdf",
+      "section": "1_Candidate_Information",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "Partial",
+      "excludeFromPageTotal": false,
+      "sourceRel": "1_Candidate Information/4_Teaching Schedule/Pacheco_Daniel_Teaching_Schedule.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/1_Candidate Information/4_Teaching Schedule/Pacheco_Daniel_Teaching_Schedule.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/1_Candidate Information/4_Teaching Schedule"
+    },
+    {
+      "file": "2_Teaching/Course 1 - JNL 221.pdf",
+      "name": "Course 1 - JNL 221.pdf",
+      "section": "2_Teaching",
+      "pages": 89,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/01_Course_1_JNL_221/Course_1_-_JNL_221.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/01_Course_1_JNL_221/Course_1_-_JNL_221.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/01_Course_1_JNL_221"
+    },
+    {
+      "file": "2_Teaching/Course 2a - MND 413-613 Residential.pdf",
+      "name": "Course 2a - MND 413-613 Residential.pdf",
+      "section": "2_Teaching",
+      "pages": 57,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/02a_Course_2a_MND_413_613/Course_2a_-_MND_413_613.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/02a_Course_2a_MND_413_613/Course_2a_-_MND_413_613.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/02a_Course_2a_MND_413_613"
+    },
+    {
+      "file": "2_Teaching/Course 2b - MND 613 Online.pdf",
+      "name": "Course 2b - MND 613 Online.pdf",
+      "section": "2_Teaching",
+      "pages": 85,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/Course_2b_-_MND_613_Online.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/Course_2b_-_MND_613_Online.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/02b_Course_2b_MND_613_Online"
+    },
+    {
+      "file": "2_Teaching/Course 3 - MMI 680.pdf",
+      "name": "Course 3 - MMI 680.pdf",
+      "section": "2_Teaching",
+      "pages": 42,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/03_Course_3_MMI_680/Course_3_-_MMI_680.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/03_Course_3_MMI_680/Course_3_-_MMI_680.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/03_Course_3_MMI_680"
+    },
+    {
+      "file": "2_Teaching/Course 4 - MND 545.pdf",
+      "name": "Course 4 - MND 545.pdf",
+      "section": "2_Teaching",
+      "pages": 43,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/04_Course_4_MND_545/Course_4_-_MND_545.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/04_Course_4_MND_545/Course_4_-_MND_545.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/04_Course_4_MND_545"
+    },
+    {
+      "file": "2_Teaching/Course 5 - MND 505.pdf",
+      "name": "Course 5 - MND 505.pdf",
+      "section": "2_Teaching",
+      "pages": 33,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/05_Course_5_MND_505/Course_5_-_MND_505.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/05_Course_5_MND_505/Course_5_-_MND_505.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/05_Course_5_MND_505"
+    },
+    {
+      "file": "2_Teaching/Course 6 - MND 600.pdf",
+      "name": "Course 6 - MND 600.pdf",
+      "section": "2_Teaching",
+      "pages": 26,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/2_Courses/06_Course_6_MND_600/Course_6_-_MND_600.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/06_Course_6_MND_600/Course_6_-_MND_600.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/2_Courses/06_Course_6_MND_600"
+    },
+    {
+      "file": "2_Teaching/Pacheco_Daniel_Introduction_to_Teaching.pdf",
+      "name": "Pacheco_Daniel_Introduction_to_Teaching.pdf",
+      "section": "2_Teaching",
+      "pages": 3,
+      "needContent": "Yes",
+      "level": "Partial",
+      "excludeFromPageTotal": false,
+      "sourceRel": "2_Teaching/1_Introduction to Teaching/Introduction_to_Teaching.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/1_Introduction to Teaching/Introduction_to_Teaching.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/2_Teaching/1_Introduction to Teaching"
+    },
+    {
+      "file": "3_Service/Pacheco_Daniel_Community_Service.pdf",
+      "name": "Pacheco_Daniel_Community_Service.pdf",
+      "section": "3_Service",
+      "pages": 2,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "4_Service/5_Community/Community_Service.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/5_Community/Community_Service.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/5_Community"
+    },
+    {
+      "file": "3_Service/Pacheco_Daniel_Introduction_to_Service.pdf",
+      "name": "Pacheco_Daniel_Introduction_to_Service.pdf",
+      "section": "3_Service",
+      "pages": 2,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "4_Service/1_Introduction to Service/Introduction_to_Service.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/1_Introduction to Service/Introduction_to_Service.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/1_Introduction to Service"
+    },
+    {
+      "file": "3_Service/Pacheco_Daniel_Newhouse_School_Service.pdf",
+      "name": "Pacheco_Daniel_Newhouse_School_Service.pdf",
+      "section": "3_Service",
+      "pages": 3,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "4_Service/2_Newhouse School/Newhouse_School_Service.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/2_Newhouse School/Newhouse_School_Service.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/2_Newhouse School"
+    },
+    {
+      "file": "3_Service/Pacheco_Daniel_Other_Service.pdf",
+      "name": "Pacheco_Daniel_Other_Service.pdf",
+      "section": "3_Service",
+      "pages": 2,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "4_Service/6_Other Service/Other_Service.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/6_Other Service/Other_Service.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/6_Other Service"
+    },
+    {
+      "file": "3_Service/Pacheco_Daniel_Profession_and_Industry_Service.pdf",
+      "name": "Pacheco_Daniel_Profession_and_Industry_Service.pdf",
+      "section": "3_Service",
+      "pages": 4,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "4_Service/4_Profession and Industry/Profession_and_Industry_Service.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/4_Profession and Industry/Profession_and_Industry_Service.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/4_Profession and Industry"
+    },
+    {
+      "file": "3_Service/Pacheco_Daniel_Syracuse_University_Service.pdf",
+      "name": "Pacheco_Daniel_Syracuse_University_Service.pdf",
+      "section": "3_Service",
+      "pages": 2,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "4_Service/3_Syracuse University/Syracuse_University_Service.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/3_Syracuse University/Syracuse_University_Service.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/4_Service/3_Syracuse University"
+    },
+    {
+      "file": "4_Connections_to_the_Profession/Pacheco_Daniel_Creative_Work.pdf",
+      "name": "Pacheco_Daniel_Creative_Work.pdf",
+      "section": "4_Connections_to_the_Profession",
+      "pages": 20,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "3_Connections to the Profession/3_Creative Work/Creative_Work.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/3_Creative Work/Creative_Work.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/3_Creative Work"
+    },
+    {
+      "file": "4_Connections_to_the_Profession/Pacheco_Daniel_Executive_Summary_of_Engagement.pdf",
+      "name": "Pacheco_Daniel_Executive_Summary_of_Engagement.pdf",
+      "section": "4_Connections_to_the_Profession",
+      "pages": 2,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "3_Connections to the Profession/2_Executive Summary of Engagement/Executive_Summary_of_Engagement.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/2_Executive Summary of Engagement/Executive_Summary_of_Engagement.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/2_Executive Summary of Engagement"
+    },
+    {
+      "file": "4_Connections_to_the_Profession/Pacheco_Daniel_Other_Contributions.pdf",
+      "name": "Pacheco_Daniel_Other_Contributions.pdf",
+      "section": "4_Connections_to_the_Profession",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/_extras_still_in_instructions_pdf/Other_Contributions.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf/Other_Contributions.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf"
+    },
+    {
+      "file": "4_Connections_to_the_Profession/Pacheco_Daniel_Plan_of_Action.pdf",
+      "name": "Pacheco_Daniel_Plan_of_Action.pdf",
+      "section": "4_Connections_to_the_Profession",
+      "pages": 3,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "3_Connections to the Profession/5_Professional Plan of Action/Professional_Plan_of_Action.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/5_Professional Plan of Action/Professional_Plan_of_Action.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/5_Professional Plan of Action"
+    },
+    {
+      "file": "4_Connections_to_the_Profession/Pacheco_Daniel_Professional_Connections.pdf",
+      "name": "Pacheco_Daniel_Professional_Connections.pdf",
+      "section": "4_Connections_to_the_Profession",
+      "pages": 5,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "3_Connections to the Profession/4_Professional Connections/Professional_Connections.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/4_Professional Connections/Professional_Connections.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/4_Professional Connections"
+    },
+    {
+      "file": "4_Connections_to_the_Profession/Pacheco_Daniel_Professional_Contributions_Document.pdf",
+      "name": "Pacheco_Daniel_Professional_Contributions_Document.pdf",
+      "section": "4_Connections_to_the_Profession",
+      "pages": 2,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": false,
+      "sourceRel": "3_Connections to the Profession/1_Professional Contributions Document/Professional_Contributions_Document.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/1_Professional Contributions Document/Professional_Contributions_Document.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/3_Connections to the Profession/1_Professional Contributions Document"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Academic_Correspondence.pdf",
+      "name": "Academic_Correspondence.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Academic_Correspondence.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Academic_Correspondence.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Citations.pdf",
+      "name": "Citations.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Citations.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Citations.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Media_Appearances.pdf",
+      "name": "Media_Appearances.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Media_Appearances.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Media_Appearances.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Other_Correspondence.pdf",
+      "name": "Other_Correspondence.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Other_Correspondence.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Other_Correspondence.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Other_Evidence_of_Impact.pdf",
+      "name": "Other_Evidence_of_Impact.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 226,
+      "needContent": "No",
+      "level": "Complete",
+      "excludeFromPageTotal": true,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Other_Evidence_of_Impact.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Other_Evidence_of_Impact.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Profession_and_Industry_Correspondence.pdf",
+      "name": "Profession_and_Industry_Correspondence.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Profession_and_Industry_Correspondence.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Profession_and_Industry_Correspondence.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "5_Other_Evidence_of_Impact/Student_Correspondence.pdf",
+      "name": "Student_Correspondence.pdf",
+      "section": "5_Other_Evidence_of_Impact",
+      "pages": 5,
+      "needContent": "Yes",
+      "level": "Partial",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/4_Supplemental_Evidence_of_Impact/Student_Correspondence.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact/Student_Correspondence.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/4_Supplemental_Evidence_of_Impact"
+    },
+    {
+      "file": "_extras_scaffolds/Pacheco_Daniel_Advising.pdf",
+      "name": "Pacheco_Daniel_Advising.pdf",
+      "section": "_extras_scaffolds",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/_extras_still_in_instructions_pdf/Advising.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf/Advising.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf"
+    },
+    {
+      "file": "_extras_scaffolds/Pacheco_Daniel_Internships_and_Student_Research.pdf",
+      "name": "Pacheco_Daniel_Internships_and_Student_Research.pdf",
+      "section": "_extras_scaffolds",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/_extras_still_in_instructions_pdf/Internships_and_Student_Research.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf/Internships_and_Student_Research.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf"
+    },
+    {
+      "file": "_extras_scaffolds/Pacheco_Daniel_Other_Teaching.pdf",
+      "name": "Pacheco_Daniel_Other_Teaching.pdf",
+      "section": "_extras_scaffolds",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/_extras_still_in_instructions_pdf/Other_Teaching.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf/Other_Teaching.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf"
+    },
+    {
+      "file": "_extras_scaffolds/Pacheco_Daniel_Thesis_Dissertation_Portfolio_Reviews.pdf",
+      "name": "Pacheco_Daniel_Thesis_Dissertation_Portfolio_Reviews.pdf",
+      "section": "_extras_scaffolds",
+      "pages": 1,
+      "needContent": "Yes",
+      "level": "No Content",
+      "excludeFromPageTotal": false,
+      "sourceRel": "0_Drafts/_extras_still_in_instructions_pdf/Thesis_Dissertation_Portfolio_Reviews.md",
+      "sourceAbs": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf/Thesis_Dissertation_Portfolio_Reviews.md",
+      "sourceFolder": "/Users/danielpacheco/Local Sites/Cursor/PoPRenewal/Renewal 3 (2026)/0_Drafts/_extras_still_in_instructions_pdf"
+    }
+  ],
+  "statusNotes": "Statuses seeded from PUNCH_LIST.md; edit METRICS.pdfExport.pdfs[].needContent / .level to override."
+}
+};
+
+const PDF_ROOT = "./0_Drafts/_pdf_review/";
+// Chrome native viewer can open the sidenav (#navpanes=1) but always lands on
+// Thumbnails. PDF.js supports defaulting to the document outline instead.
+const PDF_VIEW_HASH = "#pagemode=bookmarks";
+const PDFJS_VIEWER = "/vendor/pdfjs/web/viewer.html";
+
+function fmt(n) {
+  return new Intl.NumberFormat("en-US").format(n);
+}
+
+let LAST_INVENTORY = null;
+
+function rowClass(r) {
+  if (r.level === "Complete") return "row-complete";
+  if (r.level === "Partial") return "row-partial";
+  if (r.level === "No Content" && r.needContent === "Yes") return "row-none-need";
+  if (r.level === "No Content" && r.needContent === "No") return "row-none-ok";
+  return "";
+}
+
+function formatOfficialAt(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+const FOLDER_ICON_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2.5 3.5h4.1l1 1.2H13.5A1.5 1.5 0 0 1 15 6.2v6.3A1.5 1.5 0 0 1 13.5 14h-11A1.5 1.5 0 0 1 1 12.5v-7A2 2 0 0 1 2.5 3.5z"/></svg>';
+const EYE_ICON_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 3.5c-3.2 0-5.9 2-7.2 4.5a.7.7 0 0 0 0 .6C2.1 11 4.8 13 8 13s5.9-2 7.2-4.4a.7.7 0 0 0 0-.6C13.9 5.5 11.2 3.5 8 3.5zm0 7.3A2.8 2.8 0 1 1 8 5.2a2.8 2.8 0 0 1 0 5.6zm0-4.5a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4z"/></svg>';
+const PENCIL_ICON_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.7 1.6a1.6 1.6 0 0 1 2.3 2.3l-.5.5-2.3-2.3.5-.5zM2 11.3l7.4-7.4 2.3 2.3L4.3 13.6H2v-2.3zm.7 3.1h10.6v1.2H2.7v-1.2z"/></svg>';
+const PAPERCLIP_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+const DISK_ICON_SVG = '<svg class="disk" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2.2 1.5h9.1L14.5 4.7v9.8H2.2V1.5zm1.4 1.3v3.5h6.8V2.8H3.6zm7.8.4v3.1h1.7l-1.7-3.1zM3.6 7.6v5.6h8.8V7.6H3.6zm1.3 1.2h2.6v2.4H4.9V8.8z"/></svg>';
+const STAR_ICON_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.2l1.76 3.57 3.94.57-2.85 2.78.67 3.92L8 10.2l-3.52 1.84.67-3.92L2.3 5.34l3.94-.57L8 1.2z"/></svg>';
+
+function attrEsc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
+function folderBtnHtml({ pdf, rel, title }) {
+  const tip = title || "Open containing folder in Finder";
+  const attrs = [];
+  if (pdf) attrs.push(`data-reveal-pdf="${attrEsc(pdf)}"`);
+  if (rel) attrs.push(`data-reveal-rel="${attrEsc(rel)}"`);
+  return `<button type="button" class="folder-btn icon-btn" ${attrs.join(" ")} title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${FOLDER_ICON_SVG}</button>`;
+}
+
+function previewBtnHtml(file, name) {
+  const tip = "Preview this PDF";
+  return `<button type="button" class="icon-btn" data-preview-pdf="${attrEsc(file)}" data-name="${attrEsc(name)}" title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${EYE_ICON_SVG}</button>`;
+}
+
+function editBtnHtml(file, name) {
+  const tip = "Edit source markdown";
+  return `<button type="button" class="icon-btn edit-only" data-edit-pdf="${attrEsc(file)}" data-name="${attrEsc(name)}" title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${PENCIL_ICON_SVG}</button>`;
+}
+
+async function revealInFinder({ pdf, rel } = {}) {
+  const body = {};
+  if (pdf) body.pdf = pdf;
+  if (rel) body.rel = rel;
+  const r = await fetch("/api/reveal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await r.json();
+  if (!data.ok) alert(data.error || "Could not open folder");
+}
+
+function hasOfficialCopy(r) {
+  return !!(r && (r.officialExists || r.officialAt));
+}
+
+function officialTip(r) {
+  if (!hasOfficialCopy(r)) {
+    return "Not saved as official yet. Click to copy the current working PDF into _official/ as the FPS-ready version.";
+  }
+  const when = formatOfficialAt(r.officialAt);
+  if (r.officialStale) {
+    return "Official copy exists, but preview is newer"
+      + (when ? " · last official: " + when : "")
+      + ". Click to save as official again.";
+  }
+  return (when ? "Saved as Official · " + when : "Saved as Official")
+    + ". Click to overwrite with the current preview.";
+}
+
+function saveOfficialIconHtml(r) {
+  const star = hasOfficialCopy(r)
+    ? `<span class="promote-star" aria-hidden="true">${STAR_ICON_SVG}</span>`
+    : "";
+  return `<span class="promote-icon">${DISK_ICON_SVG}${star}</span><span>Save as official</span>`;
+}
+
+function refreshPromoteButton(file) {
+  const btn = document.getElementById("btn-promote");
+  if (!btn) return;
+  const row = (LAST_INVENTORY && file)
+    ? LAST_INVENTORY.pdfs.find(r => r.file === file)
+    : null;
+  const tip = officialTip(row);
+  btn.innerHTML = saveOfficialIconHtml(row);
+  btn.setAttribute("data-tip", tip);
+  btn.setAttribute("aria-label", tip);
+  btn.removeAttribute("title");
+  btn.classList.toggle("has-official", hasOfficialCopy(row));
+  btn.classList.toggle("is-stale", !!(row && row.officialStale));
+}
+
+function filterPdfs(pdfs) {
+  const show = document.getElementById("filter-show").value;
+  const need = document.getElementById("filter-need").value;
+  const level = document.getElementById("filter-level").value;
+  return pdfs.filter(r => {
+    if (show === "updated" && !r.updated) return false;
+    if (show.startsWith("row-") && rowClass(r) !== show) return false;
+    if (need !== "all" && r.needContent !== need) return false;
+    if (level !== "all" && r.level !== level) return false;
+    return true;
+  });
+}
+
+function sectionLabel(sectionId) {
+  const sections = (LAST_INVENTORY && LAST_INVENTORY.sections)
+    || (METRICS.pdfExport && METRICS.pdfExport.sections)
+    || [];
+  const found = sections.find(s => s.id === sectionId);
+  if (found && found.label) {
+    const label = String(found.label).trim();
+    if (/^extras\b/i.test(label)) return label.replace(/^extras\s*/i, "Extras · ");
+    return label;
+  }
+  return String(sectionId || "").replace(/_/g, " ");
+}
+
+function groupPdfsBySection(pdfs) {
+  const sections = (LAST_INVENTORY && LAST_INVENTORY.sections)
+    || (METRICS.pdfExport && METRICS.pdfExport.sections)
+    || [];
+  const order = sections.map(s => s.id);
+  const groups = new Map();
+  order.forEach(id => groups.set(id, []));
+  pdfs.forEach(r => {
+    if (!groups.has(r.section)) groups.set(r.section, []);
+    groups.get(r.section).push(r);
+  });
+  return [...groups.entries()].filter(([, rows]) => rows.length > 0);
+}
+
+function orderBtnHtml(file, delta, disabled) {
+  const tip = delta < 0 ? "Move up within section" : "Move down within section";
+  return `<button type="button" class="icon-btn order-btn edit-only" data-order-pdf="${attrEsc(file)}" data-order-delta="${delta}"${disabled ? " disabled" : ""} title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${delta < 0 ? "↑" : "↓"}</button>`;
+}
+
+function sectionPeerIndex(file, section) {
+  const peers = (LAST_INVENTORY && LAST_INVENTORY.pdfs || []).filter(r => r.section === section);
+  return { peers, index: peers.findIndex(r => r.file === file) };
+}
+
+function pdfRowHtml(r, { showSection = true } = {}) {
+  const url = pdfUrl(r.file);
+  const updated = r.updated
+    ? '<span class="updated-badge" title="Regenerated in the last export"><span class="dot" aria-hidden="true"></span>Updated</span>'
+    : "";
+  const esc = (s) => String(s).replace(/"/g, "&quot;");
+  const atts = r.attachments || [];
+  const canAppend = !!r.hasAttachments;
+  let appendedCell;
+  if (!canAppend) {
+    appendedCell = '<span class="appended-btn n-a" title="This packet is narrative-only (no appendices)">n/a</span>';
+  } else if (!atts.length) {
+    appendedCell = `<button type="button" class="appended-btn is-empty" data-open-appended="${esc(r.file)}" data-name="${esc(r.name)}" title="No files in appendix folders yet. Click to manage.">0</button>`;
+  } else {
+    const tip = atts.map(a => `${a.name} (${a.pages || 0}p)`).join("\n");
+    appendedCell = `<button type="button" class="appended-btn" data-open-appended="${esc(r.file)}" data-name="${esc(r.name)}" title="${esc(tip)}">${atts.length}</button>`;
+  }
+  const needOpts = (cur) => ["Yes", "No"].map(v =>
+    `<option value="${v}"${v === cur ? " selected" : ""}>${v}</option>`).join("");
+  const levelOpts = (cur) => ["Complete", "Partial", "No Content"].map(v =>
+    `<option value="${v}"${v === cur ? " selected" : ""}>${v}</option>`).join("");
+  const sectionCell = showSection
+    ? `<td class="section-tag col-section">${r.section.replace(/_/g, " ")}</td>`
+    : `<td class="section-tag col-section"></td>`;
+  const { peers, index } = sectionPeerIndex(r.file, r.section);
+  const canUp = index > 0;
+  const canDown = index >= 0 && index < peers.length - 1;
+  return `
+    <tr class="${rowClass(r)}${r.excludeFromPageTotal ? " row-excluded" : ""}${r.updated ? " row-updated" : ""}"
+        data-name="${esc(r.name)}">
+      <td class="file">
+        <div class="file-cell">
+          ${updated}
+          <div class="file-name-row">
+            <a class="file-link" href="${url}" data-file="${r.file}" data-name="${esc(r.name)}"
+               title="${esc(r.sourceAbs || r.sourceRel || r.name)}">${r.name}</a>
+            ${r.excludeFromPageTotal ? '<span class="excl-note">(excluded from total)</span>' : ""}
+            <span class="row-actions">
+              ${previewBtnHtml(r.file, r.name)}
+              ${editBtnHtml(r.file, r.name)}
+              ${folderBtnHtml({ pdf: r.file, title: "Open containing folder for this PDF in Finder" })}
+            </span>
+          </div>
+        </div>
+      </td>
+      <td class="appended-col">${appendedCell}</td>
+      ${sectionCell}
+      <td class="num">${fmt(r.pages)}</td>
+      <td class="need-col">
+        <select class="status-select" data-field="needContent" data-name="${esc(r.name)}" aria-label="Need Content for ${esc(r.name)}">
+          ${needOpts(r.needContent)}
+        </select>
+      </td>
+      <td class="level-col">
+        <select class="status-select" data-field="level" data-name="${esc(r.name)}" aria-label="Level of Content for ${esc(r.name)}">
+          ${levelOpts(r.level)}
+        </select>
+      </td>
+      <td class="order-col">
+        <span class="order-actions">
+          ${orderBtnHtml(r.file, -1, !canUp)}
+          ${orderBtnHtml(r.file, 1, !canDown)}
+        </span>
+      </td>
+    </tr>`;
+}
+
+async function movePacketInSection(file, delta) {
+  if (!LAST_INVENTORY) return;
+  const row = LAST_INVENTORY.pdfs.find(r => r.file === file);
+  if (!row) return;
+  const { peers, index } = sectionPeerIndex(file, row.section);
+  const next = index + delta;
+  if (index < 0 || next < 0 || next >= peers.length) return;
+  const order = peers.map(r => r.file);
+  const tmp = order[index];
+  order[index] = order[next];
+  order[next] = tmp;
+  const r = await fetch("/api/packets/order", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ section: row.section, order }),
+  });
+  const data = await r.json();
+  if (!data.ok) {
+    alert(data.error || "Could not save order");
+    return;
+  }
+  if (typeof loadLiveInventory === "function") await loadLiveInventory();
+  else {
+    const byFile = new Map(LAST_INVENTORY.pdfs.map(p => [p.file, p]));
+    const reorderedSection = order.map(f => byFile.get(f)).filter(Boolean);
+    LAST_INVENTORY.pdfs = [
+      ...LAST_INVENTORY.pdfs.filter(p => p.section !== row.section),
+      ...reorderedSection,
+    ];
+    // Keep section-major order from inventory sections list
+    const ids = (LAST_INVENTORY.sections || []).map(s => s.id);
+    if (ids.length) {
+      LAST_INVENTORY.pdfs = ids.flatMap(id =>
+        LAST_INVENTORY.pdfs.filter(p => p.section === id)
+      ).concat(LAST_INVENTORY.pdfs.filter(p => !ids.includes(p.section)));
+    }
+    renderPdfRows(LAST_INVENTORY.pdfs);
+  }
+}
+
+function renderPdfRows(pdfs) {
+  const filtered = filterPdfs(pdfs);
+  const viewEl = document.getElementById("filter-view");
+  const view = viewEl ? viewEl.value : "list";
+  const bySection = view === "section";
+  const table = document.getElementById("pdf-table");
+  table.classList.toggle("view-section", bySection);
+  const totalLabel = document.getElementById("pdf-total-label");
+  if (totalLabel) totalLabel.colSpan = bySection ? 2 : 3;
+
+  document.getElementById("filter-count").textContent =
+    filtered.length === pdfs.length
+      ? `${fmt(pdfs.length)} files`
+      : `Showing ${fmt(filtered.length)} of ${fmt(pdfs.length)}`;
+
+  let bodyHtml;
+  if (bySection) {
+    bodyHtml = groupPdfsBySection(filtered).map(([sectionId, rows]) => {
+      const pages = rows.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
+      const label = sectionLabel(sectionId);
+      return `
+        <tr class="section-head">
+          <td colspan="${document.body.classList.contains("viewer-mode") ? 3 : 7}">
+            ${label}
+            <span class="section-head-meta">${fmt(rows.length)} file${rows.length === 1 ? "" : "s"} · ${fmt(pages)} pg</span>
+          </td>
+        </tr>
+        ${rows.map(r => pdfRowHtml(r, { showSection: false })).join("")}
+      `;
+    }).join("");
+  } else {
+    bodyHtml = filtered.map(r => pdfRowHtml(r, { showSection: true })).join("");
+  }
+  document.getElementById("pdf-tbody").innerHTML = bodyHtml;
+
+  const pagesTally = filtered.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
+  const needYes = filtered.filter(r => r.needContent === "Yes").length;
+  const complete = filtered.filter(r => r.level === "Complete").length;
+  const partial = filtered.filter(r => r.level === "Partial").length;
+  const none = filtered.filter(r => r.level === "No Content").length;
+  document.getElementById("pdf-total").textContent = fmt(pagesTally);
+  document.getElementById("need-summary").textContent =
+    `Yes ${needYes} · No ${filtered.length - needYes}`;
+  document.getElementById("level-summary").textContent =
+    `C ${complete} · P ${partial} · N ${none}`;
+}
+
+function rawPdfUrl(file, { bust = false } = {}) {
+  let url = PDF_ROOT + file.split("/").map(encodeURIComponent).join("/");
+  if (bust) url += (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+  return url;
+}
+
+/** In-app preview URL (PDF.js, outline open by default). */
+function pdfUrl(file, { bust = false } = {}) {
+  // Pass a same-origin path with raw characters; encodeURIComponent once for the
+  // query value. (Encoding an already-%-escaped href double-encodes and 404s.)
+  let path = "/0_Drafts/_pdf_review/" + file;
+  if (bust) path += (path.includes("?") ? "&" : "?") + "t=" + Date.now();
+  return PDFJS_VIEWER + "?file=" + encodeURIComponent(path) + PDF_VIEW_HASH;
+}
+window.rawPdfUrl = rawPdfUrl;
+window.pdfUrl = pdfUrl;
+
+function openViewer(file, name, { pushHash = true } = {}) {
+  const url = pdfUrl(file);
+  const viewer = document.getElementById("viewer");
+  const frame = document.getElementById("viewer-frame");
+  document.getElementById("viewer-title").textContent = name;
+  refreshPromoteButton(file);
+  document.getElementById("open-external").href = rawPdfUrl(file) + "#navpanes=1";
+  const dl = document.getElementById("btn-download-pdf");
+  if (dl) {
+    dl.href = "/api/download/pdf?file=" + encodeURIComponent(file);
+    dl.setAttribute("download", (name || file.split("/").pop() || "packet.pdf"));
+  }
+  frame.src = url;
+  viewer.classList.add("is-open");
+  viewer.setAttribute("aria-hidden", "false");
+  document.body.classList.add("viewer-open");
+  // pushState does not fire hashchange — keep edit/attachments in sync here
+  if (typeof window.__popSetCurrentPdf === "function") {
+    window.__popSetCurrentPdf(file);
+  }
+  const hash = "#view=" + encodeURIComponent(file);
+  if (pushHash && location.hash !== hash) history.pushState({ view: file }, "", hash);
+}
+
+function closeViewer() {
+  const viewer = document.getElementById("viewer");
+  const frame = document.getElementById("viewer-frame");
+  viewer.classList.remove("is-open");
+  viewer.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("viewer-open");
+  frame.src = "about:blank";
+  if (typeof window.__popClearCurrentPdf === "function") {
+    window.__popClearCurrentPdf();
+  }
+  if (location.hash.startsWith("#view=")) {
+    history.pushState({}, "", location.pathname + location.search);
+  }
+}
+
+function syncViewerFromHash() {
+  const m = location.hash.match(/^#view=(.+)$/);
+  if (!m) {
+    if (document.getElementById("viewer").classList.contains("is-open")) closeViewer();
+    return;
+  }
+  const file = decodeURIComponent(m[1]);
+  const row = METRICS.pdfExport.pdfs.find(r => r.file === file);
+  openViewer(file, row ? row.name : file.split("/").pop(), { pushHash: false });
+}
+
+function renderPdfExport(data) {
+  LAST_INVENTORY = data;
+  const pdfs = data.pdfs;
+  const needYes = pdfs.filter(r => r.needContent === "Yes").length;
+  const complete = pdfs.filter(r => r.level === "Complete").length;
+  const partial = pdfs.filter(r => r.level === "Partial").length;
+  const none = pdfs.filter(r => r.level === "No Content").length;
+  const pagesTally = pdfs.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
+
+  document.getElementById("hero").innerHTML = `
+    <div class="stat"><div class="n">${fmt(pagesTally)}</div><div class="l">Total pages</div></div>
+    <div class="stat"><div class="n">${fmt(data.totals.pdfs)}</div><div class="l">PDFs</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(needYes)}</div><div class="l">Need content</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(complete)}</div><div class="l">Complete</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(partial)}</div><div class="l">Partial</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(none)}</div><div class="l">No content</div></div>
+  `;
+
+  const maxPages = Math.max(...data.sections.map(s => s.pages), 1);
+  document.getElementById("section-bars").innerHTML = data.sections.map(s => `
+    <div class="bar-row">
+      <div class="label-row">
+        <span>${s.label.replace(/^\d+\s*/, "")}</span>
+        <span>${fmt(s.pages)} pg · ${s.count}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(100 * s.pages / maxPages).toFixed(1)}%"></div></div>
+    </div>
+  `).join("");
+
+  renderPdfRows(pdfs);
+}
+
+function refreshHeroFromInventory() {
+  if (!LAST_INVENTORY) return;
+  const pdfs = LAST_INVENTORY.pdfs;
+  const needYes = pdfs.filter(r => r.needContent === "Yes").length;
+  const complete = pdfs.filter(r => r.level === "Complete").length;
+  const partial = pdfs.filter(r => r.level === "Partial").length;
+  const none = pdfs.filter(r => r.level === "No Content").length;
+  const pagesTally = pdfs.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
+  document.getElementById("hero").innerHTML = `
+    <div class="stat"><div class="n">${fmt(pagesTally)}</div><div class="l">Total pages</div></div>
+    <div class="stat"><div class="n">${fmt(LAST_INVENTORY.totals.pdfs)}</div><div class="l">PDFs</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(needYes)}</div><div class="l">Need content</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(complete)}</div><div class="l">Complete</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(partial)}</div><div class="l">Partial</div></div>
+    <div class="stat edit-only"><div class="n">${fmt(none)}</div><div class="l">No content</div></div>
+  `;
+}
+
+async function saveRowStatus(name, field, value, selectEl) {
+  selectEl.classList.add("saving");
+  selectEl.disabled = true;
+  try {
+    const res = await fetch("/api/status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, [field]: value }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
+    const row = LAST_INVENTORY && LAST_INVENTORY.pdfs.find(r => r.name === name);
+    if (row) {
+      row.needContent = data.needContent;
+      row.level = data.level;
+    }
+    refreshHeroFromInventory();
+    renderPdfRows(LAST_INVENTORY.pdfs);
+  } catch (err) {
+    alert("Could not save status: " + (err.message || err));
+    if (LAST_INVENTORY) renderPdfRows(LAST_INVENTORY.pdfs);
+  } finally {
+    selectEl.classList.remove("saving");
+    selectEl.disabled = false;
+  }
+}
+
+function wireListFilters() {
+  ["filter-show", "filter-need", "filter-level", "filter-view"].forEach(id => {
+    document.getElementById(id).addEventListener("change", () => {
+      if (LAST_INVENTORY) renderPdfRows(LAST_INVENTORY.pdfs);
+    });
+  });
+  const tbody = document.getElementById("pdf-tbody");
+  tbody.addEventListener("click", (e) => {
+    const orderBtn = e.target.closest("[data-order-pdf]");
+    if (orderBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (orderBtn.disabled) return;
+      const file = orderBtn.getAttribute("data-order-pdf");
+      const delta = Number(orderBtn.getAttribute("data-order-delta") || 0);
+      movePacketInSection(file, delta);
+      return;
+    }
+    const revealBtn = e.target.closest("[data-reveal-pdf], [data-reveal-rel]");
+    if (revealBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      revealInFinder({
+        pdf: revealBtn.getAttribute("data-reveal-pdf") || undefined,
+        rel: revealBtn.getAttribute("data-reveal-rel") || undefined,
+      });
+      return;
+    }
+    const previewBtn = e.target.closest("[data-preview-pdf]");
+    if (previewBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const file = previewBtn.getAttribute("data-preview-pdf");
+      const name = previewBtn.getAttribute("data-name") || file.split("/").pop();
+      openViewer(file, name);
+      return;
+    }
+    const editBtn = e.target.closest("[data-edit-pdf]");
+    if (editBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const file = editBtn.getAttribute("data-edit-pdf");
+      const name = editBtn.getAttribute("data-name") || file.split("/").pop();
+      openViewer(file, name);
+      if (typeof window.__popOpenEditor === "function") {
+        setTimeout(() => window.__popOpenEditor(), 0);
+      }
+      return;
+    }
+    const appBtn = e.target.closest("[data-open-appended]");
+    if (appBtn) {
+      e.preventDefault();
+      const file = appBtn.getAttribute("data-open-appended");
+      const name = appBtn.getAttribute("data-name") || file.split("/").pop();
+      openViewer(file, name);
+      if (typeof window.__popOpenAppended === "function") {
+        // Let viewer open first, then show appended list
+        setTimeout(() => window.__popOpenAppended(), 0);
+      }
+      return;
+    }
+    const a = e.target.closest("a.file-link");
+    if (!a) return;
+    e.preventDefault();
+    openViewer(a.dataset.file, a.dataset.name);
+  });
+  tbody.addEventListener("change", (e) => {
+    const sel = e.target.closest("select.status-select");
+    if (!sel) return;
+    saveRowStatus(sel.dataset.name, sel.dataset.field, sel.value, sel);
+  });
+}
+
+document.getElementById("back-to-list").addEventListener("click", () => {
+  closeViewer();
+});
+
+window.addEventListener("popstate", syncViewerFromHash);
+window.addEventListener("hashchange", syncViewerFromHash);
+
+async function loadInventory() {
+  try {
+    const res = await fetch("/api/inventory");
+    if (!res.ok) throw new Error("inventory " + res.status);
+    return await res.json();
+  } catch (err) {
+    console.warn("Using embedded METRICS (start serve_metrics.py for live data)", err);
+    return METRICS.pdfExport;
+  }
+}
+
+async function loadCourses() {
+  const sel = document.getElementById("dump-course");
+  try {
+    const res = await fetch("/api/courses");
+    const data = await res.json();
+    for (const c of data.courses) {
+      const opt = document.createElement("option");
+      opt.value = c.key;
+      opt.textContent = c.label;
+      sel.appendChild(opt);
+    }
+  } catch (err) {
+    sel.innerHTML = '<option value="">Server offline — start serve_metrics.py</option>';
+  }
+}
+
+function setBox(el, text, cls) {
+  el.hidden = !text;
+  el.textContent = text || "";
+  el.classList.remove("ok", "err");
+  if (cls) el.classList.add(cls);
+}
+
+function wireFolderDump() {
+  const drop = document.getElementById("dropzone");
+  const input = document.getElementById("file-input");
+  const kind = document.getElementById("dump-kind");
+  const course = document.getElementById("dump-course");
+  const courseLabel = document.getElementById("dump-course-label");
+  const save = document.getElementById("dump-save");
+  const chosen = document.getElementById("chosen-file");
+  const status = document.getElementById("dump-status");
+  const evidenceKinds = new Set(["student_correspondence", "profession_correspondence"]);
+  let files = [];
+
+  function needsCourse() {
+    return kind.value && !evidenceKinds.has(kind.value);
+  }
+
+  function refreshSave() {
+    const courseOk = needsCourse() ? !!course.value : true;
+    save.disabled = !(files.length && kind.value && courseOk);
+    courseLabel.style.display = needsCourse() ? "" : "none";
+    if (!needsCourse()) course.value = "";
+  }
+
+  function showChosen() {
+    if (!files.length) {
+      chosen.textContent = "No file selected";
+      return;
+    }
+    if (files.length === 1) {
+      chosen.textContent = files[0].name + " (" + Math.round(files[0].size / 1024) + " KB)";
+      return;
+    }
+    const kb = Math.round(files.reduce((a, f) => a + f.size, 0) / 1024);
+    chosen.textContent = files.length + " PDFs selected (" + kb + " KB total)";
+  }
+
+  function takeFiles(list) {
+    if (!list || !list.length) return;
+    const next = [];
+    const rejected = [];
+    for (const f of Array.from(list)) {
+      if (f.type && f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
+        rejected.push(f.name);
+        continue;
+      }
+      next.push(f);
+    }
+    if (!next.length) {
+      setBox(status, "Only PDF files are accepted.", "err");
+      return;
+    }
+    files = next;
+    showChosen();
+    if (rejected.length) {
+      setBox(status, "Skipped non-PDF: " + rejected.join(", "), "err");
+    } else {
+      setBox(status, "", null);
+    }
+    refreshSave();
+  }
+
+  drop.addEventListener("click", () => input.click());
+  drop.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); }
+  });
+  input.addEventListener("change", () => takeFiles(input.files));
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, (e) => {
+    e.preventDefault(); drop.classList.add("dragover");
+  }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, (e) => {
+    e.preventDefault(); drop.classList.remove("dragover");
+  }));
+  drop.addEventListener("drop", (e) => {
+    takeFiles(e.dataTransfer && e.dataTransfer.files);
+  });
+  kind.addEventListener("change", refreshSave);
+  course.addEventListener("change", refreshSave);
+  refreshSave();
+
+  save.addEventListener("click", async () => {
+    if (!files.length || !kind.value) return;
+    if (needsCourse() && !course.value) return;
+    save.disabled = true;
+    setBox(status, "Saving " + files.length + " file(s)…", null);
+    const body = new FormData();
+    for (const f of files) body.append("file", f, f.name);
+    body.append("kind", kind.value);
+    if (needsCourse()) body.append("course", course.value);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
+      const paths = data.saved || [data.savedAs];
+      let msg = "Saved " + (data.count || paths.length) + " file(s):\n" + paths.map(p => "• " + p).join("\n");
+      if (data.warnings && data.warnings.length) msg += "\n\n" + data.warnings.join("\n");
+      msg += "\n\nClick Regenerate PDFs to fold these into " + (data.packetHint || "the packet") + ".";
+      setBox(status, msg, "ok");
+      files = [];
+      input.value = "";
+      showChosen();
+    } catch (err) {
+      setBox(status, String(err.message || err), "err");
+    }
+    refreshSave();
+  });
+}
+
+function wireRegenerate() {
+  const run = document.getElementById("regen-run");
+  const mode = document.getElementById("regen-mode");
+  const status = document.getElementById("regen-status");
+  let timer = null;
+
+  async function poll() {
+    const res = await fetch("/api/regen/status");
+    const data = await res.json();
+    setBox(status, (data.running ? "Running (" + data.mode + ")…\n\n" : "") + (data.log || ""), data.ok === false ? "err" : data.ok ? "ok" : null);
+    if (data.running) {
+      timer = setTimeout(poll, 1500);
+      return;
+    }
+    run.disabled = false;
+    if (data.ok) {
+      setBox(status, (data.log || "Done.") + "\n\nRefreshing inventory…", "ok");
+      const inv = await loadInventory();
+      renderPdfExport(inv);
+    }
+  }
+
+  run.addEventListener("click", async () => {
+    run.disabled = true;
+    setBox(status, "Starting regenerate…", null);
+    try {
+      const res = await fetch("/api/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: mode.value }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
+      poll();
+    } catch (err) {
+      setBox(status, String(err.message || err), "err");
+      run.disabled = false;
+    }
+  });
+}
+
+async function loadLiveInventory() {
+  const inv = await loadInventory();
+  renderPdfExport(inv);
+  if (typeof window.__popRefreshPromoteButton === "function") {
+    window.__popRefreshPromoteButton();
+  }
+  return inv;
+}
+
+function applyModeFromConfig(cfg) {
+  if (!cfg) return;
+  const onAdmin = location.pathname.startsWith("/admin");
+  const productionView = !!(cfg.isProduction && !onAdmin);
+  const editableHere = !!(cfg.editable && !productionView);
+  if (!editableHere) document.body.classList.add("viewer-mode");
+  else document.body.classList.remove("viewer-mode");
+  if (onAdmin || (!cfg.isProduction && cfg.editable)) {
+    document.body.classList.add("admin-surface");
+  } else {
+    document.body.classList.remove("admin-surface");
+  }
+  const banner = document.getElementById("mode-banner");
+  if (banner) {
+    if (cfg.isProduction && !onAdmin) {
+      banner.textContent = "Read-only portal — Preview and download. Admins use /admin.";
+    } else if (!editableHere) {
+      banner.textContent = "Read-only viewer — Preview and download. Local editing happens in edit mode.";
+    }
+  }
+  const emptyHint = document.getElementById("empty-pdf-hint");
+  if (emptyHint) {
+    emptyHint.hidden = !!cfg.hasPdfs;
+    if (!cfg.hasPdfs) {
+      emptyHint.textContent = onAdmin
+        ? "No PDFs yet — import a content pack, then Rebuild / Save as official."
+        : "No PDFs published yet.";
+    }
+  }
+}
+
+(async function init() {
+  // Apply viewer-mode before first paint of the list so column widths are correct
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    applyModeFromConfig(cfg);
+  } catch (e) {}
+  await loadCourses();
+  wireFolderDump();
+  wireRegenerate();
+  wireListFilters();
+  const inv = await loadInventory();
+  renderPdfExport(inv);
+  syncViewerFromHash();
+})();
+</script>
+
+<script>
+(function () {
+  let APP = { mode: "edit", editable: true };
+  let currentPdf = null; // reviewRel
+  let currentName = null;
+  let mdDirty = false;
+
+  async function loadConfig() {
+    try {
+      const r = await fetch("/api/config");
+      APP = await r.json();
+      applyModeFromConfig(APP);
+    } catch (e) {}
+  }
+
+  function pdfUrl(rel) {
+    if (typeof window.pdfUrl === "function") {
+      return window.pdfUrl(rel, { bust: true });
+    }
+    let path = "/0_Drafts/_pdf_review/" + rel + "?t=" + Date.now();
+    return PDFJS_VIEWER + "?file=" + encodeURIComponent(path) + PDF_VIEW_HASH;
+  }
+
+  const SIDE_WIDTH_KEY = "popSideWidthPct";
+  const SIDE_COLLAPSED_KEY = "popSideCollapsed";
+
+  function viewerBody() {
+    return document.getElementById("viewer-body");
+  }
+
+  function applySideWidth(pct) {
+    const n = Math.min(85, Math.max(20, Number(pct) || 42));
+    viewerBody().style.setProperty("--side-width", n + "%");
+    try { localStorage.setItem(SIDE_WIDTH_KEY, String(n)); } catch (e) {}
+    return n;
+  }
+
+  function restoreSideLayout() {
+    let pct = 42;
+    try {
+      const saved = localStorage.getItem(SIDE_WIDTH_KEY);
+      if (saved) pct = Number(saved) || 42;
+    } catch (e) {}
+    applySideWidth(pct);
+  }
+
+  function setSideOpen(open, { collapsed = false } = {}) {
+    const body = viewerBody();
+    body.classList.toggle("side-open", !!open);
+    body.classList.toggle("side-collapsed", !!(open && collapsed));
+    if (open) {
+      try { localStorage.setItem(SIDE_COLLAPSED_KEY, collapsed ? "1" : "0"); } catch (e) {}
+    }
+  }
+
+  function collapseSide() {
+    if (!viewerBody().classList.contains("side-open")) return;
+    const rail = document.getElementById("side-rail-btn");
+    if (document.getElementById("attach-panel").classList.contains("is-open")) {
+      rail.textContent = "Appended";
+    } else {
+      rail.textContent = "Markdown";
+    }
+    setSideOpen(true, { collapsed: true });
+  }
+
+  function expandSide() {
+    setSideOpen(true, { collapsed: false });
+  }
+
+  function showPreviewOnly() {
+    document.getElementById("editor-panel").classList.remove("is-open");
+    document.getElementById("attach-panel").classList.remove("is-open");
+    document.getElementById("editor-panel").setAttribute("aria-hidden", "true");
+    document.getElementById("attach-panel").setAttribute("aria-hidden", "true");
+    setSideOpen(false, { collapsed: false });
+  }
+
+  function openSidePanel(which) {
+    const editor = document.getElementById("editor-panel");
+    const attach = document.getElementById("attach-panel");
+    editor.classList.toggle("is-open", which === "editor");
+    attach.classList.toggle("is-open", which === "attach");
+    editor.setAttribute("aria-hidden", which === "editor" ? "false" : "true");
+    attach.setAttribute("aria-hidden", which === "attach" ? "false" : "true");
+    // Opening Edit/Attachments always expands so the panel is usable
+    setSideOpen(true, { collapsed: false });
+  }
+
+  function resolveCurrentPdf() {
+    if (currentPdf) return currentPdf;
+    const m = (location.hash || "").match(/^#view=(.+)$/);
+    if (m) {
+      currentPdf = decodeURIComponent(m[1]);
+      currentName = currentPdf.split("/").pop();
+    }
+    return currentPdf;
+  }
+
+  function openEditor() {
+    if (!APP.editable) {
+      alert("Edit is unavailable in read-only viewer mode.");
+      return;
+    }
+    if (!resolveCurrentPdf()) {
+      alert("Open a PDF from the list first, then click Edit.");
+      return;
+    }
+    const editor = document.getElementById("editor-panel");
+    const alreadyLoaded = editor.classList.contains("is-open") && editor.dataset.loadedPdf === currentPdf;
+    openSidePanel("editor");
+    if (alreadyLoaded) {
+      expandSide();
+      const ta = mdEditor();
+      if (ta) {
+        ta.focus();
+        ta.setSelectionRange(mdSel.start, mdSel.end);
+      }
+      return;
+    }
+    loadMarkdown().then(() => {
+      editor.dataset.loadedPdf = currentPdf || "";
+    });
+  }
+
+  function wireSideResize() {
+    const body = viewerBody();
+    const splitter = document.getElementById("side-splitter");
+    let dragging = false;
+
+    const onMove = (ev) => {
+      if (!dragging) return;
+      const rect = body.getBoundingClientRect();
+      const fromRight = rect.right - ev.clientX;
+      const pct = (fromRight / rect.width) * 100;
+      applySideWidth(pct);
+    };
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      body.classList.remove("is-resizing");
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    splitter.addEventListener("mousedown", (ev) => {
+      if (body.classList.contains("side-collapsed")) return;
+      ev.preventDefault();
+      dragging = true;
+      body.classList.add("is-resizing");
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+    });
+    // Double-click splitter resets width
+    splitter.addEventListener("dblclick", () => applySideWidth(42));
+  }
+
+  let mdSel = { start: 0, end: 0 };
+  let linkEditRange = null; // { start, end } of markdown being replaced
+  let saveStatusTimer = null;
+
+  function mdEditor() {
+    return document.getElementById("md-editor");
+  }
+
+  function captureMdSelection() {
+    const ta = mdEditor();
+    if (!ta) return;
+    mdSel = { start: ta.selectionStart, end: ta.selectionEnd };
+  }
+
+  function setEditorValue(ta, next, selFrom, selTo) {
+    const scroll = ta.scrollTop;
+    ta.value = next;
+    ta.focus();
+    const a = Math.max(0, Math.min(selFrom, next.length));
+    const b = Math.max(0, Math.min(selTo, next.length));
+    ta.setSelectionRange(a, b);
+    ta.scrollTop = scroll;
+    mdSel = { start: a, end: b };
+    mdDirty = true;
+  }
+
+  function setSaveStatus(msg, isError) {
+    const el = document.getElementById("md-save-status");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.toggle("is-error", !!isError);
+    if (saveStatusTimer) clearTimeout(saveStatusTimer);
+    if (msg && !isError) {
+      saveStatusTimer = setTimeout(() => {
+        if (el.textContent === msg) el.textContent = "";
+      }, 4000);
+    }
+  }
+
+  function findMdLinkAt(value, start, end) {
+    const re = /\[([^\]]*)\]\(([^)\s]*)\)/g;
+    let m;
+    while ((m = re.exec(value))) {
+      const s = m.index;
+      const e = s + m[0].length;
+      if (start >= s && end <= e) {
+        return { start: s, end: e, text: m[1], url: m[2], full: m[0] };
+      }
+    }
+    return null;
+  }
+
+  function looksLikeUrl(s) {
+    return /^(https?:\/\/|mailto:|www\.)\S+$/i.test((s || "").trim());
+  }
+
+  function normalizeUrl(url) {
+    let u = (url || "").trim();
+    if (!u) return "";
+    if (/^www\./i.test(u)) u = "https://" + u;
+    return u;
+  }
+
+  function closeLinkDialog() {
+    const dlg = document.getElementById("md-link-dialog");
+    dlg.classList.remove("is-open");
+    linkEditRange = null;
+  }
+
+  function openLinkDialog() {
+    const ta = mdEditor();
+    if (!ta) return;
+    const value = ta.value;
+    const start = mdSel.start;
+    const end = mdSel.end;
+    const selected = value.slice(start, end);
+    const existing = findMdLinkAt(value, start, end);
+
+    const textInput = document.getElementById("md-link-text");
+    const urlInput = document.getElementById("md-link-url");
+    const dlg = document.getElementById("md-link-dialog");
+
+    if (existing) {
+      linkEditRange = { start: existing.start, end: existing.end };
+      textInput.value = existing.text;
+      urlInput.value = existing.url;
+    } else if (looksLikeUrl(selected)) {
+      linkEditRange = { start, end };
+      textInput.value = selected.trim();
+      urlInput.value = normalizeUrl(selected);
+    } else {
+      linkEditRange = { start, end };
+      textInput.value = selected || "";
+      urlInput.value = "";
+    }
+
+    dlg.classList.add("is-open");
+    setTimeout(() => {
+      if (!textInput.value) textInput.focus();
+      else { urlInput.focus(); urlInput.select(); }
+    }, 0);
+  }
+
+  function applyLinkDialog() {
+    const ta = mdEditor();
+    if (!ta || !linkEditRange) return;
+    const text = document.getElementById("md-link-text").value.trim() || "link text";
+    const url = normalizeUrl(document.getElementById("md-link-url").value);
+    if (!url) {
+      setSaveStatus("Enter a URL for the link.", true);
+      document.getElementById("md-link-url").focus();
+      return;
+    }
+    const md = "[" + text + "](" + url + ")";
+    const before = ta.value.slice(0, linkEditRange.start);
+    const after = ta.value.slice(linkEditRange.end);
+    const next = before + md + after;
+    const caret = before.length + md.length;
+    setEditorValue(ta, next, caret, caret);
+    closeLinkDialog();
+    setSaveStatus("Link inserted. Save markdown when ready.");
+  }
+
+  function unlinkSelection() {
+    const ta = mdEditor();
+    if (!ta) return;
+    const value = ta.value;
+    const start = mdSel.start;
+    const end = mdSel.end;
+    const existing = findMdLinkAt(value, start, end);
+    if (!existing) {
+      setSaveStatus("No markdown link at the cursor.", true);
+      return;
+    }
+    const next = value.slice(0, existing.start) + existing.text + value.slice(existing.end);
+    const from = existing.start;
+    const to = existing.start + existing.text.length;
+    setEditorValue(ta, next, from, to);
+    setSaveStatus("Link markup removed.");
+  }
+
+  function urlToLink() {
+    const ta = mdEditor();
+    if (!ta) return;
+    const start = mdSel.start;
+    const end = mdSel.end;
+    const selected = ta.value.slice(start, end).trim();
+    if (!looksLikeUrl(selected)) {
+      setSaveStatus("Select a bare URL first (https://...).", true);
+      return;
+    }
+    const url = normalizeUrl(selected);
+    const md = "[" + url + "](" + url + ")";
+    const before = ta.value.slice(0, start);
+    const after = ta.value.slice(end);
+    setEditorValue(ta, before + md + after, before.length, before.length + md.length);
+    setSaveStatus("URL converted to markdown link.");
+  }
+
+  async function loadMarkdown() {
+    const r = await fetch("/api/md?pdf=" + encodeURIComponent(currentPdf));
+    const data = await r.json();
+    if (!data.ok) { alert(data.error || "Could not load markdown"); return; }
+    const ta = mdEditor();
+    ta.value = data.content;
+    document.getElementById("md-path").textContent = data.path;
+    mdDirty = false;
+    closeLinkDialog();
+    setSaveStatus("");
+    // Keep caret near top on fresh load, not end
+    ta.setSelectionRange(0, 0);
+    ta.scrollTop = 0;
+    mdSel = { start: 0, end: 0 };
+  }
+
+  async function saveMarkdown() {
+    const ta = mdEditor();
+    const content = ta.value;
+    const scroll = ta.scrollTop;
+    const selStart = ta.selectionStart;
+    const selEnd = ta.selectionEnd;
+    setSaveStatus("Saving…");
+    const r = await fetch("/api/md", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf: currentPdf, content }),
+    });
+    const data = await r.json();
+    // Restore caret/scroll before any UI feedback (alerts steal focus)
+    ta.focus();
+    ta.setSelectionRange(selStart, selEnd);
+    ta.scrollTop = scroll;
+    mdSel = { start: selStart, end: selEnd };
+    if (!data.ok) {
+      setSaveStatus(data.error || "Save failed", true);
+      return;
+    }
+    mdDirty = false;
+    setSaveStatus("Saved. Rebuild preview to refresh the PDF.");
+  }
+
+  function applyMarkdown(cmd) {
+    const ta = mdEditor();
+    if (!ta) return;
+
+    if (cmd === "link") { openLinkDialog(); return; }
+    if (cmd === "unlink") { unlinkSelection(); return; }
+    if (cmd === "hreflink") { urlToLink(); return; }
+
+    const start = mdSel.start;
+    const end = mdSel.end;
+    const value = ta.value;
+    const selected = value.slice(start, end);
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const lineEndIdx = value.indexOf("\n", end);
+    const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
+    let before = value.slice(0, start);
+    let after = value.slice(end);
+    let insert = "";
+    let selFrom = start;
+    let selTo = end;
+
+    const wrap = (left, right, placeholder) => {
+      const inner = selected || placeholder;
+      insert = left + inner + right;
+      selFrom = start + left.length;
+      selTo = selFrom + inner.length;
+    };
+
+    const prefixLines = (prefixFn) => {
+      const blockStart = value.slice(0, lineStart);
+      const block = value.slice(lineStart, lineEnd) || "List item";
+      const blockAfter = value.slice(lineEnd);
+      const lines = block.split("\n");
+      const out = lines.map((ln, i) => prefixFn(ln, i)).join("\n");
+      setEditorValue(ta, blockStart + out + blockAfter, blockStart.length, blockStart.length + out.length);
+      return true;
+    };
+
+    switch (cmd) {
+      case "bold":
+        wrap("**", "**", "bold text");
+        break;
+      case "italic":
+        wrap("*", "*", "italic text");
+        break;
+      case "code":
+        wrap("`", "`", "code");
+        break;
+      case "h1":
+      case "h2":
+      case "h3": {
+        const level = Number(cmd[1]);
+        const marks = "#".repeat(level) + " ";
+        const line = value.slice(lineStart, lineEnd).replace(/^#{1,6}\s+/, "");
+        const headed = marks + (line || "Heading");
+        setEditorValue(
+          ta,
+          value.slice(0, lineStart) + headed + value.slice(lineEnd),
+          lineStart + marks.length,
+          lineStart + headed.length
+        );
+        return;
+      }
+      case "ul":
+        if (prefixLines((ln) => {
+          const t = ln.replace(/^\s*([-*+]|\d+\.)\s+/, "");
+          return "- " + (t || "List item");
+        })) return;
+        break;
+      case "ol":
+        if (prefixLines((ln, i) => {
+          const t = ln.replace(/^\s*([-*+]|\d+\.)\s+/, "");
+          return (i + 1) + ". " + (t || "List item");
+        })) return;
+        break;
+      case "quote":
+        if (prefixLines((ln) => {
+          const t = ln.replace(/^\s*>\s?/, "");
+          return "> " + (t || "Quote");
+        })) return;
+        break;
+      case "hr":
+        insert = (start > 0 && value[start - 1] !== "\n" ? "\n\n" : "\n") + "---\n";
+        selFrom = selTo = start + insert.length;
+        break;
+      case "codeblock": {
+        const inner = selected || "code";
+        insert = "```\n" + inner + "\n```";
+        selFrom = start + 4;
+        selTo = selFrom + inner.length;
+        break;
+      }
+      default:
+        return;
+    }
+
+    setEditorValue(ta, before + insert + after, selFrom, selTo);
+  }
+
+  let attachListCache = [];
+
+  function setAttachModeUi(editable) {
+    const editBar = document.getElementById("attach-edit-toolbar");
+    const viewBar = document.getElementById("attach-view-toolbar");
+    if (editBar) editBar.hidden = !editable;
+    if (viewBar) viewBar.hidden = editable;
+    const rail = document.getElementById("side-rail-btn");
+    if (rail) rail.textContent = "Appended";
+  }
+
+  function renderAttachList(attachments, { roots, editable }) {
+    const ul = document.getElementById("attach-list");
+    ul.innerHTML = "";
+    attachListCache = attachments || [];
+    if (!roots.length) {
+      ul.innerHTML = "<li>No appendix folders for this packet.</li>";
+      return;
+    }
+    if (!attachListCache.length) {
+      ul.innerHTML = "<li>No appended files yet. Use Upload above to add PDFs.</li>";
+      return;
+    }
+    attachListCache.forEach((a, idx) => {
+      const li = document.createElement("li");
+      const body = document.createElement("div");
+      body.className = "att-body";
+      const bm = a.bookmarkTitle || a.defaultBookmarkTitle || "";
+      const bmClass = a.bookmarkCustom ? "att-bookmark is-custom" : "att-bookmark";
+      body.innerHTML = "<span class=\"att-main\">" + (idx + 1) + ". " + a.name + "</span>"
+        + "<span class=\"att-meta\">" + (a.pages || 0) + " pages · " + a.root + "</span>"
+        + (bm ? "<span class=\"" + bmClass + "\" title=\"PDF outline / bookmark title\">Bookmark: " + bm.replace(/</g, "&lt;") + "</span>" : "");
+      li.appendChild(body);
+      const actions = document.createElement("div");
+      actions.className = "att-actions";
+      const folderWrap = document.createElement("span");
+      folderWrap.innerHTML = folderBtnHtml({
+        rel: a.rel,
+        title: "Open containing folder for this appended file in Finder",
+      });
+      const folderBtn = folderWrap.firstElementChild;
+      folderBtn.onclick = (ev) => {
+        ev.preventDefault();
+        revealInFinder({ rel: a.rel });
+      };
+      actions.appendChild(folderBtn);
+      if (editable) {
+        const mkBtn = (label, title, fn, cls) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = label;
+          b.title = title;
+          if (cls) b.className = cls;
+          b.onclick = fn;
+          return b;
+        };
+        const up = mkBtn("↑", "Move earlier in the PDF", () => moveAttachment(idx, -1));
+        up.disabled = idx === 0;
+        const down = mkBtn("↓", "Move later in the PDF", () => moveAttachment(idx, 1));
+        down.disabled = idx === attachListCache.length - 1;
+        const bmBtn = mkBtn("Bookmark", "Edit PDF outline/bookmark title", () => editBookmarkTitle(a));
+        const ren = mkBtn("Rename", "Rename this file on disk", () => renameAttachment(a));
+        const del = mkBtn("Remove", "Remove from packet folders", () => removeAttachment(a), "danger");
+        actions.appendChild(up);
+        actions.appendChild(down);
+        actions.appendChild(bmBtn);
+        actions.appendChild(ren);
+        actions.appendChild(del);
+      }
+      li.appendChild(actions);
+      ul.appendChild(li);
+    });
+  }
+
+  async function persistAttachOrder(orderRels) {
+    const r = await fetch("/api/attachments/order", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf: currentPdf, order: orderRels }),
+    });
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || "Could not save order");
+    return data;
+  }
+
+  async function moveAttachment(index, delta) {
+    const next = index + delta;
+    if (next < 0 || next >= attachListCache.length) return;
+    const order = attachListCache.map((a) => a.rel);
+    const tmp = order[index];
+    order[index] = order[next];
+    order[next] = tmp;
+    try {
+      await persistAttachOrder(order);
+      await openAttachments();
+      if (typeof loadLiveInventory === "function") loadLiveInventory();
+    } catch (err) {
+      alert(err.message || err);
+    }
+  }
+
+  async function renameAttachment(a) {
+    const proposed = prompt("New file name:", a.name);
+    if (proposed == null) return;
+    const newName = proposed.trim();
+    if (!newName || newName === a.name) return;
+    const r = await fetch("/api/attachments/rename", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf: currentPdf, rel: a.rel, newName }),
+    });
+    const data = await r.json();
+    if (!data.ok) { alert(data.error || "Rename failed"); return; }
+    openAttachments();
+    if (typeof loadLiveInventory === "function") loadLiveInventory();
+  }
+
+  async function editBookmarkTitle(a) {
+    const current = a.bookmarkTitle || a.defaultBookmarkTitle || "";
+    const hint = a.defaultBookmarkTitle
+      ? ("PDF outline/bookmark title.\n\nDefault: " + a.defaultBookmarkTitle + "\nLeave empty or match default to reset.")
+      : "PDF outline/bookmark title for this appendix.";
+    const proposed = prompt(hint, current);
+    if (proposed == null) return;
+    const r = await fetch("/api/attachments/bookmark", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf: currentPdf, rel: a.rel, title: proposed.trim() }),
+    });
+    const data = await r.json();
+    if (!data.ok) { alert(data.error || "Could not save bookmark title"); return; }
+    openAttachments();
+  }
+
+  async function removeAttachment(a) {
+    if (!confirm("Remove " + a.name + "?")) return;
+    const rr = await fetch("/api/attachments", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf: currentPdf, rel: a.rel }),
+    });
+    const dd = await rr.json();
+    if (!dd.ok) alert(dd.error || "Remove failed");
+    else {
+      openAttachments();
+      if (typeof loadLiveInventory === "function") loadLiveInventory();
+    }
+  }
+
+  async function openAttachments() {
+    if (!resolveCurrentPdf()) {
+      alert("Open a PDF from the list first, then click Appended files.");
+      return;
+    }
+    openSidePanel("attach");
+    setAttachModeUi(!!APP.editable);
+    const intro = document.getElementById("attach-intro");
+    const r = await fetch("/api/packet?pdf=" + encodeURIComponent(currentPdf));
+    const data = await r.json();
+    if (!data.ok) { alert(data.error || "No packet info"); return; }
+    const roots = data.packet.attachmentRoots || [];
+    if (intro) {
+      if (!roots.length) {
+        intro.textContent = "This packet is narrative-only — nothing is appended after the markdown.";
+      } else if (APP.editable) {
+        intro.textContent = "Add, rename, reorder, or edit Bookmark titles (PDF outline). Rebuild preview to refresh the PDF.";
+      } else {
+        intro.textContent = "Files appended after the markdown narrative (read-only).";
+      }
+    }
+    const sel = document.getElementById("attach-root");
+    if (sel) {
+      sel.innerHTML = "";
+      roots.forEach((root) => {
+        const o = document.createElement("option");
+        o.value = root; o.textContent = root;
+        sel.appendChild(o);
+      });
+    }
+    renderAttachList(data.attachments || [], { roots, editable: !!APP.editable });
+  }
+
+  window.__popOpenAppended = () => { openAttachments(); };
+  window.__popOpenEditor = () => { openEditor(); };
+
+  async function uploadAttachment() {
+    const root = document.getElementById("attach-root").value;
+    const input = document.getElementById("attach-file");
+    if (!root || !input.files.length) { alert("Choose a folder and file(s)"); return; }
+    const fd = new FormData();
+    fd.append("pdf", currentPdf);
+    fd.append("root", root);
+    for (const f of input.files) fd.append("file", f);
+    const r = await fetch("/api/attachments", { method: "POST", body: fd });
+    const data = await r.json();
+    if (!data.ok) alert(data.error || "Upload failed");
+    else {
+      input.value = "";
+      openAttachments();
+      if (typeof loadLiveInventory === "function") loadLiveInventory();
+      const warn = (data.warnings && data.warnings.length) ? ("\n" + data.warnings.join("\n")) : "";
+      alert("Added. Rebuild preview to include in the PDF." + warn);
+    }
+  }
+
+  let rebuildModalTimer = null;
+
+  function showRebuildModal(label) {
+    const modal = document.getElementById("rebuild-modal");
+    const fileEl = document.getElementById("rebuild-modal-file");
+    const statusEl = document.getElementById("rebuild-modal-status");
+    const bar = document.getElementById("rebuild-progress-bar");
+    const prog = document.getElementById("rebuild-progress");
+    if (!modal) return;
+    fileEl.textContent = label || "";
+    statusEl.textContent = "Generating…";
+    bar.style.width = "8%";
+    prog.setAttribute("aria-valuenow", "8");
+    prog.setAttribute("aria-busy", "true");
+    modal.classList.add("is-indeterminate");
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("rebuild-busy");
+    if (rebuildModalTimer) clearInterval(rebuildModalTimer);
+    let pct = 8;
+    rebuildModalTimer = setInterval(() => {
+      pct = Math.min(90, pct + Math.max(0.4, (90 - pct) * 0.035));
+      // Keep indeterminate animation while running; soft % for aria only
+      prog.setAttribute("aria-valuenow", String(Math.round(pct)));
+    }, 400);
+  }
+
+  function finishRebuildModal(ok, message) {
+    const modal = document.getElementById("rebuild-modal");
+    const statusEl = document.getElementById("rebuild-modal-status");
+    const bar = document.getElementById("rebuild-progress-bar");
+    const prog = document.getElementById("rebuild-progress");
+    if (rebuildModalTimer) {
+      clearInterval(rebuildModalTimer);
+      rebuildModalTimer = null;
+    }
+    if (!modal) return Promise.resolve();
+    modal.classList.remove("is-indeterminate");
+    bar.style.width = "100%";
+    prog.setAttribute("aria-valuenow", "100");
+    prog.setAttribute("aria-busy", "false");
+    statusEl.textContent = message || (ok ? "Done." : "Failed.");
+    return new Promise((resolve) => setTimeout(resolve, ok ? 450 : 700));
+  }
+
+  function hideRebuildModal() {
+    const modal = document.getElementById("rebuild-modal");
+    if (rebuildModalTimer) {
+      clearInterval(rebuildModalTimer);
+      rebuildModalTimer = null;
+    }
+    if (!modal) return;
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    modal.classList.remove("is-indeterminate");
+    document.body.classList.remove("rebuild-busy");
+  }
+
+  document.addEventListener("keydown", (ev) => {
+    if (!document.body.classList.contains("rebuild-busy")) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+  }, true);
+
+  async function rebuildCurrent() {
+    if (!currentPdf) return;
+    const label = currentName || currentPdf.split("/").pop() || currentPdf;
+    const status = document.getElementById("regen-status");
+    if (status) { status.hidden = false; status.textContent = "Rebuilding " + currentPdf + "…"; }
+    showRebuildModal(label);
+    try {
+      const r = await fetch("/api/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pdf: currentPdf }),
+      });
+      const data = await r.json();
+      if (!data.ok) {
+        await finishRebuildModal(false, data.error || "Rebuild failed to start");
+        hideRebuildModal();
+        alert(data.error || "Rebuild failed to start");
+        return;
+      }
+      let s;
+      for (;;) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        s = await (await fetch("/api/regen/status")).json();
+        const statusEl = document.getElementById("rebuild-modal-status");
+        if (statusEl) statusEl.textContent = "Generating…";
+        if (!s.running) break;
+      }
+      if (status) status.textContent = s.log || (s.ok ? "Done" : "Failed");
+      if (s.ok) {
+        await finishRebuildModal(true, "Done — refreshing preview…");
+        document.getElementById("viewer-frame").src = pdfUrl(currentPdf);
+        showPreviewOnly();
+        if (typeof loadLiveInventory === "function") await loadLiveInventory();
+        hideRebuildModal();
+      } else {
+        await finishRebuildModal(false, "Rebuild failed");
+        hideRebuildModal();
+        alert("Rebuild failed — see Regenerate status panel");
+      }
+    } catch (err) {
+      await finishRebuildModal(false, String(err.message || err));
+      hideRebuildModal();
+      alert("Rebuild failed: " + (err.message || err));
+    }
+  }
+
+  async function promoteCurrent() {
+    if (!currentPdf) return;
+    if (!confirm("Save current preview PDF as the official copy?")) return;
+    const r = await fetch("/api/promote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf: currentPdf }),
+    });
+    const data = await r.json();
+    if (!data.ok) alert(data.error || "Promote failed");
+    else {
+      if (typeof loadLiveInventory === "function") await loadLiveInventory();
+      refreshPromoteButton(currentPdf);
+      const when = formatOfficialAt(data.at);
+      alert("Saved as official" + (when ? " · " + when : "") + "\n" + data.official);
+    }
+  }
+
+  window.__popRefreshPromoteButton = () => {
+    if (currentPdf) refreshPromoteButton(currentPdf);
+  };
+
+  async function wireSiteAccess() {
+    const status = document.getElementById("view-pw-status");
+    const msg = document.getElementById("view-pw-msg");
+    const input = document.getElementById("view-pw-input");
+    const saveBtn = document.getElementById("view-pw-save");
+    const clearBtn = document.getElementById("view-pw-clear");
+    if (!status || !saveBtn) return;
+
+    async function refresh() {
+      try {
+        const r = await fetch("/api/admin/view-password");
+        const data = await r.json();
+        status.textContent = data.viewPasswordSet
+          ? "View password is set (visitors must sign in)."
+          : "No view password — public portal is open.";
+      } catch (e) {
+        status.textContent = "Could not load view-password status.";
+      }
+    }
+
+    saveBtn.onclick = async () => {
+      const password = (input && input.value || "").trim();
+      if (password.length < 4) {
+        alert("Password must be at least 4 characters.");
+        return;
+      }
+      const r = await fetch("/api/admin/view-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await r.json();
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = data.ok ? "View password saved." : (data.error || "Save failed");
+        msg.className = "status-box " + (data.ok ? "ok" : "err");
+      }
+      if (data.ok && input) input.value = "";
+      await refresh();
+      await loadConfig();
+    };
+
+    if (clearBtn) {
+      clearBtn.onclick = async () => {
+        if (!confirm("Clear the runtime view password? (Env VIEW_PASSWORD still applies if set.)")) return;
+        const r = await fetch("/api/admin/view-password", { method: "DELETE" });
+        const data = await r.json();
+        if (msg) {
+          msg.hidden = false;
+          msg.textContent = data.ok ? "Cleared runtime view password." : (data.error || "Clear failed");
+          msg.className = "status-box " + (data.ok ? "ok" : "err");
+        }
+        await refresh();
+        await loadConfig();
+      };
+    }
+
+    await refresh();
+  }
+
+  function wireContentImport() {
+    const input = document.getElementById("content-pack-input");
+    const btn = document.getElementById("content-pack-upload");
+    const status = document.getElementById("content-pack-status");
+    if (!btn || !input) return;
+    btn.onclick = async () => {
+      if (!input.files || !input.files[0]) {
+        alert("Choose a content-pack .zip first.");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("file", input.files[0]);
+      if (status) {
+        status.hidden = false;
+        status.className = "status-box";
+        status.textContent = "Uploading and extracting…";
+      }
+      btn.disabled = true;
+      try {
+        const r = await fetch("/api/admin/import-content", { method: "POST", body: fd });
+        const data = await r.json();
+        if (status) {
+          status.className = "status-box " + (data.ok ? "ok" : "err");
+          status.textContent = data.ok ? (data.log || "Import complete.") : (data.error || "Import failed");
+        }
+        if (data.ok && typeof loadLiveInventory === "function") await loadLiveInventory();
+        await loadConfig();
+      } catch (err) {
+        if (status) {
+          status.className = "status-box err";
+          status.textContent = String(err.message || err);
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  }
+
+  // Hook into existing open flow: patch after DOM ready
+  document.addEventListener("DOMContentLoaded", async () => {
+    await loadConfig();
+    if (document.body.classList.contains("viewer-mode") && typeof LAST_INVENTORY !== "undefined" && LAST_INVENTORY && typeof renderPdfRows === "function") {
+      renderPdfRows(LAST_INVENTORY.pdfs);
+    }
+    await wireSiteAccess();
+    wireContentImport();
+    restoreSideLayout();
+    wireSideResize();
+    const frame = document.getElementById("viewer-frame");
+
+    const origHash = () => {
+      const h = location.hash || "";
+      const m = h.match(/^#view=(.+)$/);
+      return m ? decodeURIComponent(m[1]) : null;
+    };
+
+    function syncCurrentFromHash() {
+      const rel = origHash();
+      if (rel) {
+        currentPdf = rel;
+        currentName = rel.split("/").pop();
+      }
+    }
+
+    window.addEventListener("hashchange", syncCurrentFromHash);
+    syncCurrentFromHash();
+
+    document.body.addEventListener("click", (ev) => {
+      const a = ev.target.closest("[data-pdf-file]");
+      if (a) {
+        currentPdf = a.getAttribute("data-pdf-file");
+        currentName = currentPdf.split("/").pop();
+        showPreviewOnly();
+      }
+    });
+
+    const previewBtn = document.getElementById("btn-preview");
+    const editBtn = document.getElementById("btn-edit");
+    const revealPdfBtn = document.getElementById("btn-reveal-pdf");
+    if (previewBtn) {
+      previewBtn.innerHTML = EYE_ICON_SVG + "<span>Preview</span>";
+      previewBtn.onclick = () => {
+        showPreviewOnly();
+        if (currentPdf) frame.src = pdfUrl(currentPdf);
+      };
+    }
+    if (editBtn) {
+      editBtn.innerHTML = PENCIL_ICON_SVG + "<span>Edit</span>";
+      editBtn.onclick = openEditor;
+    }
+    if (revealPdfBtn) {
+      revealPdfBtn.innerHTML = FOLDER_ICON_SVG;
+      revealPdfBtn.onclick = () => {
+        if (!resolveCurrentPdf()) {
+          alert("Open a PDF first.");
+          return;
+        }
+        revealInFinder({ pdf: currentPdf });
+      };
+    }
+    const attachBtn = document.getElementById("btn-attach");
+    if (attachBtn) {
+      attachBtn.innerHTML = PAPERCLIP_ICON_SVG + "<span>Appended files</span>";
+      attachBtn.onclick = openAttachments;
+    }
+    document.getElementById("btn-rebuild").onclick = rebuildCurrent;
+    const promoteBtn = document.getElementById("btn-promote");
+    if (promoteBtn) {
+      promoteBtn.onclick = promoteCurrent;
+      if (currentPdf) refreshPromoteButton(currentPdf);
+      else refreshPromoteButton(null);
+    }
+    document.getElementById("md-save").onclick = saveMarkdown;
+    document.getElementById("md-reload").onclick = loadMarkdown;
+    document.getElementById("attach-upload").onclick = uploadAttachment;
+    document.getElementById("md-collapse").onclick = collapseSide;
+    document.getElementById("attach-collapse").onclick = collapseSide;
+    const attachCollapseView = document.getElementById("attach-collapse-view");
+    if (attachCollapseView) attachCollapseView.onclick = collapseSide;
+    document.getElementById("side-rail-btn").onclick = () => {
+      expandSide();
+      const editorOpen = document.getElementById("editor-panel").classList.contains("is-open");
+      const attachOpen = document.getElementById("attach-panel").classList.contains("is-open");
+      if (!editorOpen && !attachOpen) openSidePanel("editor");
+    };
+    document.getElementById("md-editor").addEventListener("input", () => {
+      mdDirty = true;
+      setSaveStatus("");
+    });
+    document.getElementById("md-editor").addEventListener("keyup", captureMdSelection);
+    document.getElementById("md-editor").addEventListener("mouseup", captureMdSelection);
+    document.getElementById("md-editor").addEventListener("select", captureMdSelection);
+
+    const formatBar = document.getElementById("md-format-bar");
+    // Preserve selection: toolbar buttons steal focus before click fires
+    formatBar.addEventListener("mousedown", (ev) => {
+      const btn = ev.target.closest("button[data-md]");
+      if (!btn) return;
+      captureMdSelection();
+      ev.preventDefault();
+    });
+    formatBar.addEventListener("click", (ev) => {
+      const btn = ev.target.closest("button[data-md]");
+      if (!btn) return;
+      applyMarkdown(btn.getAttribute("data-md"));
+    });
+
+    document.getElementById("md-link-apply").onclick = applyLinkDialog;
+    document.getElementById("md-link-cancel").onclick = () => {
+      closeLinkDialog();
+      const ta = mdEditor();
+      if (ta) {
+        ta.focus();
+        ta.setSelectionRange(mdSel.start, mdSel.end);
+      }
+    };
+    document.getElementById("md-link-url").addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") { ev.preventDefault(); applyLinkDialog(); }
+      if (ev.key === "Escape") { ev.preventDefault(); document.getElementById("md-link-cancel").click(); }
+    });
+    document.getElementById("md-link-text").addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") { ev.preventDefault(); document.getElementById("md-link-url").focus(); }
+      if (ev.key === "Escape") { ev.preventDefault(); document.getElementById("md-link-cancel").click(); }
+    });
+
+    document.getElementById("md-editor").addEventListener("keydown", (ev) => {
+      captureMdSelection();
+      const mod = ev.metaKey || ev.ctrlKey;
+      if (!mod) return;
+      const key = ev.key.toLowerCase();
+      if (key === "b") { ev.preventDefault(); applyMarkdown("bold"); }
+      else if (key === "i") { ev.preventDefault(); applyMarkdown("italic"); }
+      else if (key === "k") { ev.preventDefault(); applyMarkdown("link"); }
+      else if (key === "s") { ev.preventDefault(); saveMarkdown(); }
+    });
+  });
+
+  // Expose for openViewer (pushState does not fire hashchange)
+  window.__popSetCurrentPdf = (rel) => {
+    currentPdf = rel;
+    currentName = rel ? rel.split("/").pop() : "";
+    showPreviewOnly();
+  };
+  window.__popClearCurrentPdf = () => {
+    currentPdf = null;
+    currentName = "";
+    showPreviewOnly();
+  };
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*
+.netrc
+site_auth.json
+
+# Python / OS
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.DS_Store
+*.swp
+*~
+.Rhistory
+
+# PoP narrative + attachment content (local only; sync via content pack)
+1_Candidate Information/
+2_Teaching/
+3_Connections to the Profession/
+4_Service/
+5_Other Evidence of Impact/
+Examples_other_profs/
+
+# Draft narrative copies under 0_Drafts (keep scripts + registry in git)
+0_Drafts/1_Candidate_Information/
+0_Drafts/2_Supplemental_Materials_Teaching/
+0_Drafts/3_Supplemental_Materials_Service/
+0_Drafts/4_Supplemental_Evidence_of_Impact/
+0_Drafts/_extras_still_in_instructions_pdf/
+0_Drafts/_pdf_review/
+0_Drafts/_official/
+0_Drafts/attachment_order.json
+0_Drafts/attachment_bookmarks.json
+0_Drafts/packet_order.json
+0_Drafts/PUNCH_LIST.md
+0_Drafts/WEEK_PLAN.md
+0_Drafts/calendar/
+
+# Root-level local docs / PDFs (not app code)
+*.pdf
+*.docx
+!vendor/**/*.pdf
+RequiredUploads.txt
+index.html
+
+# Generated / local editorial state
+metrics_status.json
+
+# Publish / deploy artifacts (built locally or on disk)
+publish/pdfs/
+publish/inventory.json
+publish/status.json
+publish/manifest.json
+publish/workspace/
+publish/_pdf_review/
+publish/_official/
+
+# Offline content packs (never commit)
+content-pack*.zip
+*.content-pack.zip
+
+# Local data-root mirrors
+/data/
+
+vendor/pdfjs/web/compressed.tracemonkey-pldi-09.pdf

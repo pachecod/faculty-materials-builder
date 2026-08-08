@@ -1,0 +1,39 @@
+# Scaffold only — do not auto-deploy. Create resources when you are ready.
+# Connect a PRIVATE GitHub repo, set secrets in the Render Dashboard, then deploy.
+# autoDeploy is false so git pushes never publish unexpectedly.
+
+services:
+  - type: web
+    name: pop-renewal-viewer
+    runtime: python
+    plan: starter
+    autoDeploy: false
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "serve_metrics:app" --bind 0.0.0.0:$PORT
+    disk:
+      name: pop-pdfs
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: POP_MODE
+        value: production
+      - key: PUBLISH_DATA_ROOT
+        value: /data
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: VIEW_PASSWORD
+        sync: false
+      - key: SITE_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_SYNC_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pop-renewal-db
+          property: connectionString
+
+databases:
+  - name: pop-renewal-db
+    plan: free

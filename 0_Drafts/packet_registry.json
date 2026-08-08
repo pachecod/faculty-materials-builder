@@ -1,0 +1,265 @@
+{
+  "version": 1,
+  "packets": [
+    {
+      "name": "Pacheco_Daniel_CV.pdf",
+      "reviewRel": "1_Candidate_Information/Pacheco_Daniel_CV.pdf",
+      "editMd": "1_Candidate Information/2_Curriculum Vitae/Pacheco_Daniel_CV.md",
+      "regenArg": "cv",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Personal_Statement.pdf",
+      "reviewRel": "1_Candidate_Information/Pacheco_Daniel_Personal_Statement.pdf",
+      "editMd": "1_Candidate Information/1_Personal Statement/Personal_Statement.md",
+      "regenArg": "ps",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Teaching_Schedule.pdf",
+      "reviewRel": "1_Candidate_Information/Pacheco_Daniel_Teaching_Schedule.pdf",
+      "editMd": "1_Candidate Information/4_Teaching Schedule/Pacheco_Daniel_Teaching_Schedule.md",
+      "regenArg": "schedule",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Course 1 - JNL 221.pdf",
+      "reviewRel": "2_Teaching/Course 1 - JNL 221.pdf",
+      "editMd": "2_Teaching/2_Courses/01_Course_1_JNL_221/Course_1_-_JNL_221.md",
+      "regenArg": "1",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/01_Course_1_JNL_221/1_Syllabi",
+        "2_Teaching/2_Courses/01_Course_1_JNL_221/teachingexamples",
+        "2_Teaching/2_Courses/01_Course_1_JNL_221/2_Student_Work",
+        "2_Teaching/2_Courses/01_Course_1_JNL_221/4_Other_Course_Materials"
+      ],
+      "courseKey": "1",
+      "editable": true
+    },
+    {
+      "name": "Course 2a - MND 413-613 Residential.pdf",
+      "reviewRel": "2_Teaching/Course 2a - MND 413-613 Residential.pdf",
+      "editMd": "2_Teaching/2_Courses/02a_Course_2a_MND_413_613/Course_2a_-_MND_413_613.md",
+      "regenArg": "2a",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/02a_Course_2a_MND_413_613/1_Syllabi",
+        "2_Teaching/2_Courses/02a_Course_2a_MND_413_613/teachingexamples",
+        "2_Teaching/2_Courses/02a_Course_2a_MND_413_613/2_Student_Work",
+        "2_Teaching/2_Courses/02a_Course_2a_MND_413_613/4_Other_Course_Materials"
+      ],
+      "courseKey": "2a",
+      "editable": true
+    },
+    {
+      "name": "Course 2b - MND 613 Online.pdf",
+      "reviewRel": "2_Teaching/Course 2b - MND 613 Online.pdf",
+      "editMd": "2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/Course_2b_-_MND_613_Online.md",
+      "regenArg": "2b",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/1_Syllabi",
+        "2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/teachingexamples",
+        "2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/2_Student_Work",
+        "2_Teaching/2_Courses/02b_Course_2b_MND_613_Online/4_Other_Course_Materials"
+      ],
+      "courseKey": "2b",
+      "editable": true
+    },
+    {
+      "name": "Course 3 - MMI 680.pdf",
+      "reviewRel": "2_Teaching/Course 3 - MMI 680.pdf",
+      "editMd": "2_Teaching/2_Courses/03_Course_3_MMI_680/Course_3_-_MMI_680.md",
+      "regenArg": "3",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/03_Course_3_MMI_680/1_Syllabi",
+        "2_Teaching/2_Courses/03_Course_3_MMI_680/teachingexamples",
+        "2_Teaching/2_Courses/03_Course_3_MMI_680/2_Student_Work",
+        "2_Teaching/2_Courses/03_Course_3_MMI_680/4_Other_Course_Materials"
+      ],
+      "courseKey": "3",
+      "editable": true
+    },
+    {
+      "name": "Course 4 - MND 545.pdf",
+      "reviewRel": "2_Teaching/Course 4 - MND 545.pdf",
+      "editMd": "2_Teaching/2_Courses/04_Course_4_MND_545/Course_4_-_MND_545.md",
+      "regenArg": "4",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/04_Course_4_MND_545/1_Syllabi",
+        "2_Teaching/2_Courses/04_Course_4_MND_545/teachingexamples",
+        "2_Teaching/2_Courses/04_Course_4_MND_545/2_Student_Work",
+        "2_Teaching/2_Courses/04_Course_4_MND_545/4_Other_Course_Materials"
+      ],
+      "courseKey": "4",
+      "editable": true
+    },
+    {
+      "name": "Course 5 - MND 505.pdf",
+      "reviewRel": "2_Teaching/Course 5 - MND 505.pdf",
+      "editMd": "2_Teaching/2_Courses/05_Course_5_MND_505/Course_5_-_MND_505.md",
+      "regenArg": "5",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/05_Course_5_MND_505/1_Syllabi",
+        "2_Teaching/2_Courses/05_Course_5_MND_505/teachingexamples",
+        "2_Teaching/2_Courses/05_Course_5_MND_505/2_Student_Work",
+        "2_Teaching/2_Courses/05_Course_5_MND_505/4_Other_Course_Materials"
+      ],
+      "courseKey": "5",
+      "editable": true
+    },
+    {
+      "name": "Course 6 - MND 600.pdf",
+      "reviewRel": "2_Teaching/Course 6 - MND 600.pdf",
+      "editMd": "2_Teaching/2_Courses/06_Course_6_MND_600/Course_6_-_MND_600.md",
+      "regenArg": "6",
+      "attachmentRoots": [
+        "2_Teaching/2_Courses/06_Course_6_MND_600/1_Syllabi",
+        "2_Teaching/2_Courses/06_Course_6_MND_600/teachingexamples",
+        "2_Teaching/2_Courses/06_Course_6_MND_600/2_Student_Work",
+        "2_Teaching/2_Courses/06_Course_6_MND_600/4_Other_Course_Materials"
+      ],
+      "courseKey": "6",
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Introduction_to_Teaching.pdf",
+      "reviewRel": "2_Teaching/Pacheco_Daniel_Introduction_to_Teaching.pdf",
+      "editMd": "2_Teaching/1_Introduction to Teaching/Introduction_to_Teaching.md",
+      "regenArg": "intro-teaching",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Introduction_to_Service.pdf",
+      "reviewRel": "3_Service/Pacheco_Daniel_Introduction_to_Service.pdf",
+      "editMd": "4_Service/1_Introduction to Service/Introduction_to_Service.md",
+      "regenArg": "service-intro",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Newhouse_School_Service.pdf",
+      "reviewRel": "3_Service/Pacheco_Daniel_Newhouse_School_Service.pdf",
+      "editMd": "4_Service/2_Newhouse School/Newhouse_School_Service.md",
+      "regenArg": "service-newhouse",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Syracuse_University_Service.pdf",
+      "reviewRel": "3_Service/Pacheco_Daniel_Syracuse_University_Service.pdf",
+      "editMd": "4_Service/3_Syracuse University/Syracuse_University_Service.md",
+      "regenArg": "service-su",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Profession_and_Industry_Service.pdf",
+      "reviewRel": "3_Service/Pacheco_Daniel_Profession_and_Industry_Service.pdf",
+      "editMd": "4_Service/4_Profession and Industry/Profession_and_Industry_Service.md",
+      "regenArg": "service-profession",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Community_Service.pdf",
+      "reviewRel": "3_Service/Pacheco_Daniel_Community_Service.pdf",
+      "editMd": "4_Service/5_Community/Community_Service.md",
+      "regenArg": "service-community",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Other_Service.pdf",
+      "reviewRel": "3_Service/Pacheco_Daniel_Other_Service.pdf",
+      "editMd": "4_Service/6_Other Service/Other_Service.md",
+      "regenArg": "service-other",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Professional_Contributions_Document.pdf",
+      "reviewRel": "4_Connections_to_the_Profession/Pacheco_Daniel_Professional_Contributions_Document.pdf",
+      "editMd": "3_Connections to the Profession/1_Professional Contributions Document/Professional_Contributions_Document.md",
+      "regenArg": "contrib",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Executive_Summary_of_Engagement.pdf",
+      "reviewRel": "4_Connections_to_the_Profession/Pacheco_Daniel_Executive_Summary_of_Engagement.pdf",
+      "editMd": "3_Connections to the Profession/2_Executive Summary of Engagement/Executive_Summary_of_Engagement.md",
+      "regenArg": "exec",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Creative_Work.pdf",
+      "reviewRel": "4_Connections_to_the_Profession/Pacheco_Daniel_Creative_Work.pdf",
+      "editMd": "3_Connections to the Profession/3_Creative Work/Creative_Work.md",
+      "regenArg": "creative",
+      "attachmentRoots": [
+        "3_Connections to the Profession/3_Creative Work"
+      ],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Professional_Connections.pdf",
+      "reviewRel": "4_Connections_to_the_Profession/Pacheco_Daniel_Professional_Connections.pdf",
+      "editMd": "3_Connections to the Profession/4_Professional Connections/Professional_Connections.md",
+      "regenArg": "connections",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Pacheco_Daniel_Plan_of_Action.pdf",
+      "reviewRel": "4_Connections_to_the_Profession/Pacheco_Daniel_Plan_of_Action.pdf",
+      "editMd": "3_Connections to the Profession/5_Professional Plan of Action/Professional_Plan_of_Action.md",
+      "regenArg": "plan",
+      "attachmentRoots": [],
+      "editable": true
+    },
+    {
+      "name": "Student_Correspondence.pdf",
+      "reviewRel": "5_Other_Evidence_of_Impact/Student_Correspondence.pdf",
+      "editMd": "0_Drafts/4_Supplemental_Evidence_of_Impact/Student_Correspondence.md",
+      "regenArg": "student-corr",
+      "attachmentRoots": [
+        "5_Other Evidence of Impact/3_Student_Correspondence"
+      ],
+      "editable": true
+    },
+    {
+      "name": "Academic_Correspondence.pdf",
+      "reviewRel": "5_Other_Evidence_of_Impact/Academic_Correspondence.pdf",
+      "editMd": "0_Drafts/4_Supplemental_Evidence_of_Impact/Academic_Correspondence.md",
+      "regenArg": "academic-corr",
+      "attachmentRoots": [
+        "5_Other Evidence of Impact/4_Academic_Correspondence"
+      ],
+      "editable": true
+    },
+    {
+      "name": "Profession_and_Industry_Correspondence.pdf",
+      "reviewRel": "5_Other_Evidence_of_Impact/Profession_and_Industry_Correspondence.pdf",
+      "editMd": "0_Drafts/4_Supplemental_Evidence_of_Impact/Profession_and_Industry_Correspondence.md",
+      "regenArg": "profession-corr",
+      "attachmentRoots": [
+        "5_Other Evidence of Impact/5_Profession_and_Industry_Correspondence"
+      ],
+      "editable": true
+    },
+    {
+      "name": "Other_Evidence_of_Impact.pdf",
+      "reviewRel": "5_Other_Evidence_of_Impact/Other_Evidence_of_Impact.pdf",
+      "editMd": "0_Drafts/4_Supplemental_Evidence_of_Impact/Other_Evidence_of_Impact.md",
+      "regenArg": "other-evidence",
+      "attachmentRoots": [
+        "5_Other Evidence of Impact/7_Other_Evidence_of_Impact"
+      ],
+      "editable": true
+    }
+  ]
+}
