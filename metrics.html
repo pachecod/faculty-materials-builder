@@ -2053,8 +2053,6 @@ function renderPdfRows(pdfs) {
   const bySection = view === "section";
   const table = document.getElementById("pdf-table");
   table.classList.toggle("view-section", bySection);
-  const totalLabel = document.getElementById("pdf-total-label");
-  if (totalLabel) totalLabel.colSpan = bySection ? 2 : 3;
 
   document.getElementById("filter-count").textContent =
     filtered.length === pdfs.length
