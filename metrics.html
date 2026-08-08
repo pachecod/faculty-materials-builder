@@ -392,6 +392,7 @@
   body.viewer-mode .order-col { display: none !important; }
   body.viewer-mode .need-col,
   body.viewer-mode .level-col { display: none !important; }
+  body.viewer-mode .appended-col { display: none !important; }
   /* Viewer: full-width page; File column takes all leftover space (width:100% trick) */
   body.viewer-mode .wrap {
     max-width: none;
@@ -411,7 +412,7 @@
     table-layout: fixed;
   }
   body.viewer-mode #pdf-table col.col-file { width: 100%; }
-  body.viewer-mode #pdf-table col.col-appended { width: 5.5rem; }
+  body.viewer-mode #pdf-table col.col-appended,
   body.viewer-mode #pdf-table col.col-section { width: 0; }
   body.viewer-mode #pdf-table col.col-pages { width: 4.5rem; }
   body.viewer-mode #pdf-table col.col-need,
@@ -422,11 +423,6 @@
     width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
-  }
-  body.viewer-mode th.appended-col,
-  body.viewer-mode td.appended-col {
-    width: 5.5rem !important;
-    max-width: 5.5rem !important;
   }
   body.viewer-mode #pdf-table th.col-pages,
   body.viewer-mode #pdf-table td.num {
@@ -1038,7 +1034,7 @@
             <thead>
               <tr>
                 <th class="file">File</th>
-                <th class="appended-col" title="PDF (and teaching-examples) files appended after the markdown narrative">Appended</th>
+                <th class="appended-col edit-only" title="PDF (and teaching-examples) files appended after the markdown narrative">Appended</th>
                 <th class="col-section">Section</th>
                 <th class="col-pages" style="text-align:right">Pages</th>
                 <th class="need-col">Need Content</th>
@@ -1190,7 +1186,7 @@
       <button type="button" class="bar-btn" id="btn-preview" title="Show PDF preview">Preview</button>
       <button type="button" class="bar-btn edit-only" id="btn-edit" title="Edit source markdown">Edit</button>
       <button type="button" class="folder-btn icon-btn" id="btn-reveal-pdf" title="Open containing folder for this PDF in Finder" aria-label="Open containing folder for this PDF in Finder"></button>
-      <button type="button" class="bar-btn" id="btn-attach" title="Show files appended into this packet PDF after the markdown narrative">Appended files</button>
+      <button type="button" class="bar-btn edit-only" id="btn-attach" title="Show files appended into this packet PDF after the markdown narrative">Appended files</button>
       <button type="button" class="bar-btn edit-only" id="btn-rebuild" title="Regenerate the full working PDF for this packet (markdown + appendices) into _pdf_review. Does not mark it official.">Rebuild preview</button>
       <button type="button" class="bar-btn edit-only" id="btn-promote" data-tip="Save as official — not saved yet.">Save as official</button>
       <a class="bar-btn" id="btn-download-pdf" href="#" download>Download PDF</a>
@@ -1954,7 +1950,7 @@ function pdfRowHtml(r, { showSection = true } = {}) {
           </div>
         </div>
       </td>
-      <td class="appended-col">${appendedCell}</td>
+      <td class="appended-col edit-only">${appendedCell}</td>
       ${sectionCell}
       <td class="num">${fmt(r.pages)}</td>
       <td class="need-col">
@@ -2259,6 +2255,8 @@ function wireListFilters() {
     const appBtn = e.target.closest("[data-open-appended]");
     if (appBtn) {
       e.preventDefault();
+      // Appended column/UI is local-edit only (hidden in viewer-mode)
+      if (document.body.classList.contains("viewer-mode")) return;
       const file = appBtn.getAttribute("data-open-appended");
       const name = appBtn.getAttribute("data-name") || file.split("/").pop();
       openViewer(file, name);
