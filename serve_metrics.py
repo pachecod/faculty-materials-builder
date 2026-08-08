@@ -585,9 +585,8 @@ def list_attachments(pkt: dict) -> list[dict]:
 
 
 def pdf_root_for_mode() -> Path:
+    """Primary root hint (edit uses review; viewers prefer official when present)."""
     if is_viewer():
-        # Prefer live official copies so newly promoted PDFs appear immediately.
-        # Fall back to publish/pdfs (admin sync), then review.
         if OFFICIAL.is_dir() and any(OFFICIAL.rglob("*.pdf")):
             return OFFICIAL
         pub = PUBLISH / "pdfs"
@@ -596,9 +595,38 @@ def pdf_root_for_mode() -> Path:
     return REVIEW
 
 
+def iter_viewable_pdfs() -> dict[str, Path]:
+    """Map reviewRel -> file path. Official wins over review over publish/pdfs.
+
+    Important for Render imports: section packets may exist only under _pdf_review
+    until Save as official; still show them in the viewer.
+    """
+    found: dict[str, Path] = {}
+    for root in (PUBLISH / "pdfs", REVIEW, OFFICIAL):
+        if not root.is_dir():
+            continue
+        for pdf in root.rglob("*.pdf"):
+            try:
+                rel = pdf.relative_to(root).as_posix()
+            except ValueError:
+                continue
+            found[rel] = pdf
+    return found
+
+
+def resolve_viewable_pdf(rel: str) -> Path | None:
+    rel = (rel or "").strip().lstrip("/")
+    if not rel or ".." in Path(rel).parts:
+        return None
+    for root in (OFFICIAL, REVIEW, PUBLISH / "pdfs"):
+        path = root / rel
+        if path.is_file():
+            return path
+    return None
+
+
 def content_has_pdfs() -> bool:
-    root = pdf_root_for_mode()
-    return root.is_dir() and any(root.rglob("*.pdf"))
+    return bool(iter_viewable_pdfs())
 
 
 def build_inventory() -> dict:
@@ -606,6 +634,7 @@ def build_inventory() -> dict:
     updated_set = set(_last_updated_files)
     rows = []
     pdf_root = pdf_root_for_mode()
+    viewable = iter_viewable_pdfs() if is_viewer() else None
     reg_by_name = {p["name"]: p for p in load_registry().get("packets", [])}
 
     # Frozen publish inventory is opt-in (production snapshot). Default is a
@@ -621,60 +650,74 @@ def build_inventory() -> dict:
         inv["editable"] = False
         return inv
 
-    if pdf_root.is_dir():
-        for pdf in sorted(pdf_root.rglob("*.pdf")):
-            rel = pdf.relative_to(pdf_root).as_posix()
-            name = pdf.name
-            section = rel.split("/")[0] if "/" in rel else "(root)"
+    if viewable is not None:
+        pdf_items = sorted(viewable.items(), key=lambda kv: kv[0].lower())
+    elif pdf_root.is_dir():
+        pdf_items = [
+            (pdf.relative_to(pdf_root).as_posix(), pdf)
+            for pdf in sorted(pdf_root.rglob("*.pdf"))
+        ]
+    else:
+        pdf_items = []
+
+    for rel, pdf in pdf_items:
+        name = pdf.name
+        section = rel.split("/")[0] if "/" in rel else "(root)"
+        try:
+            pages = len(PdfReader(str(pdf)).pages)
+        except Exception:
+            pages = 0
+        st = status.get(name) or default_status_for(name)
+        pkt = reg_by_name.get(name, {})
+        src_rel = pkt.get("editMd", "")
+        official_path = OFFICIAL / rel
+        official_exists = official_path.is_file()
+        official_stale = False
+        review_path = REVIEW / rel
+        if official_exists and review_path.is_file():
             try:
-                pages = len(PdfReader(str(pdf)).pages)
-            except Exception:
-                pages = 0
-            st = status.get(name) or default_status_for(name)
-            pkt = reg_by_name.get(name, {})
-            src_rel = pkt.get("editMd", "")
-            official_path = OFFICIAL / rel
-            official_exists = official_path.is_file()
-            official_stale = False
-            if official_exists and pdf_root == REVIEW:
-                official_stale = official_path.stat().st_mtime + 0.001 < pdf.stat().st_mtime
-            official_at = st.get("officialAt")
-            if official_exists and not official_at:
-                official_at = datetime.fromtimestamp(
-                    official_path.stat().st_mtime
-                ).astimezone().isoformat(timespec="seconds")
-            atts = list_attachments(pkt) if pkt else []
-            rows.append(
-                {
-                    "file": rel,
-                    "name": name,
-                    "section": section,
-                    "pages": pages,
-                    "needContent": st.get("needContent", "Yes"),
-                    "level": st.get("level", "Partial"),
-                    "excludeFromPageTotal": name == "Other_Evidence_of_Impact.pdf",
-                    "sourceRel": src_rel,
-                    "sourceAbs": str(CONTENT_ROOT / src_rel) if src_rel else "",
-                    "sourceFolder": str((CONTENT_ROOT / src_rel).parent) if src_rel else "",
-                    "regenArg": pkt.get("regenArg", ""),
-                    "editable": bool(pkt.get("editable", False)) and can_edit(),
-                    "hasAttachments": bool(pkt.get("attachmentRoots")),
-                    "attachmentCount": len(atts),
-                    "attachments": [
-                        {
-                            "name": a["name"],
-                            "pages": a["pages"],
-                            "root": a["root"],
-                            "rel": a["rel"],
-                        }
-                        for a in atts
-                    ],
-                    "officialExists": official_exists,
-                    "officialStale": official_stale,
-                    "officialAt": official_at,
-                    "updated": rel in updated_set,
-                }
-            )
+                official_stale = (
+                    official_path.stat().st_mtime + 0.001 < review_path.stat().st_mtime
+                )
+            except OSError:
+                official_stale = False
+        official_at = st.get("officialAt")
+        if official_exists and not official_at:
+            official_at = datetime.fromtimestamp(
+                official_path.stat().st_mtime
+            ).astimezone().isoformat(timespec="seconds")
+        atts = list_attachments(pkt) if pkt else []
+        rows.append(
+            {
+                "file": rel,
+                "name": name,
+                "section": section,
+                "pages": pages,
+                "needContent": st.get("needContent", "Yes"),
+                "level": st.get("level", "Partial"),
+                "excludeFromPageTotal": name == "Other_Evidence_of_Impact.pdf",
+                "sourceRel": src_rel,
+                "sourceAbs": str(CONTENT_ROOT / src_rel) if src_rel else "",
+                "sourceFolder": str((CONTENT_ROOT / src_rel).parent) if src_rel else "",
+                "regenArg": pkt.get("regenArg", ""),
+                "editable": bool(pkt.get("editable", False)) and can_edit(),
+                "hasAttachments": bool(pkt.get("attachmentRoots")),
+                "attachmentCount": len(atts),
+                "attachments": [
+                    {
+                        "name": a["name"],
+                        "pages": a["pages"],
+                        "root": a["root"],
+                        "rel": a["rel"],
+                    }
+                    for a in atts
+                ],
+                "officialExists": official_exists,
+                "officialStale": official_stale,
+                "officialAt": official_at,
+                "updated": rel in updated_set,
+            }
+        )
 
     rows = apply_packet_order(rows)
 
@@ -859,22 +902,29 @@ def api_config():
 @app.get("/pdfs/<path:subpath>")
 @require_viewer_auth
 def serve_pdfs(subpath: str):
-    root = pdf_root_for_mode()
-    return send_from_directory(root, subpath)
+    path = resolve_viewable_pdf(subpath)
+    if not path:
+        return jsonify({"ok": False, "error": "PDF not found"}), 404
+    return send_from_directory(path.parent, path.name)
 
 
 @app.get("/0_Drafts/_pdf_review/<path:subpath>")
 @require_viewer_auth
 def review_files(subpath: str):
-    # Keep legacy URL working; in viewer mode redirect conceptually to publish root
-    root = pdf_root_for_mode()
-    return send_from_directory(root, subpath)
+    # Legacy URL: serve official when present, else review / publish pdfs
+    path = resolve_viewable_pdf(subpath)
+    if not path:
+        return jsonify({"ok": False, "error": "PDF not found"}), 404
+    return send_from_directory(path.parent, path.name)
 
 
 @app.get("/0_Drafts/_official/<path:subpath>")
 @require_viewer_auth
 def official_files(subpath: str):
-    return send_from_directory(OFFICIAL, subpath)
+    path = resolve_viewable_pdf(subpath)
+    if not path:
+        return jsonify({"ok": False, "error": "PDF not found"}), 404
+    return send_from_directory(path.parent, path.name)
 
 
 @app.get("/api/courses")
@@ -1617,12 +1667,20 @@ def _apply_content_pack_extract(stage: Path) -> dict:
             for sub in item.iterdir():
                 if sub.name == "_pdf_review" and sub.is_dir():
                     REVIEW.mkdir(parents=True, exist_ok=True)
+                    OFFICIAL.mkdir(parents=True, exist_ok=True)
                     for pdf in sub.rglob("*.pdf"):
                         rel = pdf.relative_to(sub)
                         dest = REVIEW / rel
                         dest.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(pdf, dest)
                         stats["reviewPdfs"] += 1
+                        # Fill gaps so viewers that prefer official still see packets
+                        # that were rebuilt but not yet Save-as-official locally.
+                        off = OFFICIAL / rel
+                        if not off.is_file():
+                            off.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.copy2(pdf, off)
+                            stats["officialPdfs"] += 1
                 elif sub.name == "_official" and sub.is_dir():
                     OFFICIAL.mkdir(parents=True, exist_ok=True)
                     for pdf in sub.rglob("*.pdf"):
@@ -1790,9 +1848,8 @@ def api_download_pdf():
     rel = (request.args.get("file") or "").strip().lstrip("/")
     if not rel or ".." in Path(rel).parts:
         return jsonify({"ok": False, "error": "Invalid file"}), 400
-    root = pdf_root_for_mode()
-    path = safe_under(root, rel)
-    if not path.is_file():
+    path = resolve_viewable_pdf(rel)
+    if not path:
         return jsonify({"ok": False, "error": "PDF not found"}), 404
     return send_file(
         path,
@@ -1806,15 +1863,13 @@ def api_download_pdf():
 @require_viewer_auth
 def api_download_all():
     """Zip all viewable PDFs using section-folder paths (reviewRel layout)."""
-    root = pdf_root_for_mode()
-    if not root.is_dir():
+    viewable = iter_viewable_pdfs()
+    if not viewable:
         return jsonify({"ok": False, "error": "No PDFs available"}), 404
     buf = io.BytesIO()
     count = 0
     with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for pdf in sorted(root.rglob("*.pdf")):
-            rel = pdf.relative_to(root).as_posix()
-            # Friendlier section folder names in zip
+        for rel, pdf in sorted(viewable.items(), key=lambda kv: kv[0].lower()):
             parts = rel.split("/", 1)
             if len(parts) == 2:
                 section, rest = parts
