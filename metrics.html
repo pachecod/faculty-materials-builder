@@ -1076,7 +1076,7 @@
     <div class="tools-grid edit-only local-edit-only">
       <section class="panel" id="folder-dump">
         <h2>Folder dump</h2>
-        <p class="hint">Drag one or more <strong>PDFs</strong> of the same kind here, choose what they are, then save. Course items need a class; correspondence goes straight into Other Evidence folders.</p>
+        <p class="hint">Drag one or more <strong>PDFs</strong> of the same kind here, choose what they are, then save. Course items need a class; Other Evidence and Creative Work go straight into their folders (no class required).</p>
         <div class="dropzone" id="dropzone" tabindex="0">
           <strong>Drop PDF(s) here</strong>
           <span>or click to choose files</span>
@@ -1087,13 +1087,22 @@
           <label>Kind of file
             <select id="dump-kind">
               <option value="">Select…</option>
-              <option value="syllabus">Syllabus</option>
-              <option value="teaching_examples">Teaching example</option>
-              <option value="student_work">Student work example</option>
-              <option value="assessments">Assessment (e.g. OIRA section PDF)</option>
-              <option value="other">Other course materials</option>
-              <option value="student_correspondence">Student correspondence</option>
-              <option value="profession_correspondence">Professional / industry correspondence</option>
+              <optgroup label="Course materials">
+                <option value="syllabus">Syllabus</option>
+                <option value="teaching_examples">Teaching example</option>
+                <option value="student_work">Student work example</option>
+                <option value="assessments">Assessment (e.g. OIRA section PDF)</option>
+                <option value="other">Other course materials</option>
+              </optgroup>
+              <optgroup label="Other Evidence of Impact">
+                <option value="student_correspondence">Student correspondence</option>
+                <option value="academic_correspondence">Academic correspondence</option>
+                <option value="profession_correspondence">Professional / industry correspondence</option>
+                <option value="other_evidence">Other evidence of impact</option>
+              </optgroup>
+              <optgroup label="Connections">
+                <option value="creative_work">Creative work exhibit</option>
+              </optgroup>
             </select>
           </label>
           <label id="dump-course-label">Class
@@ -2313,7 +2322,13 @@ function wireFolderDump() {
   const save = document.getElementById("dump-save");
   const chosen = document.getElementById("chosen-file");
   const status = document.getElementById("dump-status");
-  const evidenceKinds = new Set(["student_correspondence", "profession_correspondence"]);
+  const evidenceKinds = new Set([
+    "student_correspondence",
+    "academic_correspondence",
+    "profession_correspondence",
+    "other_evidence",
+    "creative_work",
+  ]);
   let files = [];
 
   function needsCourse() {
