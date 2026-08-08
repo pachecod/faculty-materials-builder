@@ -2561,11 +2561,14 @@ function applyModeFromConfig(cfg) {
       try {
         const r = await fetch("/api/build-content-pack", { method: "POST" });
         if (!r.ok) {
-          let msg = "Build failed";
+          let msg = "Build failed (HTTP " + r.status + ")";
           try {
             const data = await r.json();
             msg = data.error || data.log || msg;
-          } catch (e) {}
+            if (data.log && data.error) msg = data.error + "\n" + data.log;
+          } catch (e) {
+            try { msg = (await r.text()).slice(0, 400) || msg; } catch (e2) {}
+          }
           if (status) {
             status.className = "status-box err";
             status.textContent = msg;

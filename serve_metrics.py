@@ -1673,10 +1673,14 @@ def api_build_content_pack():
             cwd=str(BASE),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=60 * 20,
         )
     except subprocess.TimeoutExpired:
         return jsonify({"ok": False, "error": "Content pack build timed out"}), 504
+    except Exception as exc:
+        return jsonify({"ok": False, "error": f"Content pack build failed: {exc}"}), 500
     if proc.returncode != 0 or not out_path.is_file():
         detail = ((proc.stderr or "") + "\n" + (proc.stdout or "")).strip()[-1500:]
         return jsonify(

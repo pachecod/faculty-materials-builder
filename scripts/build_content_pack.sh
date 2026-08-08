@@ -95,4 +95,4 @@ rm -f "$OUT"
   zip -r -q "$OUT" .
 )
 echo "Wrote $OUT ($(du -h "$OUT" | awk '{print $1}'))"
-echo "Keep this zip offline — do not commit it. Upload via /admin ? Import content."
+echo "Keep this zip offline - do not commit it. Upload via /admin -> Import content."
