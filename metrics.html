@@ -1093,7 +1093,7 @@
 
       <section class="panel" id="regenerate">
         <h2>Regenerate PDFs</h2>
-        <p class="hint">Runs the same export used from Cursor (<code>0_Drafts/export_pdfs.sh</code>): rebuild changed narratives and re-append syllabi, teaching examples, assessments, and exhibits.</p>
+        <p class="hint" id="regen-hint">Runs the same export used from Cursor (<code>0_Drafts/export_pdfs.sh</code>): rebuild changed narratives and re-append syllabi, teaching examples, assessments, and exhibits.</p>
         <div class="regen-form">
           <label>Mode
             <select id="regen-mode">
@@ -2493,6 +2493,21 @@ function applyModeFromConfig(cfg) {
       const r = await fetch("/api/config");
       APP = await r.json();
       applyModeFromConfig(APP);
+      const hint = document.getElementById("regen-hint");
+      const regenRun = document.getElementById("regen-run");
+      const rebuildBtn = document.getElementById("btn-rebuild");
+      if (APP.pdfRebuildAvailable === false) {
+        if (hint) {
+          hint.innerHTML = "PDF rebuild needs Pandoc/XeLaTeX, which are not installed on this host. "
+            + "<strong>Rebuild locally</strong>, then run <code>scripts/build_content_pack.sh</code> "
+            + "and re-upload under Import content.";
+        }
+        if (regenRun) regenRun.disabled = true;
+        if (rebuildBtn) {
+          rebuildBtn.disabled = true;
+          rebuildBtn.title = "Rebuild locally, then re-upload a content pack";
+        }
+      }
     } catch (e) {}
   }
 

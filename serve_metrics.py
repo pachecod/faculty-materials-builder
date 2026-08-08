@@ -837,6 +837,7 @@ def api_config():
             "hasContent": content_has_sources(),
             "hasPdfs": content_has_pdfs(),
             "adminPath": "/admin" if is_production() else "/",
+            "pdfRebuildAvailable": _pdf_toolchain_ok()[0],
         }
     )
 
@@ -1357,8 +1358,36 @@ def api_upload():
     return jsonify({"ok": True, "saved": saved, "savedAs": saved[0], "count": len(saved), "warnings": warnings})
 
 
+def _pdf_toolchain_ok() -> tuple[bool, str]:
+    """Rebuild needs pandoc + a LaTeX engine (xelatex). Missing on stock Render."""
+    missing = []
+    if shutil.which("pandoc") is None:
+        missing.append("pandoc")
+    if shutil.which("xelatex") is None:
+        missing.append("xelatex")
+    if not missing:
+        return True, ""
+    return False, (
+        "PDF rebuild is not available on this host (missing: "
+        + ", ".join(missing)
+        + "). Rebuild locally with POP_MODE=edit, then run "
+        "scripts/build_content_pack.sh and re-upload the zip under Import content."
+    )
+
+
 def _run_regen(mode: str) -> None:
     global _regen_state, _last_updated_files
+    ok_tools, tool_msg = _pdf_toolchain_ok()
+    if not ok_tools:
+        _regen_state = {
+            "running": False,
+            "log": tool_msg,
+            "ok": False,
+            "mode": mode,
+            "exitCode": 127,
+            "updatedFiles": [],
+        }
+        return
     cmd = ["bash", str(EXPORT_SCRIPT)]
     if mode not in {"incremental", "full", ""}:
         cmd.append(mode)
@@ -1429,6 +1458,9 @@ def api_regenerate():
     }
     if mode not in allowed:
         return jsonify({"ok": False, "error": f"Invalid mode/packet: {mode}"}), 400
+    ok_tools, tool_msg = _pdf_toolchain_ok()
+    if not ok_tools:
+        return jsonify({"ok": False, "error": tool_msg}), 503
     with _regen_lock:
         if _regen_state.get("running"):
             return jsonify({"ok": False, "error": "Regenerate already running"}), 409
