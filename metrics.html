@@ -301,15 +301,6 @@
   tr.row-partial > td { background: var(--row-partial); }
   tr.row-none-need > td { background: var(--row-none-need); }
   tr.row-none-ok > td { background: var(--row-none-ok); }
-  /* Keep Pages (and other trailing cells) painted when middle cols are display:none */
-  body.viewer-mode #pdf-tbody tr.row-complete > td.num,
-  body.viewer-mode #pdf-tbody tr.row-complete > td.appended-col { background: var(--row-complete); }
-  body.viewer-mode #pdf-tbody tr.row-partial > td.num,
-  body.viewer-mode #pdf-tbody tr.row-partial > td.appended-col { background: var(--row-partial); }
-  body.viewer-mode #pdf-tbody tr.row-none-need > td.num,
-  body.viewer-mode #pdf-tbody tr.row-none-need > td.appended-col { background: var(--row-none-need); }
-  body.viewer-mode #pdf-tbody tr.row-none-ok > td.num,
-  body.viewer-mode #pdf-tbody tr.row-none-ok > td.appended-col { background: var(--row-none-ok); }
   a.file-link {
     cursor: pointer;
     color: var(--link);
@@ -402,11 +393,11 @@
     opacity: 0.35;
     cursor: default;
   }
-  body.viewer-mode .order-col { display: none !important; }
+  /* Hide authoring columns in viewer. Prefer omitting cells in JS; these are fallbacks. */
+  body.viewer-mode .order-col,
   body.viewer-mode .need-col,
-  body.viewer-mode .level-col { display: none !important; }
+  body.viewer-mode .level-col,
   body.viewer-mode .col-section { display: none !important; }
-  /* Appended column/UI: keep for local edit + production /admin; hide public viewers */
   body.viewer-mode:not(.admin-surface) .appended-col { display: none !important; }
   body.viewer-mode:not(.admin-surface) #btn-attach { display: none !important; }
   /* Viewer: full-width page; File column takes all leftover space (width:100% trick) */
@@ -1954,6 +1945,11 @@ function pdfRowHtml(r, { showSection = true } = {}) {
   const { peers, index } = sectionPeerIndex(r.file, r.section);
   const canUp = index > 0;
   const canDown = index >= 0 && index < peers.length - 1;
+  // Viewer: only emit visible cells so Pages stays in the last column (display:none
+  // middle cells shift column assignment and leave a white Pages strip).
+  const isViewer = document.body.classList.contains("viewer-mode");
+  const showAppended = !isViewer || document.body.classList.contains("admin-surface");
+  const showMetaCols = !isViewer;
   return `
     <tr class="${rowClass(r)}${r.excludeFromPageTotal ? " row-excluded" : ""}${r.updated ? " row-updated" : ""}"
         data-name="${esc(r.name)}">
@@ -1972,9 +1968,10 @@ function pdfRowHtml(r, { showSection = true } = {}) {
           </div>
         </div>
       </td>
-      <td class="appended-col">${appendedCell}</td>
-      ${sectionCell}
+      ${showAppended ? `<td class="appended-col">${appendedCell}</td>` : ""}
+      ${showMetaCols ? sectionCell : ""}
       <td class="num">${fmt(r.pages)}</td>
+      ${showMetaCols ? `
       <td class="need-col">
         <select class="status-select" data-field="needContent" data-name="${esc(r.name)}" aria-label="Need Content for ${esc(r.name)}">
           ${needOpts(r.needContent)}
@@ -1990,7 +1987,7 @@ function pdfRowHtml(r, { showSection = true } = {}) {
           ${orderBtnHtml(r.file, -1, !canUp)}
           ${orderBtnHtml(r.file, 1, !canDown)}
         </span>
-      </td>
+      </td>` : ""}
     </tr>`;
 }
 
@@ -2034,16 +2031,54 @@ async function movePacketInSection(file, delta) {
   }
 }
 
-/** Section-head rows always span the full 7-col colgroup (hidden cols collapse). */
+/** Column count for the current mode (must match cells emitted by pdfRowHtml). */
 function pdfListColSpan() {
-  return 7;
+  if (!document.body.classList.contains("viewer-mode")) return 7;
+  return document.body.classList.contains("admin-surface") ? 3 : 2;
 }
 
 /** Footer label colspan: columns before Pages. */
 function pdfTotalLabelColSpan() {
-  if (!document.body.classList.contains("viewer-mode")) return 3; // file, appended, section
-  // Viewer: section/need/level/order hidden; optional appended on /admin
-  return document.body.classList.contains("admin-surface") ? 2 : 1;
+  return Math.max(1, pdfListColSpan() - 1);
+}
+
+/** Rebuild colgroup/thead/tfoot so column count matches cells from pdfRowHtml. */
+function syncPdfTableChrome() {
+  const isViewer = document.body.classList.contains("viewer-mode");
+  const showAppended = !isViewer || document.body.classList.contains("admin-surface");
+  const showMeta = !isViewer;
+  const table = document.getElementById("pdf-table");
+  if (!table) return;
+
+  const cols = ['<col class="col-file">'];
+  if (showAppended) cols.push('<col class="col-appended">');
+  if (showMeta) cols.push('<col class="col-section">');
+  cols.push('<col class="col-pages">');
+  if (showMeta) cols.push('<col class="col-need">', '<col class="col-level">', '<col class="col-order">');
+  const cg = table.querySelector("colgroup");
+  if (cg) cg.innerHTML = cols.join("");
+
+  const heads = ['<th class="file">File</th>'];
+  if (showAppended) {
+    heads.push('<th class="appended-col" title="PDF (and teaching-examples) files appended after the markdown narrative">Appended</th>');
+  }
+  if (showMeta) heads.push('<th class="col-section">Section</th>');
+  heads.push('<th class="col-pages" style="text-align:right">Pages</th>');
+  if (showMeta) {
+    heads.push('<th class="need-col">Need Content</th>');
+    heads.push('<th class="level-col">Level of Content</th>');
+    heads.push('<th class="order-col" title="Reorder within section">Order</th>');
+  }
+  const headRow = table.querySelector("thead tr");
+  if (headRow) headRow.innerHTML = heads.join("");
+
+  const labelSpan = pdfTotalLabelColSpan();
+  let foot = `<td colspan="${labelSpan}" id="pdf-total-label">Total (excl. book)</td><td class="num" id="pdf-total"></td>`;
+  if (showMeta) {
+    foot += '<td class="need-col" id="need-summary"></td><td class="level-col" id="level-summary"></td><td class="order-col"></td>';
+  }
+  const footRow = table.querySelector("tfoot tr");
+  if (footRow) footRow.innerHTML = foot;
 }
 
 function renderPdfRows(pdfs) {
@@ -2053,6 +2088,7 @@ function renderPdfRows(pdfs) {
   const bySection = view === "section";
   const table = document.getElementById("pdf-table");
   table.classList.toggle("view-section", bySection);
+  syncPdfTableChrome();
 
   document.getElementById("filter-count").textContent =
     filtered.length === pdfs.length
@@ -2079,8 +2115,6 @@ function renderPdfRows(pdfs) {
     bodyHtml = filtered.map(r => pdfRowHtml(r, { showSection: true })).join("");
   }
   document.getElementById("pdf-tbody").innerHTML = bodyHtml;
-  const totalLabel = document.getElementById("pdf-total-label");
-  if (totalLabel) totalLabel.colSpan = pdfTotalLabelColSpan();
 
   const pagesTally = filtered.filter(r => !r.excludeFromPageTotal).reduce((a, r) => a + r.pages, 0);
   const needYes = filtered.filter(r => r.needContent === "Yes").length;
