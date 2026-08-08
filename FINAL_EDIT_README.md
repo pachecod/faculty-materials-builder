@@ -39,13 +39,18 @@ Loop for each packet: **Preview -> Edit -> Rebuild preview -> Save as official**
 # or: POP_MODE=viewer python3 serve_metrics.py
 ```
 
-Set `SITE_PASSWORD` and `SECRET_KEY` in `.env` (copy from `.env.example`). Viewer mode hides Edit / Rebuild / Upload / Promote.
+Set `VIEW_PASSWORD` (or `SITE_PASSWORD`) and `SECRET_KEY` in `.env` (copy from `.env.example`). Viewer mode hides Edit / Rebuild / Upload / Promote.
 
-## Render (later - not automatic)
+## GitHub + Render (content-free deploy)
 
-Scaffold only until you choose to publish:
+See **[DEPLOY.md](DEPLOY.md)** for the full private-repo → Render → content-pack flow.
 
-- `render.yaml` - web service + Postgres + disk stubs (`autoDeploy: false`)
-- `./scripts/push_publish_to_render.sh` - builds bundle, upserts catalog, uploads PDFs via admin sync
+Short version:
 
-Saving, Rebuild, and building `publish/` never deploy. Run the push script only when you are ready.
+1. App-only code lives in the private GitHub repo (content and `.env` stay local / ignored).
+2. Deploy from that repo with `POP_MODE=production` and `PUBLISH_DATA_ROOT=/data`.
+3. Build a content pack locally: `./scripts/build_content_pack.sh`
+4. Sign in at `/admin`, upload the pack, rebuild/promote as needed, optional view password.
+5. Public portal is `/` (preview + downloads).
+
+Local edit mode remains the primary authoring environment.
