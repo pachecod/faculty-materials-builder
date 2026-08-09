@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<!-- Legacy file. Live shells are in app_pages/ (local.html, portal.html, hosted-admin.html). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</title>
+<title>Dan Pacheco - PoP Renewal #3 Materials</title>
 <style>
   :root {
     --ink: #1c1917;
@@ -1058,14 +1057,9 @@
 
 </style>
 </head>
-<body>
-  <div id="mode-banner">Read-only viewer — Preview and download. Editing is on /admin (production) or local edit mode.</div>
-  <nav id="local-nav" aria-label="Local surfaces">
-    <a href="/edit" data-local-nav="edit">Edit &amp; Append</a>
-    <a href="/view" data-local-nav="view">Preview</a>
-    <a href="/admin" data-local-nav="admin">Admin</a>
-  </nav>
-  <div class="wrap" id="dashboard">
+<body class="viewer-mode" data-shell="portal">
+  <div id="mode-banner">Read-only portal — Preview and download. Admins use /admin for import and site access.</div>
+<div class="wrap" id="dashboard">
     <header>
       <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
     </header>
@@ -1161,137 +1155,7 @@
         </div>
       </section>
     </div>
-
-
-    <div class="tools-grid production-admin-only admin-only">
-      <section class="panel" id="local-edit-notice">
-        <h2>Editing</h2>
-        <p class="hint">
-          This hosted site is a <strong>viewer</strong>. You can update what visitors see (import a content pack, set a view password),
-          but you cannot edit markdown or rebuild PDFs here.
-        </p>
-        <p class="hint">
-          To edit content, install and run a local copy of this app with <code>POP_MODE=edit</code>,
-          rebuild PDFs on your machine, then use <strong>Build Render import pack</strong> locally and upload it below.
-        </p>
-      </section>
-    </div>
-
-    <div class="tools-grid edit-only local-edit-only">
-      <section class="panel" id="folder-dump">
-        <h2>Folder dump</h2>
-        <p class="hint">Drag one or more <strong>PDFs</strong> of the same kind here, choose what they are, then save. Course items need a class; Other Evidence and Creative Work go straight into their folders (no class required).</p>
-        <div class="dropzone" id="dropzone" tabindex="0">
-          <strong>Drop PDF(s) here</strong>
-          <span>or click to choose files</span>
-          <span class="file-chosen" id="chosen-file">No file selected</span>
-        </div>
-        <input type="file" id="file-input" accept="application/pdf,.pdf" multiple hidden>
-        <div class="dump-form">
-          <label>Kind of file
-            <select id="dump-kind">
-              <option value="">Select…</option>
-              <optgroup label="Course materials">
-                <option value="syllabus">Syllabus</option>
-                <option value="teaching_examples">Teaching example</option>
-                <option value="student_work">Student work example</option>
-                <option value="assessments">Assessment (e.g. OIRA section PDF)</option>
-                <option value="other">Other course materials</option>
-              </optgroup>
-              <optgroup label="Other Evidence of Impact">
-                <option value="student_correspondence">Student correspondence</option>
-                <option value="academic_correspondence">Academic correspondence</option>
-                <option value="profession_correspondence">Professional / industry correspondence</option>
-                <option value="other_evidence">Other evidence of impact</option>
-              </optgroup>
-              <optgroup label="Connections">
-                <option value="creative_work">Creative work exhibit</option>
-              </optgroup>
-            </select>
-          </label>
-          <label id="dump-course-label">Class
-            <select id="dump-course">
-              <option value="">Select…</option>
-            </select>
-          </label>
-          <button type="button" id="dump-save" disabled>Save into folder</button>
-        </div>
-        <div class="status-box" id="dump-status" hidden></div>
-      </section>
-
-      <section class="panel" id="regenerate">
-        <h2>Regenerate PDFs</h2>
-        <p class="hint" id="regen-hint">Runs the same export used from Cursor (<code>0_Drafts/export_pdfs.sh</code>): rebuild changed narratives and re-append syllabi, teaching examples, assessments, and exhibits.</p>
-        <div class="regen-form">
-          <label>Mode
-            <select id="regen-mode">
-              <option value="incremental">Incremental (only what changed)</option>
-              <option value="full">Full rebuild (slower)</option>
-            </select>
-          </label>
-          <button type="button" id="regen-run">Regenerate PDFs</button>
-        </div>
-        <div class="status-box" id="regen-status" hidden></div>
-      </section>
-
-      <section class="panel" id="render-pack">
-        <h2>Build Render import pack</h2>
-        <p class="hint">
-          Package the current local PDFs and sources into a zip for the hosted viewer.
-          Download it, then upload under <strong>Import content</strong> on the Render <code>/admin</code> site.
-        </p>
-        <button type="button" class="build-render-pack-btn" id="build-render-pack">Build &amp; download import pack</button>
-        <div class="status-box render-pack-status" id="render-pack-status" hidden></div>
-      </section>
-    </div>
-
-    <div class="tools-grid admin-only">
-      <section class="panel local-surfaces-only" id="render-pack-admin">
-        <h2>Build Render import pack</h2>
-        <p class="hint">
-          Package the current local PDFs and sources into a zip for the hosted viewer.
-          Download it, then upload under <strong>Import content</strong> below (or on Render <code>/admin</code>).
-        </p>
-        <button type="button" class="build-render-pack-btn" id="build-render-pack-admin">Build &amp; download import pack</button>
-        <div class="status-box render-pack-status" id="render-pack-status-admin" hidden></div>
-      </section>
-
-      <section class="panel" id="site-access">
-        <h2>Site access</h2>
-        <p class="hint">Optional password for the public view site (<code>/</code>). Admins always bypass it. Leave cleared for an open view portal.</p>
-        <div class="site-access-form">
-          <p id="view-pw-status" class="hint">Checking…</p>
-          <label>New view password
-            <input type="password" id="view-pw-input" autocomplete="new-password" placeholder="Set or change">
-          </label>
-          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-            <button type="button" id="view-pw-save">Save view password</button>
-            <button type="button" id="view-pw-clear">Clear view password</button>
-          </div>
-        </div>
-        <div class="status-box" id="view-pw-msg" hidden></div>
-      </section>
-
-      <section class="panel" id="content-import">
-        <h2>Import content</h2>
-        <p class="hint">Upload a content-pack zip from a local install (Build Render import pack). By default this merges/overwrites by path and leaves orphan files. Use wipe when you want a clean replace. Does not go through GitHub.</p>
-        <div class="status-box" id="disk-status" hidden></div>
-        <div class="import-form">
-          <input type="file" id="content-pack-input" accept=".zip,application/zip">
-          <label id="content-pack-wipe-label" class="hint" style="display:none;gap:.4rem;align-items:flex-start">
-            <input type="checkbox" id="content-pack-wipe-first">
-            <span>Wipe all existing content on this server before importing (keeps view password)</span>
-          </label>
-          <button type="button" id="content-pack-upload">Upload content pack</button>
-          <button type="button" id="content-wipe" class="secondary" style="display:none;background:#7f1d1d">Wipe all content…</button>
-        </div>
-        <div class="status-box" id="content-pack-status" hidden></div>
-      </section>
-    </div>
-
-    <footer>
-      Final Edit app · <code>python3 serve_metrics.py</code> → <code>http://127.0.0.1:8765/</code> · Edit here or in Cursor, then Rebuild preview · Save as official when ready
-    </footer>
+<footer>PoP Renewal materials · Preview and download</footer>
   </div>
 
   <div id="viewer" aria-hidden="true">
@@ -2281,8 +2145,7 @@ function renderPdfRows(pdfs) {
 
 /** Edit & Append uses working _pdf_review; Preview/Render portal use /pdfs (official first). */
 function usesViewerPdfs() {
-  return document.body.classList.contains("viewer-mode")
-    && !document.body.classList.contains("local-edit");
+  return true;
 }
 
 function pdfFilePath(file) {
@@ -2721,67 +2584,16 @@ async function loadLiveInventory() {
 
 function applyModeFromConfig(cfg) {
   if (!cfg) return;
-  const path = location.pathname || "/";
-  const onAdmin = path.startsWith("/admin");
-  const onView = path === "/view" || path.startsWith("/view/");
-  const onEdit = path === "/edit" || path.startsWith("/edit/");
-  const localSurfaces = !!(cfg.localSurfaces || (cfg.editable && !cfg.isProduction));
-  // Authoring only on local /edit — / and /admin land on admin tools; /view is portal preview
-  const editableHere = !!cfg.editable && !cfg.isProduction && onEdit;
-  if (!editableHere) document.body.classList.add("viewer-mode");
-  else document.body.classList.remove("viewer-mode");
-
-  if (editableHere) document.body.classList.add("local-edit");
-  else document.body.classList.remove("local-edit");
-
-  if (onView && localSurfaces) document.body.classList.add("local-view");
-  else document.body.classList.remove("local-view");
-
-  if (localSurfaces) document.body.classList.add("local-surfaces");
-  else document.body.classList.remove("local-surfaces");
-
-  // /admin with admin rights: import + site access (Render and local edit)
-  const showAdminOps = !!(onAdmin && cfg.isAdmin);
-  if (showAdminOps) document.body.classList.add("admin-surface");
-  else document.body.classList.remove("admin-surface");
-
-  if (showAdminOps) document.body.classList.add("production-admin");
-  else document.body.classList.remove("production-admin");
-
+  document.body.classList.add("viewer-mode");
+  document.body.classList.remove("local-edit", "local-view", "local-surfaces", "admin-surface", "production-admin");
   const banner = document.getElementById("mode-banner");
   if (banner) {
-    if (showAdminOps) {
-      banner.textContent = cfg.isProduction
-        ? "Admin — Site access and import content only. Edit & append on a local install."
-        : "Admin — Build import pack, site access, and import content.";
-    } else if (editableHere) {
-      banner.textContent = "Edit & Append — Set Need/Level, manage appendices, rebuild PDFs.";
-    } else if (onView && localSurfaces) {
-      // Same banner copy as Render public portal
-      banner.textContent = "Read-only portal — Preview and download. Admins use /admin for import and site access.";
-    } else if (cfg.isProduction) {
-      banner.textContent = "Read-only portal — Preview and download. Admins use /admin for import and site access.";
-    } else {
-      banner.textContent = "Read-only viewer — Preview and download. Local editing happens in edit mode.";
-    }
+    banner.textContent = "Read-only portal — Preview and download. Admins use /admin for import and site access.";
   }
-
-  const nav = document.getElementById("local-nav");
-  if (nav) {
-    const key = onAdmin ? "admin" : (onView ? "view" : (onEdit ? "edit" : "admin"));
-    nav.querySelectorAll("[data-local-nav]").forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("data-local-nav") === key);
-    });
-  }
-
   const emptyHint = document.getElementById("empty-pdf-hint");
   if (emptyHint) {
     emptyHint.hidden = !!cfg.hasPdfs;
-    if (!cfg.hasPdfs) {
-      emptyHint.textContent = showAdminOps
-        ? "No PDFs yet — upload a content pack built on your local install."
-        : "No PDFs published yet.";
-    }
+    if (!cfg.hasPdfs) emptyHint.textContent = "No PDFs published yet.";
   }
 }
 
@@ -4002,6 +3814,7 @@ function applyModeFromConfig(cfg) {
   };
 })();
 </script>
+<script src="/local-switcher.js"></script>
 
 </body>
 </html>

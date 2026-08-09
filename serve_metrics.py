@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""PoP Final Edit dashboard: edit / preview / promote / production viewer.
+"""PoP Final Edit dashboard: local shells vs Render shells (app_pages/).
 
-  POP_MODE=edit        python3 serve_metrics.py   # local authoring (default)
-  POP_MODE=viewer      python3 serve_metrics.py   # local read-only preview
-  POP_MODE=production  gunicorn …                 # Render: / view + /admin edit
+  POP_MODE=edit        python3 serve_metrics.py
+      /edit            local.html — Edit & Append
+      /admin           local.html — local Admin (build pack, import, site access)
+      /preview         portal.html — test Render public /
+      /render-admin    hosted-admin.html — test Render /admin
 
-  http://127.0.0.1:8765/
+  POP_MODE=production  gunicorn …
+      /                portal.html
+      /admin           hosted-admin.html
+
+  POP_MODE=viewer      portal.html at /
 """
 
 from __future__ import annotations
@@ -629,19 +635,29 @@ def content_has_pdfs() -> bool:
     return bool(iter_viewable_pdfs())
 
 
-def build_inventory() -> dict:
+def build_inventory(*, as_viewer: bool | None = None) -> dict:
+    """Build PDF inventory.
+
+    as_viewer=True uses the same official-preferring file set as Render's public
+    portal (and local /view Preview). Default follows POP_MODE.
+    """
     status = load_status()
     updated_set = set(_last_updated_files)
     rows = []
-    pdf_root = pdf_root_for_mode()
-    viewable = iter_viewable_pdfs() if is_viewer() else None
+    viewer_lens = is_viewer() if as_viewer is None else bool(as_viewer)
+    pdf_root = (
+        (OFFICIAL if OFFICIAL.is_dir() and any(OFFICIAL.rglob("*.pdf")) else REVIEW)
+        if viewer_lens
+        else REVIEW
+    )
+    viewable = iter_viewable_pdfs() if viewer_lens else None
     reg_by_name = {p["name"]: p for p in load_registry().get("packets", [])}
 
     # Frozen publish inventory is opt-in (production snapshot). Default is a
     # live scan so Save as official shows up immediately in local viewer mode.
     use_frozen = os.environ.get("POP_FROZEN_PUBLISH", "").strip() in {"1", "true", "yes"}
     if (
-        is_viewer()
+        viewer_lens
         and use_frozen
         and (PUBLISH / "inventory.json").is_file()
     ):
@@ -740,7 +756,8 @@ def build_inventory() -> dict:
         "generated": datetime.now().astimezone().strftime("%Y-%m-%d %H:%M"),
         "source": str(pdf_root.relative_to(BASE)) if pdf_root.is_relative_to(BASE) else str(pdf_root),
         "mode": POP_MODE,
-        "editable": can_edit(),
+        "editable": can_edit() and not viewer_lens,
+        "asViewer": viewer_lens,
         "totals": {
             "pdfs": len(rows),
             "pages": tally,
@@ -817,6 +834,9 @@ def login_post():
 
 @app.get("/admin/login")
 def admin_login_page():
+    # Local edit: /admin needs no password (mirrors Render URL shape for testing)
+    if POP_MODE == "edit":
+        return redirect("/admin")
     if not is_production():
         return redirect("/")
     if is_admin_session():
@@ -831,6 +851,8 @@ def admin_login_page():
 
 @app.post("/admin/login")
 def admin_login_post():
+    if POP_MODE == "edit":
+        return redirect("/admin")
     if not is_production():
         return redirect("/")
     pw = (request.form.get("password") or "").strip()
@@ -842,30 +864,91 @@ def admin_login_post():
     return redirect("/admin/login?e=1")
 
 
+PAGES = BASE / "app_pages"
+
+
+def send_app_page(name: str):
+    """Serve an HTML shell from app_pages/ (local vs Render separation)."""
+    return send_from_directory(PAGES, name)
+
+
+@app.get("/local-switcher.js")
+def local_switcher_js():
+    """Local-only top toggle script (no-op on Render via /api/config)."""
+    return send_from_directory(PAGES, "local-switcher.js", mimetype="application/javascript")
+
+
 @app.get("/logout")
 def logout():
     session.clear()
     if is_production():
         return redirect("/")
+    if POP_MODE == "edit":
+        return redirect("/edit")
     return redirect("/login" if view_password_configured() else "/")
 
 
 @app.get("/")
 @require_viewer_auth
 def index():
-    return send_from_directory(BASE, "metrics.html")
+    # Local edit: authoring home. Production/viewer: public portal shell.
+    if POP_MODE == "edit":
+        return redirect("/edit")
+    return send_app_page("portal.html")
+
+
+@app.get("/edit")
+@require_viewer_auth
+def edit_index():
+    """Local-only authoring shell (Edit & Append)."""
+    if POP_MODE != "edit":
+        return redirect("/")
+    return send_app_page("local.html")
 
 
 @app.get("/admin")
 @require_admin
 def admin_index():
-    return send_from_directory(BASE, "metrics.html")
+    # Local edit: local Admin tools shell. Production: hosted admin shell.
+    if POP_MODE == "edit":
+        return send_app_page("local.html")
+    return send_app_page("hosted-admin.html")
+
+
+@app.get("/preview")
+@require_viewer_auth
+def preview_portal():
+    """Local-only: exact Render public portal page (app_pages/portal.html)."""
+    if POP_MODE != "edit":
+        return redirect("/")
+    return send_app_page("portal.html")
+
+
+@app.get("/render-admin")
+@require_viewer_auth
+def preview_hosted_admin():
+    """Local-only: exact Render /admin page (app_pages/hosted-admin.html)."""
+    if POP_MODE != "edit":
+        return redirect("/admin")
+    return send_app_page("hosted-admin.html")
+
+
+@app.get("/view")
+@require_viewer_auth
+def view_index_legacy():
+    """Back-compat: old local /view → /preview."""
+    if POP_MODE == "edit":
+        return redirect("/preview")
+    return redirect("/")
 
 
 @app.get("/metrics.html")
 @require_viewer_auth
 def metrics_html():
-    return send_from_directory(BASE, "metrics.html")
+    # Legacy bookmark: send to the appropriate shell
+    if POP_MODE == "edit":
+        return redirect("/edit")
+    return send_app_page("portal.html")
 
 
 @app.get("/vendor/pdfjs/<path:subpath>")
@@ -892,7 +975,10 @@ def api_config():
             "viewPasswordSet": view_password_configured(),
             "hasContent": content_has_sources(),
             "hasPdfs": content_has_pdfs(),
-            "adminPath": "/admin" if is_production() else "/",
+            "adminPath": "/admin",
+            "previewPath": "/preview" if can_edit() else "/",
+            "renderAdminPath": "/render-admin" if can_edit() else "/admin",
+            "localSurfaces": can_edit(),
             "pdfRebuildAvailable": _pdf_toolchain_ok()[0] if can_edit() else False,
             "contentPackExportAvailable": can_edit(),
         }
@@ -958,7 +1044,10 @@ def api_courses():
 @app.get("/api/inventory")
 @require_viewer_auth
 def api_inventory():
-    return jsonify(build_inventory())
+    # Local /view Preview: ?as=viewer matches Render public portal file set
+    as_arg = (request.args.get("as") or "").strip().lower()
+    as_viewer = True if as_arg == "viewer" else (False if as_arg == "edit" else None)
+    return jsonify(build_inventory(as_viewer=as_viewer))
 
 
 @app.get("/api/packet")
@@ -2028,8 +2117,10 @@ def main() -> None:
     print(f"App root: {BASE}")
     print(f"Content root: {CONTENT_ROOT}")
     print(f"PDF review: {REVIEW}")
+    if POP_MODE == "edit":
+        print("Local shells: /edit  /admin  |  Render test: /preview  /render-admin")
     if is_production():
-        print("Production: / view, /admin edit")
+        print("Production shells: / = portal.html, /admin = hosted-admin.html")
         if ADMIN_PASSWORD:
             print("Admin password protection: ON")
         else:

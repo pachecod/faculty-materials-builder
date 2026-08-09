@@ -63,23 +63,30 @@ On Render (viewer only — no content editing):
 
 Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. Default import merges by path; use wipe when you need a full replace. App code updates = `git push` (autodeploy); disk content persists across deploys.
 
-## 5. Surfaces
+## 5. Surfaces (Render)
 
-| URL | Role |
-|-----|------|
-| `/` | Public view + downloads (optional view password) |
-| `/admin` | Import content pack + site access only |
-| `/api/download/pdf?file=…` | Single PDF download |
-| `/api/download/all` | Zip of all PDFs by section folder |
+| URL | Page shell | Role |
+|-----|------------|------|
+| `/` | `app_pages/portal.html` | Public view + downloads |
+| `/admin` | `app_pages/hosted-admin.html` | Import + site access only |
+| `/api/download/pdf?file=…` | — | Single PDF download |
+| `/api/download/all` | — | Zip of all PDFs |
+
+Local authoring uses **different** pages under `POP_MODE=edit` so local chrome cannot leak onto Render.
 
 ## Local day-to-day
 
 ```bash
-# Authoring
 POP_MODE=edit python3 serve_metrics.py          # :8765
-
-# Local view preview
-./start_viewer.sh                               # or POP_MODE=viewer
 ```
+
+| Local URL | Page shell | Role |
+|-----------|------------|------|
+| `/edit` | `local.html` | Edit & Append |
+| `/admin` | `local.html` | Local Admin (build pack, import, site access) |
+| `/preview` | `portal.html` | **Test Render public `/`** before push |
+| `/render-admin` | `hosted-admin.html` | **Test Render `/admin`** before push |
+
+A sticky top toggle (**Local working copy** / **What Render users see**) appears only in local edit mode. It is not shown on Render.
 
 Content and `.env` stay on disk; git only moves app changes.

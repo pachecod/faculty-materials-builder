@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Legacy file. Live shells are in app_pages/ (local.html, portal.html, hosted-admin.html). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -858,33 +857,6 @@
   body.local-view footer {
     display: none;
   }
-  #local-nav {
-    display: none;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    padding: 0.45rem 0.75rem;
-    background: #0c0a09;
-    border-bottom: 1px solid #292524;
-  }
-  body.local-surfaces #local-nav { display: flex; }
-  #local-nav a {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-decoration: none;
-    color: #e7e5e4;
-    padding: 0.35rem 0.75rem;
-    border: 1px solid #44403c;
-    border-radius: 6px;
-    background: #1c1917;
-  }
-  #local-nav a:hover { background: #292524; border-color: #78716c; }
-  #local-nav a.is-active {
-    background: #e8f0ec;
-    color: #14532d;
-    border-color: #86efac;
-  }
   .list-toolbar {
     display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
     margin: 0 0 0.75rem;
@@ -1058,13 +1030,8 @@
 
 </style>
 </head>
-<body>
-  <div id="mode-banner">Read-only viewer — Preview and download. Editing is on /admin (production) or local edit mode.</div>
-  <nav id="local-nav" aria-label="Local surfaces">
-    <a href="/edit" data-local-nav="edit">Edit &amp; Append</a>
-    <a href="/view" data-local-nav="view">Preview</a>
-    <a href="/admin" data-local-nav="admin">Admin</a>
-  </nav>
+<body data-shell="local">
+  <div id="mode-banner">Local Final Edit</div>
   <div class="wrap" id="dashboard">
     <header>
       <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
@@ -1250,7 +1217,7 @@
         <h2>Build Render import pack</h2>
         <p class="hint">
           Package the current local PDFs and sources into a zip for the hosted viewer.
-          Download it, then upload under <strong>Import content</strong> below (or on Render <code>/admin</code>).
+          Download it, then upload under <strong>Import content</strong> below, or on production Render <code>/admin</code>.
         </p>
         <button type="button" class="build-render-pack-btn" id="build-render-pack-admin">Build &amp; download import pack</button>
         <div class="status-box render-pack-status" id="render-pack-status-admin" hidden></div>
@@ -2722,56 +2689,39 @@ async function loadLiveInventory() {
 function applyModeFromConfig(cfg) {
   if (!cfg) return;
   const path = location.pathname || "/";
-  const onAdmin = path.startsWith("/admin");
-  const onView = path === "/view" || path.startsWith("/view/");
+  const onAdmin = path.startsWith("/admin") && !path.startsWith("/render-admin");
   const onEdit = path === "/edit" || path.startsWith("/edit/");
   const localSurfaces = !!(cfg.localSurfaces || (cfg.editable && !cfg.isProduction));
-  // Authoring only on local /edit — / and /admin land on admin tools; /view is portal preview
   const editableHere = !!cfg.editable && !cfg.isProduction && onEdit;
+
   if (!editableHere) document.body.classList.add("viewer-mode");
   else document.body.classList.remove("viewer-mode");
 
   if (editableHere) document.body.classList.add("local-edit");
   else document.body.classList.remove("local-edit");
 
-  if (onView && localSurfaces) document.body.classList.add("local-view");
-  else document.body.classList.remove("local-view");
-
+  document.body.classList.remove("local-view");
   if (localSurfaces) document.body.classList.add("local-surfaces");
   else document.body.classList.remove("local-surfaces");
 
-  // /admin with admin rights: import + site access (Render and local edit)
-  const showAdminOps = !!(onAdmin && cfg.isAdmin);
-  if (showAdminOps) document.body.classList.add("admin-surface");
-  else document.body.classList.remove("admin-surface");
-
-  if (showAdminOps) document.body.classList.add("production-admin");
-  else document.body.classList.remove("production-admin");
+  const showAdminOps = !!(onAdmin && localSurfaces);
+  if (showAdminOps) {
+    document.body.classList.add("admin-surface");
+    document.body.classList.add("production-admin");
+  } else {
+    document.body.classList.remove("admin-surface");
+    document.body.classList.remove("production-admin");
+  }
 
   const banner = document.getElementById("mode-banner");
   if (banner) {
     if (showAdminOps) {
-      banner.textContent = cfg.isProduction
-        ? "Admin — Site access and import content only. Edit & append on a local install."
-        : "Admin — Build import pack, site access, and import content.";
+      banner.textContent = "Local Admin — Build import pack, site access, and import. Use Render admin to test the hosted /admin page.";
     } else if (editableHere) {
       banner.textContent = "Edit & Append — Set Need/Level, manage appendices, rebuild PDFs.";
-    } else if (onView && localSurfaces) {
-      // Same banner copy as Render public portal
-      banner.textContent = "Read-only portal — Preview and download. Admins use /admin for import and site access.";
-    } else if (cfg.isProduction) {
-      banner.textContent = "Read-only portal — Preview and download. Admins use /admin for import and site access.";
     } else {
-      banner.textContent = "Read-only viewer — Preview and download. Local editing happens in edit mode.";
+      banner.textContent = "Local shell";
     }
-  }
-
-  const nav = document.getElementById("local-nav");
-  if (nav) {
-    const key = onAdmin ? "admin" : (onView ? "view" : (onEdit ? "edit" : "admin"));
-    nav.querySelectorAll("[data-local-nav]").forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("data-local-nav") === key);
-    });
   }
 
   const emptyHint = document.getElementById("empty-pdf-hint");
@@ -2779,7 +2729,7 @@ function applyModeFromConfig(cfg) {
     emptyHint.hidden = !!cfg.hasPdfs;
     if (!cfg.hasPdfs) {
       emptyHint.textContent = showAdminOps
-        ? "No PDFs yet — upload a content pack built on your local install."
+        ? "No PDFs yet — rebuild locally, then build an import pack."
         : "No PDFs published yet.";
     }
   }
@@ -4002,6 +3952,7 @@ function applyModeFromConfig(cfg) {
   };
 })();
 </script>
+<script src="/local-switcher.js"></script>
 
 </body>
 </html>

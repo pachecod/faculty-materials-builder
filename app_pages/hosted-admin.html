@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PoP Admin ù Site access &amp; import</title>
+<style>
+  :root {
+    --ink: #1c1917;
+    --muted: #57534e;
+    --line: #e7e5e4;
+    --bg: #fafaf9;
+    --panel: #ffffff;
+    --accent: #0f3d2e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #e8f0ec 0%, transparent 55%),
+      var(--bg);
+    min-height: 100vh;
+    line-height: 1.45;
+  }
+  #mode-banner {
+    display: block;
+    background: #422006;
+    color: #fde68a;
+    text-align: center;
+    padding: .45rem .75rem;
+    font-size: .85rem;
+    font-weight: 600;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+  h1 {
+    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+    margin: 0 0 1rem;
+    color: var(--accent);
+  }
+  .tools-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1rem;
+  }
+  .panel h2 {
+    margin: 0 0 .5rem;
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+  .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 .75rem; }
+  .site-access-form, .import-form {
+    display: grid; gap: 0.55rem; font-size: 0.85rem;
+  }
+  .site-access-form input[type="password"],
+  .import-form input[type="file"] {
+    font: inherit; padding: 0.4rem 0.5rem; border: 1px solid var(--line); width: 100%;
+  }
+  button {
+    font: inherit; padding: 0.45rem 0.75rem; border: 0; border-radius: 6px;
+    background: #1d4ed8; color: #fff; cursor: pointer;
+  }
+  button.secondary { background: #57534e; }
+  button.danger { background: #7f1d1d; }
+  .status-box {
+    margin-top: 0.75rem; padding: 0.65rem 0.75rem;
+    background: #f5f5f4; border: 1px solid var(--line);
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem; white-space: pre-wrap; max-height: 220px; overflow: auto;
+  }
+  .status-box.ok { border-color: #86efac; background: #f0fdf4; }
+  .status-box.err { border-color: #fca5a5; background: #fef2f2; }
+</style>
+</head>
+<body>
+  <div id="mode-banner">Admin ù Site access and import content only.</div>
+  <div class="wrap">
+    <header>
+      <h1>PoP hosted admin</h1>
+      <p class="hint" id="surface-hint">Manage the public view password and import content packs.</p>
+    </header>
+    <div class="tools-grid">
+      <section class="panel" id="site-access">
+        <h2>Site access</h2>
+        <p class="hint">Optional password for the public view site (<code>/</code>). Admins always bypass it.</p>
+        <div class="site-access-form">
+          <p id="view-pw-status" class="hint">Checkingù</p>
+          <label>New view password
+            <input type="password" id="view-pw-input" autocomplete="new-password" placeholder="Set or change">
+          </label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button type="button" id="view-pw-save">Save view password</button>
+            <button type="button" id="view-pw-clear" class="secondary">Clear view password</button>
+          </div>
+        </div>
+        <div class="status-box" id="view-pw-msg" hidden></div>
+      </section>
+
+      <section class="panel" id="content-import">
+        <h2>Import content</h2>
+        <p class="hint">Upload a content-pack zip. By default this merges/overwrites by path. Use wipe for a clean replace.</p>
+        <div class="status-box" id="disk-status" hidden></div>
+        <div class="import-form">
+          <input type="file" id="content-pack-input" accept=".zip,application/zip">
+          <label id="content-pack-wipe-label" class="hint" style="display:none;gap:.4rem;align-items:flex-start">
+            <input type="checkbox" id="content-pack-wipe-first">
+            <span>Wipe all existing content on this server before importing (keeps view password)</span>
+          </label>
+          <button type="button" id="content-pack-upload">Upload content pack</button>
+          <button type="button" id="content-wipe" class="danger" style="display:none">Wipe all contentù</button>
+        </div>
+        <div class="status-box" id="content-pack-status" hidden></div>
+      </section>
+    </div>
+  </div>
+<script>
+(async function () {
+  const cfg = await (await fetch("/api/config")).json().catch(() => ({}));
+  const localTest = !!(cfg.localSurfaces || (cfg.editable && !cfg.isProduction));
+  if (localTest) {
+    document.body.classList.add("is-local-test");
+    document.getElementById("mode-banner").textContent =
+      "Render admin (local test) ù Same page as production /admin. Not the local Admin tools page.";
+    document.getElementById("surface-hint").textContent =
+      "This is the hosted admin shell. Local-only build-pack UI lives at /admin.";
+  }
+
+  async function refreshStorage() {
+    const el = document.getElementById("disk-status");
+    const wipeLabel = document.getElementById("content-pack-wipe-label");
+    const wipeBtn = document.getElementById("content-wipe");
+    try {
+      const r = await fetch("/api/admin/storage");
+      const data = await r.json();
+      if (!data.ok) return;
+      el.hidden = false;
+      el.className = "status-box " + (data.writable ? "ok" : "err");
+      el.textContent = data.writable
+        ? `Disk OK ù official PDFs: ${data.officialPdfCount || 0}, review PDFs: ${data.reviewPdfCount || 0}`
+        : `Disk NOT writable: ${data.error || "unknown"}`;
+      const canWipe = !!data.canWipeContent;
+      if (wipeLabel) wipeLabel.style.display = canWipe ? "flex" : "none";
+      if (wipeBtn) wipeBtn.style.display = canWipe ? "" : "none";
+    } catch (e) {}
+  }
+
+  async function refreshPw() {
+    const status = document.getElementById("view-pw-status");
+    try {
+      const r = await fetch("/api/admin/view-password");
+      const data = await r.json();
+      status.textContent = data.viewPasswordSet
+        ? "View password is set (visitors must sign in)."
+        : "No view password ù public portal is open.";
+    } catch (e) {
+      status.textContent = "Could not load view-password status.";
+    }
+  }
+
+  document.getElementById("view-pw-save").onclick = async () => {
+    const input = document.getElementById("view-pw-input");
+    const msg = document.getElementById("view-pw-msg");
+    const password = (input.value || "").trim();
+    if (password.length < 4) { alert("Password must be at least 4 characters."); return; }
+    const r = await fetch("/api/admin/view-password", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const data = await r.json();
+    msg.hidden = false;
+    msg.className = "status-box " + (data.ok ? "ok" : "err");
+    msg.textContent = data.ok ? "View password saved." : (data.error || "Save failed");
+    if (data.ok) input.value = "";
+    await refreshPw();
+  };
+
+  document.getElementById("view-pw-clear").onclick = async () => {
+    if (!confirm("Clear the runtime view password? (Env VIEW_PASSWORD still applies if set.)")) return;
+    const msg = document.getElementById("view-pw-msg");
+    const r = await fetch("/api/admin/view-password", { method: "DELETE" });
+    const data = await r.json();
+    msg.hidden = false;
+    msg.className = "status-box " + (data.ok ? "ok" : "err");
+    msg.textContent = data.ok ? "Cleared runtime view password." : (data.error || "Clear failed");
+    await refreshPw();
+  };
+
+  const wipeBtn = document.getElementById("content-wipe");
+  const uploadBtn = document.getElementById("content-pack-upload");
+  const wipeFirst = document.getElementById("content-pack-wipe-first");
+  const status = document.getElementById("content-pack-status");
+  const input = document.getElementById("content-pack-input");
+
+  if (wipeBtn) {
+    wipeBtn.onclick = async () => {
+      if (!confirm("Delete ALL imported content on this server?")) return;
+      const typed = prompt("Type WIPE to confirm:");
+      if ((typed || "").trim() !== "WIPE") return;
+      status.hidden = false;
+      status.className = "status-box";
+      status.textContent = "Wipingù";
+      const r = await fetch("/api/admin/wipe-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: "WIPE" }),
+      });
+      const data = await r.json();
+      status.className = "status-box " + (data.ok ? "ok" : "err");
+      status.textContent = data.ok ? (data.log || "Wiped.") : (data.error || "Wipe failed");
+      await refreshStorage();
+    };
+  }
+
+  uploadBtn.onclick = async () => {
+    if (!input.files || !input.files[0]) { alert("Choose a .zip first."); return; }
+    const doWipe = !!(wipeFirst && wipeFirst.checked);
+    if (doWipe && !confirm("Wipe all existing content, then import?")) return;
+    const fd = new FormData();
+    fd.append("file", input.files[0]);
+    if (doWipe) fd.append("wipe", "1");
+    status.hidden = false;
+    status.className = "status-box";
+    status.textContent = doWipe ? "Wiping, then uploadingù" : "Uploadingù";
+    uploadBtn.disabled = true;
+    try {
+      const r = await fetch("/api/admin/import-content", { method: "POST", body: fd });
+      const data = await r.json();
+      status.className = "status-box " + (data.ok ? "ok" : "err");
+      status.textContent = data.ok ? (data.log || "Import complete.") : (data.error || "Import failed");
+      await refreshStorage();
+    } catch (err) {
+      status.className = "status-box err";
+      status.textContent = String(err.message || err);
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  };
+
+  await refreshPw();
+  await refreshStorage();
+})();
+</script>
+<script src="/local-switcher.js"></script>
+</body>
+</html>
