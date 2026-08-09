@@ -883,8 +883,12 @@ def local_switcher_js():
 @app.get("/logout")
 def logout():
     session.clear()
+    # Optional: /logout?next=/login (used by admin "test as visitor")
+    nxt = (request.args.get("next") or "").strip()
+    if nxt.startswith("/") and not nxt.startswith("//") and "://" not in nxt:
+        return redirect(nxt)
     if is_production():
-        return redirect("/")
+        return redirect("/login" if view_password_configured() else "/")
     if POP_MODE == "edit":
         return redirect("/edit")
     return redirect("/login" if view_password_configured() else "/")

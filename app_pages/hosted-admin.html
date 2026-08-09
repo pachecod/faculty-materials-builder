@@ -90,17 +90,20 @@
         <p class="hint">
           This sets the <strong>public view password</strong> for visitors at
           <code>/</code> (sign-in page <code>/login</code>).
-          It does <em>not</em> change your admin login ó that stays
+          It does <em>not</em> change your admin login ù that stays
           <code>ADMIN_PASSWORD</code> in the Render Environment.
         </p>
         <div class="site-access-form">
-          <p id="view-pw-status" class="hint">CheckingÖ</p>
+          <p id="view-pw-status" class="hint">Checkingù</p>
           <label>New public view password
             <input type="password" id="view-pw-input" autocomplete="new-password" placeholder="Share this with visitors">
           </label>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap">
             <button type="button" id="view-pw-save">Save view password</button>
             <button type="button" id="view-pw-clear" class="secondary">Clear view password</button>
+            <a class="secondary" href="/logout?next=/login" style="display:inline-flex;align-items:center;text-decoration:none;padding:0.45rem 0.75rem;border:1px solid var(--line);border-radius:6px;color:inherit">
+              Sign out &amp; test as visitor
+            </a>
           </div>
         </div>
         <div class="status-box" id="view-pw-msg" hidden></div>
@@ -180,7 +183,9 @@
     const data = await r.json();
     msg.hidden = false;
     msg.className = "status-box " + (data.ok ? "ok" : "err");
-    msg.textContent = data.ok ? "View password saved." : (data.error || "Save failed");
+    msg.textContent = data.ok
+      ? "Saved. Share this password for the public site (/login) ó not for /admin."
+      : (data.error || "Save failed");
     if (data.ok) input.value = "";
     await refreshPw();
   };
