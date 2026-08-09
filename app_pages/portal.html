@@ -2136,11 +2136,16 @@ function renderPdfRows(pdfs) {
   const complete = filtered.filter(r => r.level === "Complete").length;
   const partial = filtered.filter(r => r.level === "Partial").length;
   const none = filtered.filter(r => r.level === "No Content").length;
-  document.getElementById("pdf-total").textContent = fmt(pagesTally);
-  document.getElementById("need-summary").textContent =
-    `Yes ${needYes} · No ${filtered.length - needYes}`;
-  document.getElementById("level-summary").textContent =
-    `C ${complete} · P ${partial} · N ${none}`;
+  const totalEl = document.getElementById("pdf-total");
+  if (totalEl) totalEl.textContent = fmt(pagesTally);
+  const needSummary = document.getElementById("need-summary");
+  if (needSummary) {
+    needSummary.textContent = `Yes ${needYes} · No ${filtered.length - needYes}`;
+  }
+  const levelSummary = document.getElementById("level-summary");
+  if (levelSummary) {
+    levelSummary.textContent = `C ${complete} · P ${partial} · N ${none}`;
+  }
 }
 
 /** Edit & Append uses working _pdf_review; Preview/Render portal use /pdfs (official first). */
@@ -2398,6 +2403,7 @@ async function loadInventory() {
 
 async function loadCourses() {
   const sel = document.getElementById("dump-course");
+  if (!sel) return;
   try {
     const res = await fetch("/api/courses");
     const data = await res.json();
@@ -2428,6 +2434,7 @@ function wireFolderDump() {
   const save = document.getElementById("dump-save");
   const chosen = document.getElementById("chosen-file");
   const status = document.getElementById("dump-status");
+  if (!drop || !input || !kind || !course || !courseLabel || !save || !chosen || !status) return;
   const evidenceKinds = new Set([
     "student_correspondence",
     "academic_correspondence",
@@ -2536,6 +2543,7 @@ function wireRegenerate() {
   const run = document.getElementById("regen-run");
   const mode = document.getElementById("regen-mode");
   const status = document.getElementById("regen-status");
+  if (!run || !mode || !status) return;
   let timer = null;
 
   async function poll() {
@@ -2603,6 +2611,7 @@ function applyModeFromConfig(cfg) {
     const cfg = await (await fetch("/api/config")).json();
     applyModeFromConfig(cfg);
   } catch (e) {}
+  // Authoring widgets are local-only; skip safely when absent from this shell
   await loadCourses();
   wireFolderDump();
   wireRegenerate();
