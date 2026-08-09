@@ -1054,10 +1054,32 @@
     .top-grid, .tools-grid { grid-template-columns: 1fr; }
     .top-grid .list-panel { order: -1; }
   }
+  #pdf-loading {
+    position: fixed; inset: 0; z-index: 10050;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem; background: rgba(28, 25, 23, 0.5);
+  }
+  #pdf-loading[hidden] { display: none !important; }
+  #pdf-loading .pdf-loading-card {
+    background: #fff; color: #1c1917;
+    max-width: 22rem; width: 100%;
+    border-radius: 10px; padding: 1.35rem 1.5rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  #pdf-loading .pdf-loading-card p {
+    margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.4;
+  }
 
 </style>
 </head>
 <body class="viewer-mode" data-shell="portal">
+  <div id="pdf-loading" role="status" aria-live="polite" aria-busy="true">
+    <div class="pdf-loading-card">
+      <p>Loading PDFs....</p>
+    </div>
+  </div>
   <div id="mode-banner">Read-only portal — Preview and download. Admins use /admin for import and site access.</div>
 <div class="wrap" id="dashboard">
     <header>
@@ -2389,6 +2411,13 @@ document.getElementById("back-to-list").addEventListener("click", () => {
 window.addEventListener("popstate", syncViewerFromHash);
 window.addEventListener("hashchange", syncViewerFromHash);
 
+function setPdfLoading(on) {
+  const el = document.getElementById("pdf-loading");
+  if (!el) return;
+  el.hidden = !on;
+  el.setAttribute("aria-busy", on ? "true" : "false");
+}
+
 async function loadInventory() {
   try {
     const q = usesViewerPdfs() ? "?as=viewer" : "?as=edit";
@@ -2582,12 +2611,17 @@ function wireRegenerate() {
 }
 
 async function loadLiveInventory() {
-  const inv = await loadInventory();
-  renderPdfExport(inv);
-  if (typeof window.__popRefreshPromoteButton === "function") {
-    window.__popRefreshPromoteButton();
+  setPdfLoading(true);
+  try {
+    const inv = await loadInventory();
+    renderPdfExport(inv);
+    if (typeof window.__popRefreshPromoteButton === "function") {
+      window.__popRefreshPromoteButton();
+    }
+    return inv;
+  } finally {
+    setPdfLoading(false);
   }
-  return inv;
 }
 
 function applyModeFromConfig(cfg) {
@@ -2606,19 +2640,24 @@ function applyModeFromConfig(cfg) {
 }
 
 (async function init() {
-  // Apply viewer-mode before first paint of the list so column widths are correct
+  setPdfLoading(true);
   try {
-    const cfg = await (await fetch("/api/config")).json();
-    applyModeFromConfig(cfg);
-  } catch (e) {}
-  // Authoring widgets are local-only; skip safely when absent from this shell
-  await loadCourses();
-  wireFolderDump();
-  wireRegenerate();
-  wireListFilters();
-  const inv = await loadInventory();
-  renderPdfExport(inv);
-  syncViewerFromHash();
+    // Apply viewer-mode before first paint of the list so column widths are correct
+    try {
+      const cfg = await (await fetch("/api/config")).json();
+      applyModeFromConfig(cfg);
+    } catch (e) {}
+    // Authoring widgets are local-only; skip safely when absent from this shell
+    await loadCourses();
+    wireFolderDump();
+    wireRegenerate();
+    wireListFilters();
+    const inv = await loadInventory();
+    renderPdfExport(inv);
+    syncViewerFromHash();
+  } finally {
+    setPdfLoading(false);
+  }
 })();
 </script>
 
