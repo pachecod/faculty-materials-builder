@@ -4,7 +4,9 @@
 Usage:
   ./build_attachments.py                 Courses + all Evidence-of-Impact categories
   ./build_attachments.py --only 4 5      Only those course keys (always re-append)
-  ./build_attachments.py --evidence      Only Other Evidence of Impact packets
+  ./build_attachments.py --evidence      All Other Evidence of Impact packets
+  ./build_attachments.py --evidence Academic_Correspondence.pdf
+                                         Only the named Evidence packet(s)
   ./build_attachments.py --creative-work Append exhibits into Creative Work PDF
 
 Option 1 (instructions.pdf): one PDF per FPS bullet. Course Information Packets
@@ -341,13 +343,18 @@ def course_sources(folder, tmpdir, key):
     return sources, bool(syllabi), examples_doc.exists() and examples_doc.stat().st_size > 0
 
 
-def append_evidence_categories(tmpdir, force=False):
+def append_evidence_categories(tmpdir, force=False, only_pdfs=None):
     """Append category folder PDFs into cover PDFs.
 
     When force=True (explicit --evidence after a fresh export), skip the
     already_appended guard so exhibit list changes are applied.
+    only_pdfs: optional iterable of review PDF basenames to limit which
+    categories are touched (avoids marking siblings outdated).
     """
+    only = {Path(p).name for p in only_pdfs} if only_pdfs else None
     for folder_name, pdf_name in EVIDENCE_CATEGORIES:
+        if only is not None and pdf_name not in only:
+            continue
         packet = EVIDENCE_PACKET_DIR / pdf_name
         folder = EVIDENCE_ROOT / folder_name
         if not packet.is_file():
@@ -404,9 +411,14 @@ def main():
     ap.add_argument(
         "--evidence",
         "--other-evidence",
-        action="store_true",
+        nargs="*",
+        metavar="PDF",
         dest="evidence",
-        help="Append PDFs into Other Evidence of Impact category packets.",
+        help=(
+            "Append PDFs into Other Evidence of Impact category packets. "
+            "Pass one or more review PDF basenames to limit which packets "
+            "(e.g. Academic_Correspondence.pdf)."
+        ),
     )
     ap.add_argument(
         "--creative-work",
@@ -415,10 +427,10 @@ def main():
     )
     args = ap.parse_args()
     only = set(args.only) if args.only else None
-    exclusive = args.evidence or args.creative_work
+    exclusive = args.evidence is not None or args.creative_work
     do_courses = only is not None or not exclusive
-    do_evidence = args.evidence or (only is None and not args.creative_work)
-    do_creative = args.creative_work or (only is None and not args.evidence)
+    do_evidence = args.evidence is not None or (only is None and not args.creative_work)
+    do_creative = args.creative_work or (only is None and args.evidence is None)
 
     if do_courses and not PACKET_DIR.is_dir():
         sys.exit(f"No packet folder at {PACKET_DIR}. Run ./export_pdfs.sh first.")
@@ -467,7 +479,12 @@ def main():
 
         if do_evidence:
             # force only when explicitly requested (fresh cover export); otherwise skip if already appended
-            append_evidence_categories(tmpdir, force=args.evidence)
+            evidence_only = list(args.evidence) if args.evidence else None
+            append_evidence_categories(
+                tmpdir,
+                force=args.evidence is not None,
+                only_pdfs=evidence_only,
+            )
 
         if do_creative:
             append_creative_work(tmpdir, force=args.creative_work)

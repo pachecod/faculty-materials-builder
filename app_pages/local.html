@@ -26,6 +26,13 @@
     --row-partial: #ffedd5;
     --row-none-need: #fecaca;
     --row-none-ok: #fde68a;
+    --official-ok: #16a34a;
+    --official-stale: #c2410c;
+    --official-missing: #78716c;
+    --official-ok-bg: #dcfce7;
+    --official-stale-bg: #ffedd5;
+    --official-stale-row: #ffedd5;
+    --official-missing-bg: #f5f5f4;
     --badge-text: #1e40af;
     --badge-bg: #dbeafe;
     --badge-border: #93c5fd;
@@ -114,6 +121,9 @@
   .swatch.partial { background: var(--row-partial); }
   .swatch.none-need { background: var(--row-none-need); }
   .swatch.none-ok { background: var(--row-none-ok); }
+  .swatch.official-ok { background: var(--official-ok-bg); box-shadow: inset 3px 0 0 var(--official-ok); }
+  .swatch.official-stale { background: var(--official-stale-row); box-shadow: inset 3px 0 0 var(--official-stale); }
+  .swatch.official-missing { background: var(--official-missing-bg); box-shadow: inset 3px 0 0 var(--official-missing); }
   .bars { display: flex; flex-direction: column; gap: 0.45rem; }
   .bar-row {
     display: grid; grid-template-columns: 1fr;
@@ -324,6 +334,52 @@
   tr.row-partial > td { background: var(--row-partial); }
   tr.row-none-need > td { background: var(--row-none-need); }
   tr.row-none-ok > td { background: var(--row-none-ok); }
+  body.local-edit tr.official-ok > td:first-child {
+    box-shadow: inset 3px 0 0 var(--official-ok);
+  }
+  body.local-edit tr.official-stale {
+    background: var(--official-stale-row);
+  }
+  body.local-edit tr.official-stale > td {
+    background: var(--official-stale-row);
+  }
+  body.local-edit tr.official-stale > td:first-child {
+    box-shadow: inset 3px 0 0 var(--official-stale);
+  }
+  body.local-edit tr.official-missing > td:first-child {
+    box-shadow: inset 3px 0 0 var(--official-missing);
+  }
+  .official-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.12rem 0.4rem;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .official-badge.is-ok {
+    color: var(--official-ok);
+    background: var(--official-ok-bg);
+    border-color: var(--official-ok);
+  }
+  .official-badge.is-stale {
+    color: var(--official-stale);
+    background: var(--official-stale-bg);
+    border-color: var(--official-stale);
+  }
+  .official-badge.is-missing {
+    color: var(--official-missing);
+    background: var(--official-missing-bg);
+    border-color: var(--official-missing);
+  }
+  body:not(.local-edit) .official-badge,
+  body:not(.local-edit) .official-filter-opt { display: none !important; }
   a.file-link {
     cursor: pointer;
     color: var(--link);
@@ -343,6 +399,12 @@
     gap: 0.3rem;
     min-width: 0;
     max-width: 100%;
+  }
+  .file-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
   }
   .file-name-row {
     display: flex;
@@ -847,7 +909,7 @@
     display: none !important;
   }
   body.admin-surface .wrap {
-    max-width: 720px;
+    max-width: 880px;
   }
   body.admin-surface header h1 {
     font-size: clamp(1.25rem, 2.5vw, 1.6rem);
@@ -1159,6 +1221,56 @@
   }
   .status-box.ok { border-color: #93c5fd; background: #eff6ff; }
   .status-box.err { border-color: #fca5a5; background: #fef2f2; }
+  .theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 0.85rem;
+  }
+  @media (max-width: 560px) {
+    .theme-grid { grid-template-columns: 1fr; }
+  }
+  .theme-field {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+  }
+  .theme-field span { color: var(--muted); }
+  .theme-field .row {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+  }
+  .theme-field input[type="color"] {
+    width: 2.4rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+  }
+  .theme-field input[type="text"] {
+    font: inherit;
+    flex: 1;
+    min-width: 0;
+    padding: 0.35rem 0.45rem;
+    border: 1px solid var(--line);
+  }
+  .theme-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+  .theme-group-title {
+    grid-column: 1 / -1;
+    margin: 0.55rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .theme-group-title:first-child { margin-top: 0; }
   .regen-form {
     display: grid;
     gap: 0.65rem;
@@ -1451,6 +1563,9 @@
           <span><i class="swatch partial"></i> Partial (Need Yes or No)</span>
           <span><i class="swatch none-need"></i> No Content + Need Yes</span>
           <span><i class="swatch none-ok"></i> No Content + Need No</span>
+          <span><i class="swatch official-ok"></i> Official (edge)</span>
+          <span><i class="swatch official-stale"></i> Official outdated (row + edge)</span>
+          <span><i class="swatch official-missing"></i> Not official</span>
         </div>
         <div class="bars" id="section-bars"></div>
         <a class="tally-download" id="btn-download-all" href="/api/download/all">Download all PDFs</a>
@@ -1471,6 +1586,10 @@
               <option value="row-partial">Yellow — Partial</option>
               <option value="row-none-need">Red — No Content + Need Yes</option>
               <option value="row-none-ok">Amber — No Content + Need No</option>
+              <option class="official-filter-opt" value="official">Official</option>
+              <option class="official-filter-opt" value="official-stale">Official outdated</option>
+              <option class="official-filter-opt" value="not-official">Not official</option>
+              <option class="official-filter-opt" value="needs-official">Needs official save</option>
             </select>
           </label>
           <label class="edit-only need-col">Need Content
@@ -1605,6 +1724,23 @@
         <div class="status-box" id="regen-status" hidden></div>
       </section>
 
+      <section class="panel" id="promote-all">
+        <h2>Save all as official</h2>
+        <p class="hint">
+          Copy every working preview PDF from <code>_pdf_review</code> into <code>_official</code>
+          so Preview / Render tallies match Edit. Use after rebuilds when you want the public
+          copies updated in one step (single-packet <strong>Save as official</strong> still works in the viewer).
+        </p>
+        <div class="regen-form">
+          <label style="display:flex;gap:.4rem;align-items:flex-start">
+            <input type="checkbox" id="promote-all-only-needed">
+            <span>Only missing or outdated official copies</span>
+          </label>
+          <button type="button" id="promote-all-run">Save all as official</button>
+        </div>
+        <div class="status-box" id="promote-all-status" hidden></div>
+      </section>
+
       <section class="panel" id="render-pack">
         <h2>Build Render import pack</h2>
         <p class="hint">
@@ -1640,6 +1776,29 @@
           <span>Wipe Render content before import (keeps view password)</span>
         </label>
         <div class="status-box render-pack-status" id="render-pack-status-admin" hidden></div>
+      </section>
+
+      <section class="panel local-surfaces-only" id="portal-theme">
+        <h2>Portal colors</h2>
+        <p class="hint">
+          Same color options as Render admin. Saved in local <code>theme.json</code> and applied to
+          <code>/edit</code>, <code>/preview</code>, and this admin shell. Includes list-row fills and
+          Official status badge/edge colors.
+        </p>
+        <div class="theme-grid" id="theme-grid"></div>
+        <div class="theme-actions">
+          <button type="button" id="theme-save">Save colors</button>
+          <button type="button" id="theme-reset" class="secondary">Reset to defaults</button>
+          <a class="secondary" href="/edit" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;text-decoration:none;padding:0.45rem 0.75rem;border:1px solid var(--line);color:inherit">
+            Open Edit &amp; Append
+          </a>
+          <a class="secondary" href="/preview" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;text-decoration:none;padding:0.45rem 0.75rem;border:1px solid var(--line);color:inherit">
+            Open Preview
+          </a>
+        </div>
+        <div class="status-box" id="theme-msg" hidden></div>
       </section>
 
       <section class="panel" id="site-access">
@@ -2394,6 +2553,32 @@ function hasOfficialCopy(r) {
   return !!(r && (r.officialExists || r.officialAt));
 }
 
+/** Local edit: ok | stale | missing */
+function officialStatus(r) {
+  if (!hasOfficialCopy(r)) return "missing";
+  if (r && r.officialStale) return "stale";
+  return "ok";
+}
+
+function officialBadgeHtml(r) {
+  const status = officialStatus(r);
+  const when = formatOfficialAt(r && r.officialAt);
+  let label;
+  let tip;
+  if (status === "ok") {
+    label = "Official";
+    tip = when ? "Official · " + when : "Official copy matches preview";
+  } else if (status === "stale") {
+    label = "Outdated";
+    tip = "Official exists, but preview is newer"
+      + (when ? " · last official: " + when : "");
+  } else {
+    label = "Not official";
+    tip = "No official copy in _official yet";
+  }
+  return `<span class="official-badge is-${status}" title="${attrEsc(tip)}">${htmlEsc(label)}</span>`;
+}
+
 function officialTip(r) {
   if (!hasOfficialCopy(r)) {
     return "Not saved as official yet. Click to copy the current working PDF into _official/ as the FPS-ready version.";
@@ -2437,6 +2622,10 @@ function filterPdfs(pdfs) {
   return pdfs.filter(r => {
     if (show === "updated" && !r.updated) return false;
     if (show.startsWith("row-") && rowClass(r) !== show) return false;
+    if (show === "official" && officialStatus(r) !== "ok") return false;
+    if (show === "official-stale" && officialStatus(r) !== "stale") return false;
+    if (show === "not-official" && officialStatus(r) !== "missing") return false;
+    if (show === "needs-official" && officialStatus(r) === "ok") return false;
     if (need !== "all" && r.needContent !== need) return false;
     if (level !== "all" && r.level !== level) return false;
     return true;
@@ -2485,6 +2674,9 @@ function pdfRowHtml(r, { showSection = true } = {}) {
   const updated = r.updated
     ? '<span class="updated-badge" title="Regenerated in the last export"><span class="dot" aria-hidden="true"></span>Updated</span>'
     : "";
+  const isEditRow = document.body.classList.contains("local-edit");
+  const officialMark = isEditRow ? officialBadgeHtml(r) : "";
+  const officialClass = isEditRow ? (" official-" + officialStatus(r)) : "";
   const esc = (s) => String(s).replace(/"/g, "&quot;");
   const atts = r.attachments || [];
   const canAppend = !!r.hasAttachments;
@@ -2543,11 +2735,11 @@ function pdfRowHtml(r, { showSection = true } = {}) {
       + `<td class="num">${fmt(r.pages)}</td>${needCell}${levelCell}${orderCell}`;
   }
   return `
-    <tr class="${rowClass(r)}${r.excludeFromPageTotal ? " row-excluded" : ""}${r.updated ? " row-updated" : ""}"
+    <tr class="${rowClass(r)}${officialClass}${r.excludeFromPageTotal ? " row-excluded" : ""}${r.updated ? " row-updated" : ""}"
         data-name="${esc(r.name)}">
       <td class="file">
         <div class="file-cell">
-          ${updated}
+          ${(updated || officialMark) ? `<div class="file-badges">${updated}${officialMark}</div>` : ""}
           <div class="file-name-row">
             <a class="file-link" href="${url}" data-file="${r.file}" data-name="${esc(r.name)}"
                title="${esc(r.sourceAbs || r.sourceRel || r.name)}">${r.name}</a>
@@ -3544,6 +3736,51 @@ function wireRegenerate() {
   });
 }
 
+function wirePromoteAll() {
+  const run = document.getElementById("promote-all-run");
+  const onlyNeeded = document.getElementById("promote-all-only-needed");
+  const status = document.getElementById("promote-all-status");
+  if (!run || !status) return;
+
+  run.addEventListener("click", async () => {
+    const only = !!(onlyNeeded && onlyNeeded.checked);
+    const msg = only
+      ? "Copy missing or outdated preview PDFs into _official so Preview/Render match Edit?"
+      : "Copy ALL working preview PDFs into _official (overwriting existing official copies)?";
+    if (!confirm(msg)) return;
+    run.disabled = true;
+    setBox(status, "Saving official copies…", null);
+    try {
+      const res = await fetch("/api/promote-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onlyNeeded: only }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
+      const lines = [
+        "Saved " + (data.promoted || 0) + " as official"
+          + ((data.skipped || 0) ? ("; skipped " + data.skipped) : "")
+          + ".",
+      ];
+      const skipped = data.skippedItems || [];
+      const missing = skipped.filter((s) => s.reason === "missing_review");
+      const current = skipped.filter((s) => s.reason === "already_current");
+      if (current.length) lines.push("Already current: " + current.length);
+      if (missing.length) {
+        lines.push("Missing preview PDF: " + missing.map((s) => s.name).join(", "));
+      }
+      setBox(status, lines.join("\n") + "\n\nRefreshing inventory…", "ok");
+      await loadLiveInventory();
+      setBox(status, lines.join("\n"), "ok");
+    } catch (err) {
+      setBox(status, String(err.message || err), "err");
+    } finally {
+      run.disabled = false;
+    }
+  });
+}
+
 async function loadLiveInventory() {
   const inv = await loadInventory();
   renderPdfExport(inv);
@@ -3613,7 +3850,7 @@ function applyModeFromConfig(cfg) {
   const banner = document.getElementById("mode-banner");
   if (banner) {
     if (showAdminOps) {
-      banner.textContent = "Local Admin — Build import pack and upload to Render. Use Render admin (/render-admin) for the public view password.";
+      banner.textContent = "Local Admin — Build import pack, set portal colors, upload to Render. Use /render-admin for the public view password.";
     } else if (editableHere) {
       banner.textContent = "Edit & Append — Set Need/Level, manage appendices, rebuild PDFs.";
     } else {
@@ -3654,6 +3891,7 @@ function applyModeFromConfig(cfg) {
   await loadCourses();
   wireFolderDump();
   wireRegenerate();
+  wirePromoteAll();
   wireListFilters();
   const inv = await loadInventory();
   renderPdfExport(inv);
@@ -4673,6 +4911,139 @@ function applyModeFromConfig(cfg) {
     } catch (e) {}
   }
 
+  function wirePortalTheme() {
+    const grid = document.getElementById("theme-grid");
+    const saveBtn = document.getElementById("theme-save");
+    const resetBtn = document.getElementById("theme-reset");
+    const msg = document.getElementById("theme-msg");
+    if (!grid || !saveBtn || !resetBtn) return;
+
+    let themeFields = [];
+    let themeCssVars = {};
+
+    function applyThemeLive(theme) {
+      if (!theme) return;
+      Object.keys(theme).forEach((key) => {
+        const cssVar = themeCssVars[key] || ("--" + key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()));
+        const val = theme[key];
+        if (typeof val === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val.trim())) {
+          document.documentElement.style.setProperty(cssVar, val.trim());
+        }
+      });
+    }
+
+    function syncThemeInputs(theme) {
+      themeFields.forEach(({ key }) => {
+        const color = document.getElementById("theme-color-" + key);
+        const text = document.getElementById("theme-text-" + key);
+        const val = (theme && theme[key]) || "#000000";
+        if (color) color.value = val;
+        if (text) text.value = val;
+      });
+    }
+
+    function readThemeInputs() {
+      const theme = {};
+      themeFields.forEach(({ key }) => {
+        const text = document.getElementById("theme-text-" + key);
+        theme[key] = ((text && text.value) || "").trim();
+      });
+      return theme;
+    }
+
+    function buildThemeFields(fields) {
+      themeFields = Array.isArray(fields) ? fields : [];
+      let html = "";
+      let lastGroup = null;
+      themeFields.forEach(({ key, label, group }) => {
+        if (group && group !== lastGroup) {
+          html += `<div class="theme-group-title">${group}</div>`;
+          lastGroup = group;
+        }
+        html += `
+        <label class="theme-field">
+          <span>${label}</span>
+          <span class="row">
+            <input type="color" id="theme-color-${key}" data-key="${key}" value="#000000">
+            <input type="text" id="theme-text-${key}" data-key="${key}" spellcheck="false" maxlength="7">
+          </span>
+        </label>`;
+      });
+      grid.innerHTML = html;
+      grid.querySelectorAll('input[type="color"]').forEach((el) => {
+        el.addEventListener("input", () => {
+          const text = document.getElementById("theme-text-" + el.dataset.key);
+          if (text) text.value = el.value;
+        });
+      });
+      grid.querySelectorAll('input[type="text"]').forEach((el) => {
+        el.addEventListener("change", () => {
+          const v = (el.value || "").trim();
+          if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) {
+            const color = document.getElementById("theme-color-" + el.dataset.key);
+            if (color) {
+              color.value = v.length === 4
+                ? "#" + v.slice(1).split("").map((c) => c + c).join("")
+                : v;
+            }
+          }
+        });
+      });
+    }
+
+    async function refreshTheme() {
+      try {
+        const r = await fetch("/api/admin/theme");
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || "Load failed");
+        themeCssVars = data.cssVars || {};
+        buildThemeFields(data.fields || []);
+        const theme = data.theme || data.defaults || {};
+        syncThemeInputs(theme);
+        applyThemeLive(theme);
+      } catch (e) {
+        if (msg) {
+          msg.hidden = false;
+          msg.className = "status-box err";
+          msg.textContent = "Could not load theme: " + (e.message || e);
+        }
+      }
+    }
+
+    saveBtn.onclick = async () => {
+      const r = await fetch("/api/admin/theme", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme: readThemeInputs() }),
+      });
+      const data = await r.json();
+      msg.hidden = false;
+      msg.className = "status-box " + (data.ok ? "ok" : "err");
+      msg.textContent = data.ok
+        ? "Saved to local theme.json. Refresh /edit or /preview if they were already open."
+        : (data.error || "Save failed");
+      if (data.ok) {
+        syncThemeInputs(data.theme);
+        applyThemeLive(data.theme);
+      }
+    };
+
+    resetBtn.onclick = async () => {
+      if (!confirm("Reset portal colors to the default blue / light-orange theme?")) return;
+      const r = await fetch("/api/admin/theme", { method: "DELETE" });
+      const data = await r.json();
+      msg.hidden = false;
+      msg.className = "status-box " + (data.ok ? "ok" : "err");
+      msg.textContent = data.ok ? "Reset to defaults." : (data.error || "Reset failed");
+      if (data.ok) {
+        syncThemeInputs(data.theme);
+        applyThemeLive(data.theme);
+      }
+    };
+
+    refreshTheme();
+  }
+
   async function wireSiteAccess() {
     const status = document.getElementById("view-pw-status");
     const msg = document.getElementById("view-pw-msg");
@@ -4956,7 +5327,10 @@ function applyModeFromConfig(cfg) {
     await wireSiteAccess();
     wireContentImport();
     wireRenderPackExport();
-    if (document.body.classList.contains("admin-surface")) await refreshStorageStatus();
+    if (document.body.classList.contains("admin-surface")) {
+      await refreshStorageStatus();
+      wirePortalTheme();
+    }
     restoreSideLayout();
     wireSideResize();
     const frame = document.getElementById("viewer-frame");

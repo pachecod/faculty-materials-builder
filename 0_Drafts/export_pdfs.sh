@@ -283,7 +283,7 @@ if fatal:
 PYEOF
 
 REBUILT_COURSES=()
-REBUILT_EVIDENCE=0
+REBUILT_EVIDENCE_PDFS=()
 REBUILT_CREATIVE_WORK=0
 
 rebuild_course() {
@@ -345,7 +345,12 @@ case "$MODE" in
     export_pdf "$SCRIPT_DIR/4_Supplemental_Evidence_of_Impact/Academic_Correspondence.md" "$EV" "Academic_Correspondence.pdf"
     export_pdf "$SCRIPT_DIR/4_Supplemental_Evidence_of_Impact/Profession_and_Industry_Correspondence.md" "$EV" "Profession_and_Industry_Correspondence.pdf"
     export_pdf "$SCRIPT_DIR/4_Supplemental_Evidence_of_Impact/Other_Evidence_of_Impact.md" "$EV" "Other_Evidence_of_Impact.pdf"
-    REBUILT_EVIDENCE=1
+    REBUILT_EVIDENCE_PDFS+=(
+      "Student_Correspondence.pdf"
+      "Academic_Correspondence.pdf"
+      "Profession_and_Industry_Correspondence.pdf"
+      "Other_Evidence_of_Impact.pdf"
+    )
     ;;
 
   course)
@@ -406,19 +411,19 @@ case "$MODE" in
         ;;
       student-corr)
         export_pdf "$EVIDENCE_MD_DIR/Student_Correspondence.md" "$OUT/5_Other_Evidence_of_Impact" "Student_Correspondence.pdf"
-        REBUILT_EVIDENCE=1
+        REBUILT_EVIDENCE_PDFS+=("Student_Correspondence.pdf")
         ;;
       academic-corr)
         export_pdf "$EVIDENCE_MD_DIR/Academic_Correspondence.md" "$OUT/5_Other_Evidence_of_Impact" "Academic_Correspondence.pdf"
-        REBUILT_EVIDENCE=1
+        REBUILT_EVIDENCE_PDFS+=("Academic_Correspondence.pdf")
         ;;
       profession-corr)
         export_pdf "$EVIDENCE_MD_DIR/Profession_and_Industry_Correspondence.md" "$OUT/5_Other_Evidence_of_Impact" "Profession_and_Industry_Correspondence.pdf"
-        REBUILT_EVIDENCE=1
+        REBUILT_EVIDENCE_PDFS+=("Profession_and_Industry_Correspondence.pdf")
         ;;
       other-evidence)
         export_pdf "$EVIDENCE_MD_DIR/Other_Evidence_of_Impact.md" "$OUT/5_Other_Evidence_of_Impact" "Other_Evidence_of_Impact.pdf"
-        REBUILT_EVIDENCE=1
+        REBUILT_EVIDENCE_PDFS+=("Other_Evidence_of_Impact.pdf")
         ;;
       *)
         echo "Unknown packet key: $PACKET_KEY" >&2
@@ -519,7 +524,7 @@ case "$MODE" in
       fi
       if needs_rebuild "$dest" "${sources[@]}"; then
         export_pdf "$src" "$dest_dir" "$pdf_name"
-        REBUILT_EVIDENCE=1
+        REBUILT_EVIDENCE_PDFS+=("$pdf_name")
       else
         echo "  skip   $pdf_name (up to date)"
       fi
@@ -536,14 +541,16 @@ echo ""
 if [[ "$MODE" == "full" ]]; then
   echo "Appending course exhibits, Evidence-of-Impact files, and Creative Work exhibits ..."
   "$SCRIPT_DIR/build_attachments.py"
-elif [[ ${#REBUILT_COURSES[@]} -gt 0 || "$REBUILT_EVIDENCE" -eq 1 || "$REBUILT_CREATIVE_WORK" -eq 1 ]]; then
+elif [[ ${#REBUILT_COURSES[@]} -gt 0 || ${#REBUILT_EVIDENCE_PDFS[@]} -gt 0 || "$REBUILT_CREATIVE_WORK" -eq 1 ]]; then
   if [[ ${#REBUILT_COURSES[@]} -gt 0 ]]; then
     echo "Appending exhibits for courses: ${REBUILT_COURSES[*]} ..."
     "$SCRIPT_DIR/build_attachments.py" --only "${REBUILT_COURSES[@]}"
   fi
-  if [[ "$REBUILT_EVIDENCE" -eq 1 ]]; then
-    echo "Appending Evidence-of-Impact category exhibits ..."
-    "$SCRIPT_DIR/build_attachments.py" --evidence
+  if [[ ${#REBUILT_EVIDENCE_PDFS[@]} -gt 0 ]]; then
+    echo "Appending Evidence-of-Impact exhibits for: ${REBUILT_EVIDENCE_PDFS[*]} ..."
+    # Only the rebuilt cover PDF(s) — do not force-reappend siblings (that
+    # doubled appendices and flipped them to Official outdated).
+    "$SCRIPT_DIR/build_attachments.py" --evidence "${REBUILT_EVIDENCE_PDFS[@]}"
   fi
   if [[ "$REBUILT_CREATIVE_WORK" -eq 1 ]]; then
     echo "Appending Creative Work exhibits ..."

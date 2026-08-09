@@ -158,6 +158,13 @@ _THEME_SPEC = (
     ("rowPartial", "--row-partial", "#ffedd5", "Partial rows", "List rows"),
     ("rowNoneNeed", "--row-none-need", "#fecaca", "No content + need yes rows", "List rows"),
     ("rowNoneOk", "--row-none-ok", "#fde68a", "No content + need no rows", "List rows"),
+    ("officialOk", "--official-ok", "#16a34a", "Official edge", "Official status"),
+    ("officialOkBg", "--official-ok-bg", "#dcfce7", "Official badge background", "Official status"),
+    ("officialStale", "--official-stale", "#c2410c", "Official outdated edge", "Official status"),
+    ("officialStaleBg", "--official-stale-bg", "#ffedd5", "Official outdated badge background", "Official status"),
+    ("officialStaleRow", "--official-stale-row", "#ffedd5", "Official outdated row background", "Official status"),
+    ("officialMissing", "--official-missing", "#78716c", "Not official edge", "Official status"),
+    ("officialMissingBg", "--official-missing-bg", "#f5f5f4", "Not official badge background", "Official status"),
     ("badgeText", "--badge-text", "#1e40af", "Updated badge text", "Badges"),
     ("badgeBg", "--badge-bg", "#dbeafe", "Updated badge background", "Badges"),
     ("badgeBorder", "--badge-border", "#93c5fd", "Updated badge border", "Badges"),
@@ -2224,6 +2231,29 @@ def api_regenerate():
     return jsonify({"ok": True, "started": True, "mode": mode})
 
 
+def _promote_packet(pkt: dict) -> dict:
+    """Copy one packet's review PDF to _official and stamp officialAt."""
+    rel = pkt["reviewRel"]
+    src = REVIEW / rel
+    if not src.is_file():
+        raise FileNotFoundError(f"Preview PDF missing: {rel}")
+    dest = OFFICIAL / rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    status = load_status()
+    st = status.get(pkt["name"]) or default_status_for(pkt["name"])
+    at = datetime.now().astimezone().isoformat(timespec="seconds")
+    st["officialAt"] = at
+    status[pkt["name"]] = st
+    save_status(status)
+    return {
+        "name": pkt["name"],
+        "file": rel,
+        "official": str(dest),
+        "at": at,
+    }
+
+
 @app.post("/api/promote")
 @require_edit
 def api_promote():
@@ -2232,19 +2262,51 @@ def api_promote():
     pkt = packet_by_pdf(pdf)
     if not pkt:
         return jsonify({"ok": False, "error": "Unknown packet"}), 404
-    rel = pkt["reviewRel"]
-    src = REVIEW / rel
-    if not src.is_file():
-        return jsonify({"ok": False, "error": f"Preview PDF missing: {rel}"}), 404
-    dest = OFFICIAL / rel
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src, dest)
-    status = load_status()
-    st = status.get(pkt["name"]) or default_status_for(pkt["name"])
-    st["officialAt"] = datetime.now().astimezone().isoformat(timespec="seconds")
-    status[pkt["name"]] = st
-    save_status(status)
-    return jsonify({"ok": True, "official": str(dest), "at": st["officialAt"]})
+    try:
+        result = _promote_packet(pkt)
+    except FileNotFoundError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 404
+    return jsonify({"ok": True, "official": result["official"], "at": result["at"]})
+
+
+@app.post("/api/promote-all")
+@require_edit
+def api_promote_all():
+    """Copy every available _pdf_review packet PDF into _official (local edit)."""
+    data = request.get_json(silent=True) or {}
+    only_needed = bool(data.get("onlyNeeded"))
+    promoted: list[dict] = []
+    skipped: list[dict] = []
+    for pkt in load_registry().get("packets", []):
+        name = pkt.get("name") or ""
+        rel = (pkt.get("reviewRel") or "").strip()
+        if not name or not rel:
+            continue
+        src = REVIEW / rel
+        if not src.is_file():
+            skipped.append({"name": name, "file": rel, "reason": "missing_review"})
+            continue
+        dest = OFFICIAL / rel
+        if only_needed and dest.is_file():
+            try:
+                if dest.stat().st_mtime + 0.001 >= src.stat().st_mtime:
+                    skipped.append({"name": name, "file": rel, "reason": "already_current"})
+                    continue
+            except OSError:
+                pass
+        try:
+            promoted.append(_promote_packet(pkt))
+        except Exception as exc:
+            skipped.append({"name": name, "file": rel, "reason": str(exc)})
+    return jsonify(
+        {
+            "ok": True,
+            "promoted": len(promoted),
+            "skipped": len(skipped),
+            "items": promoted,
+            "skippedItems": skipped,
+        }
+    )
 
 
 @app.post("/api/admin/sync")
