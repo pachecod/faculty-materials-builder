@@ -786,18 +786,43 @@ def build_inventory(*, as_viewer: bool | None = None) -> dict:
 
 # ---------- routes ----------
 
-def _login_html(title: str, action: str, blurb: str, err: bool) -> Response:
-    err_html = '<p class="err">Incorrect password.</p>' if err else ""
+def _login_html(
+    title: str,
+    action: str,
+    blurb: str,
+    err: bool,
+    *,
+    with_username: bool = False,
+) -> Response:
+    err_html = (
+        '<p class="err">Incorrect username or password.</p>'
+        if err and with_username
+        else ('<p class="err">Incorrect password.</p>' if err else "")
+    )
+    user_field = (
+        '<label>Username'
+        '<input type=text name=username autocomplete=username required autofocus '
+        "placeholder=\"Same as password\">"
+        "</label>"
+        if with_username
+        else ""
+    )
+    pw_autofocus = "" if with_username else " autofocus"
     html = (
         "<!doctype html><html><head><meta charset=utf-8>"
         f"<title>{title}</title>"
         "<style>body{font-family:system-ui;max-width:24rem;margin:4rem auto;padding:0 1rem}"
+        "label{display:block;font-size:.85rem;margin-top:.65rem}"
         "input,button{font:inherit;padding:.5rem;width:100%;margin:.35rem 0;box-sizing:border-box}"
         ".err{color:#b91c1c}</style></head><body>"
         f"<h1>{title}</h1>"
         f"<p>{blurb}</p>"
         f"<form method=post action={action}>"
-        '<input type=password name=password placeholder=Password required autofocus>'
+        f"{user_field}"
+        f"<label>Password"
+        f'<input type=password name=password autocomplete=current-password '
+        f'placeholder=Password required{pw_autofocus}>'
+        "</label>"
         "<button type=submit>Sign in</button>"
         "</form>"
         f"{err_html}"
@@ -815,9 +840,10 @@ def login_page():
     return _login_html(
         "PoP Renewal Viewer",
         "/login",
-        "Enter the public view password (set by an admin under Site access). "
-        "This is not the admin password.",
+        "Enter the public access credentials (set under Admin → Site access). "
+        "Use the same value for username and password. This is not the admin login.",
         bool(request.args.get("e")),
+        with_username=True,
     )
 
 
@@ -825,8 +851,10 @@ def login_page():
 def login_post():
     if POP_MODE == "edit":
         return redirect("/")
+    user = (request.form.get("username") or "").strip()
     pw = (request.form.get("password") or "").strip()
-    if check_view_password(pw):
+    # Username mirrors password so password managers have a username field to save.
+    if user and user == pw and check_view_password(pw):
         session["view_authed"] = True
         session["authed"] = True  # back-compat
         return redirect("/")

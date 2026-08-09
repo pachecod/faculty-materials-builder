@@ -88,14 +88,16 @@
       <section class="panel" id="site-access">
         <h2>Site access</h2>
         <p class="hint">
-          This sets the <strong>public view password</strong> for visitors at
+          This sets the <strong>public access secret</strong> for visitors at
           <code>/</code> (sign-in page <code>/login</code>).
-          It does <em>not</em> change your admin login ù that stays
+          Visitors enter that same value as both <strong>username</strong> and
+          <strong>password</strong> (helps password managers save it).
+          It does <em>not</em> change your admin login ó that stays
           <code>ADMIN_PASSWORD</code> in the Render Environment.
         </p>
         <div class="site-access-form">
-          <p id="view-pw-status" class="hint">Checkingù</p>
-          <label>New public view password
+          <p id="view-pw-status" class="hint">CheckingÖ</p>
+          <label>New public access secret (username = password)
             <input type="password" id="view-pw-input" autocomplete="new-password" placeholder="Share this with visitors">
           </label>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap">
@@ -184,7 +186,7 @@
     msg.hidden = false;
     msg.className = "status-box " + (data.ok ? "ok" : "err");
     msg.textContent = data.ok
-      ? "Saved. Share this password for the public site (/login) ó not for /admin."
+      ? "Saved. Visitors use this same value for both username and password on /login ù not for /admin."
       : (data.error || "Save failed");
     if (data.ok) input.value = "";
     await refreshPw();
