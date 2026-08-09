@@ -66,6 +66,13 @@ content-pack*.zip
 *.content-pack.zip
 publish/content-pack*.zip
 
+# Local → Render push fingerprint (mtime/size snapshot)
+render_push_state.json
+
+# Runtime portal theme (also stored on Render /data)
+theme.json
+publish/theme.json
+
 # Local data-root mirrors
 /data/
 

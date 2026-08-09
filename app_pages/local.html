@@ -15,6 +15,10 @@
     --accent-soft: #fff1e6;
     --bar: #2563eb;
     --link: #1d4ed8;
+    --panel-head: #1e3a5f;
+    --panel-head-text: #dbeafe;
+    --wash-a: #dbeafe;
+    --wash-b: #fff1e6;
     --row-complete: #dbeafe;
     --row-partial: #ffedd5;
     --row-none-need: #fecaca;
@@ -26,8 +30,8 @@
     font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     color: var(--ink);
     background:
-      radial-gradient(1200px 600px at 10% -10%, #dbeafe 0%, transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, #fff1e6 0%, transparent 50%),
+      radial-gradient(1200px 600px at 10% -10%, var(--wash-a) 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, var(--wash-b) 0%, transparent 50%),
       var(--bg);
     min-height: 100vh;
     line-height: 1.45;
@@ -286,19 +290,19 @@
   }
   #pdf-table.view-section .col-section { display: none; }
   tr.section-head td {
-    background: #1e3a5f;
-    color: #fafaf9;
+    background: var(--panel-head);
+    color: var(--panel-head-text);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.03em;
     padding: 0.55rem 0.65rem;
-    border-bottom: 1px solid #44403c;
+    border-bottom: 1px solid color-mix(in srgb, var(--panel-head) 70%, #000);
     vertical-align: middle;
   }
   tr.section-head .section-head-meta {
     font-weight: 500;
-    color: #a8a29e;
+    color: color-mix(in srgb, var(--panel-head-text) 70%, transparent);
     margin-left: 0.65rem;
     font-size: 0.72rem;
     letter-spacing: 0;
@@ -823,11 +827,14 @@
     font-weight: 600;
     letter-spacing: 0.01em;
   }
-  /* Admin: only Site access + Import content */
+  /* Admin: local pack build/import only — Site access is Render /admin (hosted-admin) */
   body.admin-surface .top-grid,
   body.admin-surface .tools-grid.production-admin-only,
   body.admin-surface .tools-grid.local-edit-only,
   body.admin-surface #local-edit-notice {
+    display: none !important;
+  }
+  body.local-surfaces #site-access {
     display: none !important;
   }
   body.admin-surface .wrap {
@@ -868,6 +875,20 @@
     display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
     margin: 0 0 0.75rem;
   }
+  .list-toolbar:empty { display: none; }
+  .tally-download {
+    display: block;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+  .tally-download:hover { color: var(--accent); }
   .list-toolbar .bar-btn {
     text-decoration: none; display: inline-flex; align-items: center;
   }
@@ -891,6 +912,111 @@
     backdrop-filter: blur(2px);
   }
   #rebuild-modal[hidden] { display: none !important; }
+  #confirm-import-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(28, 25, 23, 0.62);
+    backdrop-filter: blur(2px);
+  }
+  #confirm-import-modal[hidden] { display: none !important; }
+  .confirm-import-card {
+    width: min(28rem, 100%);
+    background: #fffaf5;
+    color: #1c1917;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 1.25rem 1.35rem 1.15rem;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .confirm-import-card h3 {
+    margin: 0 0 0.65rem;
+    font-size: 1.1rem;
+    color: #991b1b;
+  }
+  .confirm-import-card p {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: #44403c;
+  }
+  .confirm-import-card.is-ok-only {
+    border-color: #93c5fd;
+  }
+  .confirm-import-card.is-ok-only h3 {
+    color: #1e3a8a;
+  }
+  #confirm-import-list {
+    margin: 0 0 1.1rem;
+    padding: 0.55rem 0.75rem;
+    max-height: min(40vh, 16rem);
+    overflow: auto;
+    list-style: none;
+    border: 1px solid #e8e4df;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 0.86rem;
+  }
+  #confirm-import-list[hidden] { display: none !important; }
+  #confirm-import-list li {
+    display: flex;
+    gap: 0.45rem;
+    align-items: baseline;
+    padding: 0.22rem 0;
+    border-bottom: 1px solid #f5f5f4;
+  }
+  #confirm-import-list li:last-child { border-bottom: 0; }
+  #confirm-import-list .op {
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #1e3a8a;
+  }
+  #confirm-import-list .op.is-added { color: #166534; }
+  #confirm-import-list .op.is-removed { color: #991b1b; }
+  #confirm-import-list .name {
+    color: #1c1917;
+    word-break: break-word;
+  }
+  .confirm-import-actions {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .confirm-import-actions button {
+    font: inherit;
+    font-weight: 700;
+    min-width: 4.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #d6d3d1;
+    cursor: pointer;
+  }
+  #confirm-import-no {
+    background: #fff;
+    color: #1c1917;
+  }
+  #confirm-import-yes {
+    background: #991b1b;
+    border-color: #991b1b;
+    color: #fff;
+  }
+  #confirm-import-yes:hover { background: #7f1d1d; }
+  .confirm-import-card.is-ok-only #confirm-import-yes {
+    background: #1e3a8a;
+    border-color: #1e3a8a;
+  }
+  .confirm-import-card.is-ok-only #confirm-import-yes:hover {
+    background: #1e40af;
+  }
   .rebuild-modal-card {
     width: min(26rem, 100%);
     background: #fafaf9;
@@ -1176,13 +1302,13 @@
           <span><i class="swatch none-ok"></i> No Content + Need No</span>
         </div>
         <div class="bars" id="section-bars"></div>
+        <a class="tally-download" id="btn-download-all" href="/api/download/all">Download all PDFs</a>
       </aside>
 
       <section class="panel list-panel" id="metric-pdf-export">
         <h2>PDF list</h2>
         <p class="hint">Click a file name to view here. Hover a file name to see its source markdown path. Scroll the page to browse the full list.</p>
         <div class="list-toolbar">
-          <a class="bar-btn" id="btn-download-all" href="/api/download/all">Download all PDFs</a>
           <span class="hint" id="empty-pdf-hint" hidden>No PDFs published yet.</span>
         </div>
         <div class="list-filters" id="list-filters">
@@ -1383,7 +1509,11 @@
 
       <section class="panel" id="content-import">
         <h2>Import content</h2>
-        <p class="hint">Upload a content-pack zip from a local install (Build Render import pack). By default this merges/overwrites by path and leaves orphan files. Use wipe when you want a clean replace. Does not go through GitHub.</p>
+        <p class="hint">
+          Imports into <strong>this Mac’s working copy</strong> (overwrites matching files).
+          Prefer <strong>Upload to Render</strong> above to update the hosted site.
+          Use this only if you intentionally want to restore local files from a pack.
+        </p>
         <div class="status-box" id="disk-status" hidden></div>
         <div class="import-form">
           <input type="file" id="content-pack-input" accept=".zip,application/zip">
@@ -1496,6 +1626,20 @@
         <div class="rebuild-progress-bar" id="rebuild-progress-bar"></div>
       </div>
       <p class="rebuild-modal-status" id="rebuild-modal-status">Starting…</p>
+    </div>
+  </div>
+
+  <div id="confirm-import-modal" hidden aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="confirm-import-title" aria-describedby="confirm-import-body">
+    <div class="confirm-import-card" id="confirm-import-card">
+      <h3 id="confirm-import-title">Warning!</h3>
+      <p id="confirm-import-body">
+        Uploading this pack will replace all of your local files. Are you sure you want to proceed?
+      </p>
+      <ul id="confirm-import-list" hidden></ul>
+      <div class="confirm-import-actions">
+        <button type="button" id="confirm-import-no">NO</button>
+        <button type="button" id="confirm-import-yes">YES</button>
+      </div>
     </div>
   </div>
 
@@ -3101,7 +3245,7 @@ function applyModeFromConfig(cfg) {
   const banner = document.getElementById("mode-banner");
   if (banner) {
     if (showAdminOps) {
-      banner.textContent = "Local Admin — Build import pack, site access, and import. Use Render admin to test the hosted /admin page.";
+      banner.textContent = "Local Admin — Build import pack and upload to Render. Use Render admin (/render-admin) for the public view password.";
     } else if (editableHere) {
       banner.textContent = "Edit & Append — Set Need/Level, manage appendices, rebuild PDFs.";
     } else {
@@ -3119,6 +3263,20 @@ function applyModeFromConfig(cfg) {
     }
   }
   applyContentUpdated(cfg);
+  if (typeof applyTheme === "function") applyTheme(cfg.theme, cfg.themeCssVars);
+  else if (cfg.theme) {
+    const map = cfg.themeCssVars || {
+      accent: "--accent", accentSoft: "--accent-soft", link: "--link", bar: "--bar",
+      panelHead: "--panel-head", panelHeadText: "--panel-head-text",
+      bg: "--bg", washA: "--wash-a", washB: "--wash-b",
+    };
+    Object.keys(map).forEach((key) => {
+      const val = cfg.theme[key];
+      if (typeof val === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val.trim())) {
+        document.documentElement.style.setProperty(map[key], val.trim());
+      }
+    });
+  }
 }
 
 (async function init() {
@@ -3236,6 +3394,65 @@ function applyModeFromConfig(cfg) {
       const status = panel ? panel.querySelector(".render-pack-status") : null;
       const wipeEl = panel ? panel.querySelector(".push-render-wipe") : null;
       const wipe = !!(wipeEl && wipeEl.checked);
+      if (wipe) {
+        const proceed = await confirmDangerModal({
+          title: "Warning!",
+          body:
+            "You chose to wipe all content on Render. This will replace everything on that site. "
+            + "Are you sure you want to proceed?",
+          fallback:
+            "You chose to wipe all content on Render. This will replace everything on that site. "
+            + "Are you sure you want to proceed?",
+        });
+        if (!proceed) return;
+      } else {
+        let preview = null;
+        try {
+          const pr = await fetch("/api/push-content-preview");
+          preview = await pr.json();
+          if (!pr.ok || !preview.ok) {
+            if (status) {
+              status.hidden = false;
+              status.className = "status-box render-pack-status err";
+              status.textContent = (preview && preview.error) || "Could not compare changes for upload.";
+            }
+            return;
+          }
+        } catch (err) {
+          if (status) {
+            status.hidden = false;
+            status.className = "status-box render-pack-status err";
+            status.textContent = String(err.message || err);
+          }
+          return;
+        }
+        if (!preview.hasChanges) {
+          await confirmDangerModal({
+            title: "Nothing new to upload",
+            body: "Local content matches the last successful Upload to Render. There is nothing new to upload.",
+            mode: "ok",
+            okLabel: "OK",
+            fallback: "Nothing new to upload",
+          });
+          return;
+        }
+        const n = preview.changeCount || (preview.changes || []).length;
+        const body = preview.firstPush
+          ? ("This is the first Upload to Render from this Mac. The pack includes "
+            + (preview.fileCount || n) + " file(s). Upload now?")
+          : ("These incremental updates will be uploaded to Render ("
+            + n + " change"
+            + (n === 1 ? "" : "s")
+            + "). Proceed?");
+        const proceed = await confirmDangerModal({
+          title: preview.firstPush ? "Upload to Render" : "Upload incremental updates",
+          body,
+          changes: preview.changes || [],
+          changeCount: n,
+          fallback: body,
+        });
+        if (!proceed) return;
+      }
       if (status) {
         status.hidden = false;
         status.className = "status-box render-pack-status";
@@ -4150,6 +4367,115 @@ function applyModeFromConfig(cfg) {
     await refresh();
   }
 
+  function confirmDangerModal({
+    title,
+    body,
+    fallback,
+    mode,
+    okLabel,
+    yesLabel,
+    noLabel,
+    changes,
+    changeCount,
+  }) {
+    const modal = document.getElementById("confirm-import-modal");
+    const card = document.getElementById("confirm-import-card");
+    const yes = document.getElementById("confirm-import-yes");
+    const no = document.getElementById("confirm-import-no");
+    const titleEl = document.getElementById("confirm-import-title");
+    const bodyEl = document.getElementById("confirm-import-body");
+    const listEl = document.getElementById("confirm-import-list");
+    const okOnly = mode === "ok";
+    if (!modal || !yes || !no) {
+      if (okOnly) {
+        alert(fallback || body || title || "Nothing new to upload");
+        return Promise.resolve(false);
+      }
+      return Promise.resolve(confirm(fallback || body || title || "Proceed?"));
+    }
+    if (titleEl && title) titleEl.textContent = title;
+    if (bodyEl && body) bodyEl.textContent = body;
+    if (card) card.classList.toggle("is-ok-only", okOnly);
+    if (listEl) {
+      const rows = Array.isArray(changes) ? changes : [];
+      if (!rows.length || okOnly) {
+        listEl.hidden = true;
+        listEl.innerHTML = "";
+      } else {
+        const limit = 40;
+        const shown = rows.slice(0, limit);
+        const total = typeof changeCount === "number" ? changeCount : rows.length;
+        const opLabel = (op) => {
+          if (op === "added") return "New";
+          if (op === "removed") return "Removed";
+          return "Updated";
+        };
+        listEl.innerHTML = shown.map((row) => {
+          const op = row.op || "changed";
+          const name = row.label || row.path || "";
+          return (
+            "<li>"
+            + '<span class="op is-' + op + '">' + opLabel(op) + "</span>"
+            + '<span class="name">' + String(name).replace(/[&<>"']/g, (c) => ({
+              "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+            }[c])) + "</span>"
+            + "</li>"
+          );
+        }).join("") + (total > shown.length
+          ? ("<li><span class=\"name\">…and " + (total - shown.length) + " more</span></li>")
+          : "");
+        listEl.hidden = false;
+      }
+    }
+    no.hidden = okOnly;
+    yes.textContent = okOnly ? (okLabel || "OK") : (yesLabel || "YES");
+    no.textContent = noLabel || "NO";
+    return new Promise((resolve) => {
+      const finish = (ok) => {
+        modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
+        yes.removeEventListener("click", onYes);
+        no.removeEventListener("click", onNo);
+        modal.removeEventListener("keydown", onKey);
+        no.hidden = false;
+        yes.textContent = "YES";
+        no.textContent = "NO";
+        if (card) card.classList.remove("is-ok-only");
+        if (listEl) {
+          listEl.hidden = true;
+          listEl.innerHTML = "";
+        }
+        resolve(ok);
+      };
+      const onYes = () => finish(!okOnly);
+      const onNo = () => finish(false);
+      const onKey = (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          finish(false);
+        }
+      };
+      yes.addEventListener("click", onYes);
+      no.addEventListener("click", onNo);
+      modal.addEventListener("keydown", onKey);
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      (okOnly ? yes : no).focus();
+    });
+  }
+
+  function confirmLocalPackImport() {
+    return confirmDangerModal({
+      title: "Warning!",
+      body:
+        "Uploading this pack will replace all of your local files. "
+        + "Are you sure you want to proceed?",
+      fallback:
+        "Warning! Uploading this pack will replace all of your local files. "
+        + "Are you sure you want to proceed?",
+    });
+  }
+
   function wireContentImport() {
     const input = document.getElementById("content-pack-input");
     const btn = document.getElementById("content-pack-upload");
@@ -4210,7 +4536,11 @@ function applyModeFromConfig(cfg) {
         return;
       }
       const doWipe = !!(wipeFirst && wipeFirst.checked);
-      if (doWipe) {
+      // Local authoring tree: always require an explicit YES before overwriting files.
+      if (document.body.classList.contains("local-surfaces")) {
+        const proceed = await confirmLocalPackImport();
+        if (!proceed) return;
+      } else if (doWipe) {
         const ok = confirm(
           "Wipe all existing content on this server, then import this pack?\n\n"
           + "Orphan files from older imports will be removed. View password is kept."

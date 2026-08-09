@@ -15,6 +15,10 @@
     --accent-soft: #fff1e6;
     --bar: #2563eb;
     --link: #1d4ed8;
+    --panel-head: #1e3a5f;
+    --panel-head-text: #dbeafe;
+    --wash-a: #dbeafe;
+    --wash-b: #fff1e6;
     --row-complete: #dbeafe;
     --row-partial: #ffedd5;
     --row-none-need: #fecaca;
@@ -26,8 +30,8 @@
     font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     color: var(--ink);
     background:
-      radial-gradient(1200px 600px at 10% -10%, #dbeafe 0%, transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, #fff1e6 0%, transparent 50%),
+      radial-gradient(1200px 600px at 10% -10%, var(--wash-a) 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, var(--wash-b) 0%, transparent 50%),
       var(--bg);
     min-height: 100vh;
     line-height: 1.45;
@@ -286,19 +290,19 @@
   }
   #pdf-table.view-section .col-section { display: none; }
   tr.section-head td {
-    background: #1e3a5f;
-    color: #fafaf9;
+    background: var(--panel-head);
+    color: var(--panel-head-text);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.03em;
     padding: 0.55rem 0.65rem;
-    border-bottom: 1px solid #44403c;
+    border-bottom: 1px solid color-mix(in srgb, var(--panel-head) 70%, #000);
     vertical-align: middle;
   }
   tr.section-head .section-head-meta {
     font-weight: 500;
-    color: #a8a29e;
+    color: color-mix(in srgb, var(--panel-head-text) 70%, transparent);
     margin-left: 0.65rem;
     font-size: 0.72rem;
     letter-spacing: 0;
@@ -805,14 +809,14 @@
   body:not(.local-surfaces) .local-surfaces-only { display: none !important; }
   body:not(.production-admin) .production-admin-only { display: none !important; }
   #mode-banner {
-    display: none; background: #1e3a5f; color: #dbeafe; text-align: center;
+    display: none; background: var(--panel-head); color: var(--panel-head-text); text-align: center;
     padding: .4rem; font-size: .85rem;
   }
   body.viewer-mode #mode-banner,
   body.local-edit #mode-banner { display: block; }
   body.local-edit #mode-banner {
-    background: #1e3a8a;
-    color: #dbeafe;
+    background: var(--accent);
+    color: var(--panel-head-text);
     font-weight: 600;
     letter-spacing: 0.01em;
   }
@@ -895,9 +899,20 @@
     display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
     margin: 0 0 0.75rem;
   }
-  .list-toolbar .bar-btn {
-    text-decoration: none; display: inline-flex; align-items: center;
+  .list-toolbar:empty { display: none; }
+  .tally-download {
+    display: block;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
   }
+  .tally-download:hover { color: var(--accent); }
   .site-access-form, .import-form {
     display: grid; gap: 0.55rem; font-size: 0.85rem;
   }
@@ -1112,8 +1127,7 @@
       margin-left: 0;
       grid-column: 1 / -1;
     }
-    .list-toolbar .bar-btn,
-    #btn-download-all {
+    .list-toolbar .bar-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1360,6 +1374,7 @@
           <span><i class="swatch none-ok"></i> No Content + Need No</span>
         </div>
         <div class="bars" id="section-bars"></div>
+        <a class="tally-download" id="btn-download-all" href="/api/download/all">Download all PDFs</a>
       </aside>
 
       <section class="panel list-panel" id="metric-pdf-export">
@@ -1369,7 +1384,6 @@
           <span class="hint-mobile">Tap a file name to open it. Scroll to browse the full list.</span>
         </p>
         <div class="list-toolbar">
-          <a class="bar-btn" id="btn-download-all" href="/api/download/all">Download all PDFs</a>
           <span class="hint" id="empty-pdf-hint" hidden>No PDFs published yet.</span>
         </div>
         <div class="list-filters" id="list-filters">
@@ -3132,6 +3146,28 @@ function applyContentUpdated(cfg) {
   el.textContent = "Last updated: " + formatContentUpdated(stamp);
 }
 
+function applyTheme(theme, cssVars) {
+  if (!theme || typeof theme !== "object") return;
+  const map = cssVars || {
+    accent: "--accent",
+    accentSoft: "--accent-soft",
+    link: "--link",
+    bar: "--bar",
+    panelHead: "--panel-head",
+    panelHeadText: "--panel-head-text",
+    bg: "--bg",
+    washA: "--wash-a",
+    washB: "--wash-b",
+  };
+  const root = document.documentElement;
+  Object.keys(map).forEach((key) => {
+    const val = theme[key];
+    if (typeof val === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val.trim())) {
+      root.style.setProperty(map[key], val.trim());
+    }
+  });
+}
+
 function applyModeFromConfig(cfg) {
   if (!cfg) return;
   document.body.classList.add("viewer-mode");
@@ -3146,6 +3182,7 @@ function applyModeFromConfig(cfg) {
     if (!cfg.hasPdfs) emptyHint.textContent = "No PDFs published yet.";
   }
   applyContentUpdated(cfg);
+  applyTheme(cfg.theme, cfg.themeCssVars);
 }
 
 (async function init() {

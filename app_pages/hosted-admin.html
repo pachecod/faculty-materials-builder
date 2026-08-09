@@ -76,6 +76,46 @@
   }
   .status-box.ok { border-color: #93c5fd; background: #eff6ff; }
   .status-box.err { border-color: #fca5a5; background: #fef2f2; }
+  .theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 0.85rem;
+  }
+  @media (max-width: 560px) {
+    .theme-grid { grid-template-columns: 1fr; }
+  }
+  .theme-field {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+  }
+  .theme-field span { color: var(--muted); }
+  .theme-field .row {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+  }
+  .theme-field input[type="color"] {
+    width: 2.4rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+  }
+  .theme-field input[type="text"] {
+    font: inherit;
+    flex: 1;
+    min-width: 0;
+    padding: 0.35rem 0.45rem;
+    border: 1px solid var(--line);
+  }
+  .theme-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
 </style>
 </head>
 <body>
@@ -83,7 +123,7 @@
   <div class="wrap">
     <header>
       <h1>PoP hosted admin</h1>
-      <p class="hint" id="surface-hint">Manage the public view password and import content packs.</p>
+      <p class="hint" id="surface-hint">Manage the public view password, colors, and import content packs.</p>
     </header>
     <div class="tools-grid">
       <section class="panel" id="site-access">
@@ -110,6 +150,23 @@
           </div>
         </div>
         <div class="status-box" id="view-pw-msg" hidden></div>
+      </section>
+
+      <section class="panel" id="portal-theme">
+        <h2>Portal colors</h2>
+        <p class="hint">
+          These colors update the public site at <code>/</code>. Saved on the server disk (survives deploys and content wipe).
+        </p>
+        <div class="theme-grid" id="theme-grid"></div>
+        <div class="theme-actions">
+          <button type="button" id="theme-save">Save colors</button>
+          <button type="button" id="theme-reset" class="secondary">Reset to defaults</button>
+          <a class="secondary" href="/" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;text-decoration:none;padding:0.45rem 0.75rem;border:1px solid var(--line);border-radius:6px;color:inherit">
+            Open public site
+          </a>
+        </div>
+        <div class="status-box" id="theme-msg" hidden></div>
       </section>
 
       <section class="panel" id="content-import">
@@ -255,8 +312,115 @@
     }
   };
 
+  const THEME_FIELDS = [
+    { key: "accent", label: "Titles & numbers" },
+    { key: "accentSoft", label: "Stat card background" },
+    { key: "link", label: "Links" },
+    { key: "bar", label: "Progress bars" },
+    { key: "panelHead", label: "Section headers" },
+    { key: "panelHeadText", label: "Section header text" },
+    { key: "bg", label: "Page background" },
+    { key: "washA", label: "Background wash A" },
+    { key: "washB", label: "Background wash B" },
+  ];
+
+  function syncThemeInputs(theme) {
+    THEME_FIELDS.forEach(({ key }) => {
+      const color = document.getElementById("theme-color-" + key);
+      const text = document.getElementById("theme-text-" + key);
+      const val = (theme && theme[key]) || "#000000";
+      if (color) color.value = val;
+      if (text) text.value = val;
+    });
+  }
+
+  function readThemeInputs() {
+    const theme = {};
+    THEME_FIELDS.forEach(({ key }) => {
+      const text = document.getElementById("theme-text-" + key);
+      theme[key] = ((text && text.value) || "").trim();
+    });
+    return theme;
+  }
+
+  function buildThemeFields() {
+    const grid = document.getElementById("theme-grid");
+    if (!grid) return;
+    grid.innerHTML = THEME_FIELDS.map(({ key, label }) => `
+      <label class="theme-field">
+        <span>${label}</span>
+        <span class="row">
+          <input type="color" id="theme-color-${key}" data-key="${key}" value="#000000">
+          <input type="text" id="theme-text-${key}" data-key="${key}" spellcheck="false" maxlength="7">
+        </span>
+      </label>`).join("");
+    grid.querySelectorAll('input[type="color"]').forEach((el) => {
+      el.addEventListener("input", () => {
+        const text = document.getElementById("theme-text-" + el.dataset.key);
+        if (text) text.value = el.value;
+      });
+    });
+    grid.querySelectorAll('input[type="text"]').forEach((el) => {
+      el.addEventListener("change", () => {
+        const v = (el.value || "").trim();
+        if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) {
+          const color = document.getElementById("theme-color-" + el.dataset.key);
+          if (color) color.value = v.length === 4
+            ? "#" + v.slice(1).split("").map((c) => c + c).join("")
+            : v;
+        }
+      });
+    });
+  }
+
+  async function refreshTheme() {
+    const msg = document.getElementById("theme-msg");
+    try {
+      const r = await fetch("/api/admin/theme");
+      const data = await r.json();
+      if (!data.ok) throw new Error(data.error || "Load failed");
+      syncThemeInputs(data.theme || data.defaults || {});
+    } catch (e) {
+      if (msg) {
+        msg.hidden = false;
+        msg.className = "status-box err";
+        msg.textContent = "Could not load theme: " + (e.message || e);
+      }
+    }
+  }
+
+  buildThemeFields();
+
+  document.getElementById("theme-save").onclick = async () => {
+    const msg = document.getElementById("theme-msg");
+    const r = await fetch("/api/admin/theme", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme: readThemeInputs() }),
+    });
+    const data = await r.json();
+    msg.hidden = false;
+    msg.className = "status-box " + (data.ok ? "ok" : "err");
+    msg.textContent = data.ok
+      ? "Saved. Hard-refresh the public site to see the new colors."
+      : (data.error || "Save failed");
+    if (data.ok) syncThemeInputs(data.theme);
+  };
+
+  document.getElementById("theme-reset").onclick = async () => {
+    if (!confirm("Reset portal colors to the default blue / light-orange theme?")) return;
+    const msg = document.getElementById("theme-msg");
+    const r = await fetch("/api/admin/theme", { method: "DELETE" });
+    const data = await r.json();
+    msg.hidden = false;
+    msg.className = "status-box " + (data.ok ? "ok" : "err");
+    msg.textContent = data.ok ? "Reset to defaults." : (data.error || "Reset failed");
+    if (data.ok) syncThemeInputs(data.theme);
+  };
+
   await refreshPw();
   await refreshStorage();
+  await refreshTheme();
 })();
 </script>
 <script src="/local-switcher.js"></script>

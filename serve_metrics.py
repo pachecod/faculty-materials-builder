@@ -99,6 +99,34 @@ SITE_AUTH_FILE = (PUBLISH / "site_auth.json") if USE_DATA_LAYOUT else (BASE / "s
 CONTENT_UPDATED_FILE = (
     (PUBLISH / "content_updated.json") if USE_DATA_LAYOUT else (BASE / "content_updated.json")
 )
+THEME_FILE = (PUBLISH / "theme.json") if USE_DATA_LAYOUT else (BASE / "theme.json")
+# Local-only fingerprint of last successful Upload to Render
+RENDER_PUSH_STATE_FILE = BASE / "render_push_state.json"
+
+# Public portal CSS variables editable from Render /admin
+DEFAULT_THEME = {
+    "accent": "#1e3a8a",
+    "accentSoft": "#fff1e6",
+    "link": "#1d4ed8",
+    "bar": "#2563eb",
+    "panelHead": "#1e3a5f",
+    "panelHeadText": "#dbeafe",
+    "bg": "#fffaf5",
+    "washA": "#dbeafe",
+    "washB": "#fff1e6",
+}
+THEME_CSS_VARS = {
+    "accent": "--accent",
+    "accentSoft": "--accent-soft",
+    "link": "--link",
+    "bar": "--bar",
+    "panelHead": "--panel-head",
+    "panelHeadText": "--panel-head-text",
+    "bg": "--bg",
+    "washA": "--wash-a",
+    "washB": "--wash-b",
+}
+_HEX_RE = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
 STATUS_FILE = (
     (PUBLISH / "metrics_status.json") if USE_DATA_LAYOUT else (BASE / "metrics_status.json")
 )
@@ -276,6 +304,48 @@ def content_updated_at() -> str | None:
         except Exception:
             pass
     return _newest_pdf_mtime_iso()
+
+
+def _normalize_hex_color(value: str) -> str | None:
+    raw = (value or "").strip()
+    if not _HEX_RE.match(raw):
+        return None
+    if len(raw) == 4:
+        return "#" + "".join(ch * 2 for ch in raw[1:]).lower()
+    return raw.lower()
+
+
+def load_theme() -> dict:
+    theme = dict(DEFAULT_THEME)
+    if THEME_FILE.is_file():
+        try:
+            data = json.loads(THEME_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                for key in DEFAULT_THEME:
+                    if key in data:
+                        norm = _normalize_hex_color(str(data[key]))
+                        if norm:
+                            theme[key] = norm
+        except Exception:
+            pass
+    return theme
+
+
+def save_theme(theme: dict) -> dict:
+    cleaned = dict(DEFAULT_THEME)
+    for key in DEFAULT_THEME:
+        if key in theme:
+            norm = _normalize_hex_color(str(theme[key]))
+            if not norm:
+                raise ValueError(f"Invalid color for {key}: {theme[key]!r}")
+            cleaned[key] = norm
+    THEME_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        **cleaned,
+        "updatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
+    THEME_FILE.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return cleaned
 
 
 def view_password_hash() -> str | None:
@@ -1158,6 +1228,9 @@ def api_config():
             ),
             "renderSyncUrl": RENDER_SYNC_URL if can_edit() and RENDER_SYNC_URL else "",
             "contentUpdatedAt": content_updated_at(),
+            "theme": load_theme(),
+            "themeDefaults": dict(DEFAULT_THEME),
+            "themeCssVars": dict(THEME_CSS_VARS),
         }
     )
 
@@ -1961,6 +2034,45 @@ def api_admin_sync():
     return jsonify({"ok": True, "saved": saved, "root": str(data_root)})
 
 
+@app.get("/api/theme")
+@require_viewer_auth
+def api_theme_get():
+    return jsonify({"ok": True, "theme": load_theme(), "defaults": dict(DEFAULT_THEME)})
+
+
+@app.get("/api/admin/theme")
+@require_admin
+def api_admin_theme_get():
+    return jsonify(
+        {
+            "ok": True,
+            "theme": load_theme(),
+            "defaults": dict(DEFAULT_THEME),
+            "cssVars": dict(THEME_CSS_VARS),
+        }
+    )
+
+
+@app.put("/api/admin/theme")
+@require_admin
+def api_admin_theme_put():
+    data = request.get_json(silent=True) or {}
+    incoming = data.get("theme") if isinstance(data.get("theme"), dict) else data
+    try:
+        theme = save_theme(incoming or {})
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True, "theme": theme})
+
+
+@app.delete("/api/admin/theme")
+@require_admin
+def api_admin_theme_delete():
+    if THEME_FILE.is_file():
+        THEME_FILE.unlink(missing_ok=True)
+    return jsonify({"ok": True, "theme": load_theme()})
+
+
 @app.get("/api/admin/view-password")
 @require_admin
 def api_view_password_get():
@@ -2079,6 +2191,181 @@ def _apply_content_pack_extract(stage: Path) -> dict:
     return stats
 
 
+def _collect_pack_rel_paths() -> list[str]:
+    """Paths that build_content_pack.sh includes (files only, posix rel)."""
+    reg = load_registry()
+    roots: set[Path] = set()
+    for p in reg.get("packets", []):
+        md = (p.get("editMd") or "").strip()
+        if md:
+            roots.add(Path(md))
+        for r in p.get("attachmentRoots") or []:
+            if r:
+                roots.add(Path(r))
+    for rel in (
+        "metrics_status.json",
+        "0_Drafts/attachment_order.json",
+        "0_Drafts/attachment_bookmarks.json",
+        "0_Drafts/packet_order.json",
+    ):
+        if (BASE / rel).exists():
+            roots.add(Path(rel))
+    for base in (DRAFTS / "_official", DRAFTS / "_pdf_review"):
+        if base.is_dir():
+            for pdf in base.rglob("*.pdf"):
+                roots.add(pdf.relative_to(BASE))
+    for sub in (
+        "2_Supplemental_Materials_Teaching",
+        "3_Supplemental_Materials_Service",
+        "4_Supplemental_Evidence_of_Impact",
+    ):
+        d = DRAFTS / sub
+        if d.is_dir():
+            for f in d.rglob("*"):
+                if f.is_file() and f.suffix.lower() in {".md", ".pdf", ".txt"}:
+                    roots.add(f.relative_to(BASE))
+
+    files: set[str] = set()
+    for rel in roots:
+        src = BASE / rel
+        if not src.exists():
+            continue
+        if src.is_file():
+            files.add(Path(rel).as_posix())
+            continue
+        if src.is_dir():
+            for f in src.rglob("*"):
+                if f.is_file():
+                    files.add(f.relative_to(BASE).as_posix())
+    return sorted(files)
+
+
+def _pack_file_label(rel: str) -> str:
+    """Human label for a pack path (packet name when possible)."""
+    name = Path(rel).name
+    if "/_official/" in rel or "/_pdf_review/" in rel:
+        for p in load_registry().get("packets", []):
+            pname = p.get("name") or ""
+            if pname and (rel.endswith("/" + pname) or name == pname):
+                return pname.replace(".pdf", "").replace("_", " ")
+    if rel.endswith(".md"):
+        return name
+    return name
+
+
+def _fingerprint_pack_files() -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for rel in _collect_pack_rel_paths():
+        path = BASE / rel
+        try:
+            st = path.stat()
+        except OSError:
+            continue
+        out[rel] = {
+            "mtime": int(st.st_mtime),
+            "size": int(st.st_size),
+            "label": _pack_file_label(rel),
+        }
+    return out
+
+
+def _load_render_push_state() -> dict:
+    if RENDER_PUSH_STATE_FILE.is_file():
+        try:
+            return json.loads(RENDER_PUSH_STATE_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_render_push_state(files: dict[str, dict]) -> None:
+    payload = {
+        "pushedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "renderSyncUrl": RENDER_SYNC_URL,
+        "files": {
+            rel: {"mtime": meta["mtime"], "size": meta["size"]}
+            for rel, meta in files.items()
+        },
+    }
+    RENDER_PUSH_STATE_FILE.write_text(
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+    )
+
+
+def _push_content_diff() -> dict:
+    """Compare current pack files to last successful local → Render push."""
+    current = _fingerprint_pack_files()
+    prev = _load_render_push_state().get("files") or {}
+    first_push = not bool(prev)
+    added: list[dict] = []
+    changed: list[dict] = []
+    removed: list[dict] = []
+    for rel, meta in current.items():
+        old = prev.get(rel)
+        entry = {
+            "path": rel,
+            "label": meta.get("label") or Path(rel).name,
+            "size": meta.get("size") or 0,
+        }
+        if old is None:
+            added.append(entry)
+        elif int(old.get("mtime") or 0) != int(meta["mtime"]) or int(
+            old.get("size") or 0
+        ) != int(meta["size"]):
+            changed.append(entry)
+    for rel, old in prev.items():
+        if rel not in current:
+            removed.append(
+                {
+                    "path": rel,
+                    "label": _pack_file_label(rel),
+                    "size": int(old.get("size") or 0),
+                }
+            )
+    changes = (
+        [{"op": "changed", **e} for e in changed]
+        + [{"op": "added", **e} for e in added]
+        + [{"op": "removed", **e} for e in removed]
+    )
+    # Prefer packet PDFs / markdown first in the UI list
+    def sort_key(row: dict) -> tuple:
+        p = row.get("path") or ""
+        rank = 0
+        if "/_official/" in p or "/_pdf_review/" in p:
+            rank = 0
+        elif p.endswith(".md"):
+            rank = 1
+        else:
+            rank = 2
+        return (rank, row.get("label") or p)
+
+    changes.sort(key=sort_key)
+    return {
+        "ok": True,
+        "firstPush": first_push,
+        "hasChanges": first_push or bool(changes),
+        "fileCount": len(current),
+        "changeCount": len(current) if first_push else len(changes),
+        "added": len(added) if not first_push else len(current),
+        "changed": 0 if first_push else len(changed),
+        "removed": 0 if first_push else len(removed),
+        "lastPushedAt": _load_render_push_state().get("pushedAt"),
+        "changes": changes
+        if not first_push
+        else [
+            {
+                "op": "added",
+                "path": rel,
+                "label": meta.get("label") or Path(rel).name,
+                "size": meta.get("size") or 0,
+            }
+            for rel, meta in sorted(
+                current.items(), key=lambda kv: sort_key({"path": kv[0], "label": kv[1].get("label")})
+            )
+        ],
+    }
+
+
 def _run_build_content_pack() -> tuple[Path | None, str | None, str]:
     """Build content pack zip. Returns (path, error, log)."""
     global _LAST_CONTENT_PACK
@@ -2125,6 +2412,23 @@ def api_build_content_pack():
         as_attachment=True,
         download_name=out_path.name,
     )
+
+
+@app.get("/api/push-content-preview")
+@require_edit
+def api_push_content_preview():
+    """Local edit only: files that would change vs last successful Upload to Render."""
+    if not RENDER_SYNC_URL or not ADMIN_SYNC_TOKEN:
+        return jsonify(
+            {
+                "ok": False,
+                "error": (
+                    "Set RENDER_SYNC_URL and ADMIN_SYNC_TOKEN in local .env "
+                    "(matching ADMIN_SYNC_TOKEN on Render)."
+                ),
+            }
+        ), 400
+    return jsonify(_push_content_diff())
 
 
 @app.post("/api/push-content-pack")
@@ -2206,6 +2510,10 @@ def api_push_content_pack():
                     "pack": pack_path.name,
                 }
             ), 502
+        try:
+            _save_render_push_state(_fingerprint_pack_files())
+        except Exception:
+            pass
         return jsonify(
             {
                 "ok": True,
@@ -2214,6 +2522,7 @@ def api_push_content_pack():
                 "remote": payload,
                 "buildLog": build_log[-800:] if build_log else "",
                 "url": RENDER_SYNC_URL,
+                "contentUpdatedAt": payload.get("contentUpdatedAt"),
             }
         )
     except Exception as exc:
