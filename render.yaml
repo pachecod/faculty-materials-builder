@@ -9,7 +9,7 @@ services:
     plan: starter
     autoDeploy: true
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn serve_metrics:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn serve_metrics:app --bind 0.0.0.0:$PORT --timeout 600 --graceful-timeout 60
     disk:
       name: pop-pdfs
       mountPath: /data

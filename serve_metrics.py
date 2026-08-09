@@ -2408,8 +2408,61 @@ def _safe_extract_zip(zf: zipfile.ZipFile, dest: Path) -> list[str]:
     return written
 
 
+def _same_device(src: Path, dest_parent: Path) -> bool:
+    try:
+        return os.stat(src).st_dev == os.stat(dest_parent).st_dev
+    except OSError:
+        return False
+
+
+def _place_file(src: Path, dest: Path) -> None:
+    """Install a file; rename when same device (fast on /data), else copy."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        if dest.is_dir():
+            shutil.rmtree(dest)
+        else:
+            dest.unlink()
+    if _same_device(src, dest.parent):
+        try:
+            os.replace(src, dest)
+            return
+        except OSError:
+            pass
+    shutil.copy2(src, dest)
+
+
+def _place_tree(src: Path, dest: Path) -> None:
+    """Install a directory; rename when same device, else merge-copy."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if _same_device(src, dest.parent):
+        if dest.exists():
+            shutil.rmtree(dest)
+        try:
+            src.rename(dest)
+            return
+        except OSError:
+            pass
+    if dest.exists() and dest.is_dir():
+        shutil.copytree(src, dest, dirs_exist_ok=True)
+    else:
+        if dest.exists():
+            dest.unlink()
+        shutil.copytree(src, dest)
+
+
+def _hardlink_or_copy(src: Path, dest: Path) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        dest.unlink()
+    try:
+        os.link(src, dest)
+    except OSError:
+        shutil.copy2(src, dest)
+
+
 def _apply_content_pack_extract(stage: Path) -> dict:
-    """Copy staged pack into CONTENT_ROOT / REVIEW / OFFICIAL / status files."""
+    """Install staged pack into CONTENT_ROOT / REVIEW / OFFICIAL / status files."""
     stats = {"sources": 0, "reviewPdfs": 0, "officialPdfs": 0, "meta": 0}
     CONTENT_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -2429,45 +2482,39 @@ def _apply_content_pack_extract(stage: Path) -> dict:
                     for pdf in sub.rglob("*.pdf"):
                         rel = pdf.relative_to(sub)
                         dest = REVIEW / rel
-                        dest.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(pdf, dest)
+                        _place_file(pdf, dest)
                         stats["reviewPdfs"] += 1
                         # Fill gaps so viewers that prefer official still see packets
                         # that were rebuilt but not yet Save-as-official locally.
                         off = OFFICIAL / rel
                         if not off.is_file():
-                            off.parent.mkdir(parents=True, exist_ok=True)
-                            shutil.copy2(pdf, off)
+                            _hardlink_or_copy(dest, off)
                             stats["officialPdfs"] += 1
                 elif sub.name == "_official" and sub.is_dir():
                     OFFICIAL.mkdir(parents=True, exist_ok=True)
                     for pdf in sub.rglob("*.pdf"):
                         rel = pdf.relative_to(sub)
-                        dest = OFFICIAL / rel
-                        dest.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(pdf, dest)
+                        _place_file(pdf, OFFICIAL / rel)
                         stats["officialPdfs"] += 1
                 else:
                     dest = CONTENT_DRAFTS / sub.name
                     if sub.is_dir():
-                        shutil.copytree(sub, dest, dirs_exist_ok=True)
+                        _place_tree(sub, dest)
                     else:
-                        dest.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(sub, dest)
+                        _place_file(sub, dest)
                     stats["sources"] += 1
             continue
         if name == "metrics_status.json" and item.is_file():
             STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(item, STATUS_FILE)
+            _place_file(item, STATUS_FILE)
             stats["meta"] += 1
             continue
         dest = CONTENT_ROOT / name
         if item.is_dir():
-            shutil.copytree(item, dest, dirs_exist_ok=True)
+            _place_tree(item, dest)
             stats["sources"] += sum(1 for _ in dest.rglob("*") if _.is_file())
         else:
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(item, dest)
+            _place_file(item, dest)
             stats["sources"] += 1
     return stats
 
@@ -2807,10 +2854,18 @@ def api_push_content_pack():
             }
         )
     except Exception as exc:
+        msg = f"Upload to Render failed: {exc}"
+        if "500" in str(exc) or "502" in str(exc) or "504" in str(exc):
+            msg += (
+                " — often gunicorn worker timeout during a large import. "
+                "On Render set Start Command to: "
+                "gunicorn serve_metrics:app --bind 0.0.0.0:$PORT "
+                "--timeout 600 --graceful-timeout 60"
+            )
         return jsonify(
             {
                 "ok": False,
-                "error": f"Upload to Render failed: {exc}",
+                "error": msg,
                 "pack": pack_path.name if pack_path else None,
                 "buildLog": build_log[-800:] if build_log else "",
             }
@@ -2971,8 +3026,18 @@ def api_import_content():
                 f"pdfs={removed['publishPdfEntries']} "
                 f"meta={removed['metaFiles']}\n"
             )
-        with tempfile.TemporaryDirectory(prefix="pop-pack-") as tmp:
-            tmp_path = Path(tmp)
+        # Stage on the persistent disk when possible so install can rename
+        # instead of cross-device copy (keeps large imports under gunicorn timeout).
+        tmp_ctx = None
+        if USE_DATA_LAYOUT:
+            tmp_path = PUBLISH / ".import_tmp"
+            if tmp_path.exists():
+                shutil.rmtree(tmp_path)
+            tmp_path.mkdir(parents=True, exist_ok=True)
+        else:
+            tmp_ctx = tempfile.TemporaryDirectory(prefix="pop-pack-")
+            tmp_path = Path(tmp_ctx.name)
+        try:
             zip_path = tmp_path / "pack.zip"
             f.save(str(zip_path))
             stage = tmp_path / "stage"
@@ -3022,6 +3087,11 @@ def api_import_content():
                     "contentUpdatedAt": updated_at,
                 }
             )
+        finally:
+            if tmp_ctx is not None:
+                tmp_ctx.cleanup()
+            elif USE_DATA_LAYOUT and tmp_path.exists():
+                shutil.rmtree(tmp_path, ignore_errors=True)
     except Exception as exc:
         _import_state = {"running": False, "log": f"Import failed: {exc}", "ok": False}
         return jsonify({"ok": False, "error": str(exc)}), 400
