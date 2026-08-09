@@ -38,6 +38,13 @@
     font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0 0 0.3rem;
     letter-spacing: -0.02em; color: var(--accent);
   }
+  #content-updated {
+    margin: 0.15rem 0 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  #content-updated[hidden] { display: none; }
 
   /* Top two-column layout: tally | list */
   .top-grid {
@@ -1338,6 +1345,7 @@
 <div class="wrap" id="dashboard">
     <header>
       <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
+      <p id="content-updated" hidden></p>
     </header>
 
     <div class="top-grid">
@@ -3094,6 +3102,36 @@ async function loadLiveInventory() {
   }
 }
 
+function formatContentUpdated(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  try {
+    return d.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch (e) {
+    return d.toLocaleString();
+  }
+}
+
+function applyContentUpdated(cfg) {
+  const el = document.getElementById("content-updated");
+  if (!el) return;
+  const stamp = cfg && cfg.contentUpdatedAt;
+  if (!stamp) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  el.textContent = "Last updated: " + formatContentUpdated(stamp);
+}
+
 function applyModeFromConfig(cfg) {
   if (!cfg) return;
   document.body.classList.add("viewer-mode");
@@ -3107,6 +3145,7 @@ function applyModeFromConfig(cfg) {
     emptyHint.hidden = !!cfg.hasPdfs;
     if (!cfg.hasPdfs) emptyHint.textContent = "No PDFs published yet.";
   }
+  applyContentUpdated(cfg);
 }
 
 (async function init() {

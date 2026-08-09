@@ -96,6 +96,9 @@ REVIEW = (PUBLISH / "_pdf_review") if USE_DATA_LAYOUT else (DRAFTS / "_pdf_revie
 OFFICIAL = (PUBLISH / "_official") if USE_DATA_LAYOUT else (DRAFTS / "_official")
 CONTENT_DRAFTS = CONTENT_ROOT / "0_Drafts"
 SITE_AUTH_FILE = (PUBLISH / "site_auth.json") if USE_DATA_LAYOUT else (BASE / "site_auth.json")
+CONTENT_UPDATED_FILE = (
+    (PUBLISH / "content_updated.json") if USE_DATA_LAYOUT else (BASE / "content_updated.json")
+)
 STATUS_FILE = (
     (PUBLISH / "metrics_status.json") if USE_DATA_LAYOUT else (BASE / "metrics_status.json")
 )
@@ -232,6 +235,47 @@ def load_site_auth() -> dict:
 def save_site_auth(data: dict) -> None:
     SITE_AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     SITE_AUTH_FILE.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def record_content_updated(*, source: str = "import") -> str:
+    """Persist when hosted content last changed (survives process restart)."""
+    stamp = datetime.now().astimezone().isoformat(timespec="seconds")
+    payload = {"updatedAt": stamp, "source": source}
+    CONTENT_UPDATED_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CONTENT_UPDATED_FILE.write_text(
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+    )
+    return stamp
+
+
+def _newest_pdf_mtime_iso() -> str | None:
+    newest: float | None = None
+    for root in (OFFICIAL, REVIEW):
+        if not root.is_dir():
+            continue
+        for pdf in root.rglob("*.pdf"):
+            try:
+                m = pdf.stat().st_mtime
+            except OSError:
+                continue
+            if newest is None or m > newest:
+                newest = m
+    if newest is None:
+        return None
+    return datetime.fromtimestamp(newest).astimezone().isoformat(timespec="seconds")
+
+
+def content_updated_at() -> str | None:
+    """ISO timestamp for portal 'Last updated' line."""
+    if CONTENT_UPDATED_FILE.is_file():
+        try:
+            data = json.loads(CONTENT_UPDATED_FILE.read_text(encoding="utf-8"))
+            stamp = (data.get("updatedAt") or "").strip()
+            if stamp:
+                return stamp
+        except Exception:
+            pass
+    return _newest_pdf_mtime_iso()
 
 
 def view_password_hash() -> str | None:
@@ -1113,6 +1157,7 @@ def api_config():
                 can_edit() and RENDER_SYNC_URL and ADMIN_SYNC_TOKEN
             ),
             "renderSyncUrl": RENDER_SYNC_URL if can_edit() and RENDER_SYNC_URL else "",
+            "contentUpdatedAt": content_updated_at(),
         }
     )
 
@@ -2226,6 +2271,7 @@ def wipe_hosted_content() -> dict:
         "inventory.json",
         "manifest.json",
         "status.json",
+        "content_updated.json",
     ):
         meta = PUBLISH / name
         if meta.is_file():
@@ -2360,6 +2406,7 @@ def api_import_content():
                     }[name]
                     shutil.copy2(src, dest)
                     stats["meta"] += 1
+            updated_at = record_content_updated(source="import")
             log = (
                 wipe_log
                 + f"Extracted {len(written)} zip members.\n"
@@ -2367,10 +2414,24 @@ def api_import_content():
                 f"Review PDFs: {stats['reviewPdfs']}\n"
                 f"Official PDFs: {stats['officialPdfs']}\n"
                 f"Meta files: {stats['meta']}\n"
+                f"Content updated at: {updated_at}\n"
                 "Import complete."
             )
-            _import_state = {"running": False, "log": log, "ok": True, "stats": stats}
-            return jsonify({"ok": True, "stats": stats, "log": log})
+            _import_state = {
+                "running": False,
+                "log": log,
+                "ok": True,
+                "stats": stats,
+                "contentUpdatedAt": updated_at,
+            }
+            return jsonify(
+                {
+                    "ok": True,
+                    "stats": stats,
+                    "log": log,
+                    "contentUpdatedAt": updated_at,
+                }
+            )
     except Exception as exc:
         _import_state = {"running": False, "log": f"Import failed: {exc}", "ok": False}
         return jsonify({"ok": False, "error": str(exc)}), 400
