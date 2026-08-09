@@ -815,7 +815,8 @@ def login_page():
     return _login_html(
         "PoP Renewal Viewer",
         "/login",
-        "Enter the view password to continue.",
+        "Enter the public view password (set by an admin under Site access). "
+        "This is not the admin password.",
         bool(request.args.get("e")),
     )
 
@@ -844,7 +845,8 @@ def admin_login_page():
     return _login_html(
         "PoP Admin",
         "/admin/login",
-        "Enter the admin password to manage content.",
+        "Enter the Render ADMIN_PASSWORD (Environment variable). "
+        "This is not the public view password visitors use on /.",
         bool(request.args.get("e")),
     )
 
