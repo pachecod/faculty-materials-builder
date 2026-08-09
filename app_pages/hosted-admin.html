@@ -116,6 +116,16 @@
     gap: 0.5rem;
     margin-top: 0.85rem;
   }
+  .theme-group-title {
+    grid-column: 1 / -1;
+    margin: 0.55rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .theme-group-title:first-child { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -155,7 +165,8 @@
       <section class="panel" id="portal-theme">
         <h2>Portal colors</h2>
         <p class="hint">
-          These colors update the public site at <code>/</code>. Saved on the server disk (survives deploys and content wipe).
+          These colors update the public site at <code>/</code>, including list row fills, links, headers, and washes.
+          Saved on the server disk (survives deploys and content wipe).
         </p>
         <div class="theme-grid" id="theme-grid"></div>
         <div class="theme-actions">
@@ -312,17 +323,7 @@
     }
   };
 
-  const THEME_FIELDS = [
-    { key: "accent", label: "Titles & numbers" },
-    { key: "accentSoft", label: "Stat card background" },
-    { key: "link", label: "Links" },
-    { key: "bar", label: "Progress bars" },
-    { key: "panelHead", label: "Section headers" },
-    { key: "panelHeadText", label: "Section header text" },
-    { key: "bg", label: "Page background" },
-    { key: "washA", label: "Background wash A" },
-    { key: "washB", label: "Background wash B" },
-  ];
+  let THEME_FIELDS = [];
 
   function syncThemeInputs(theme) {
     THEME_FIELDS.forEach(({ key }) => {
@@ -343,17 +344,27 @@
     return theme;
   }
 
-  function buildThemeFields() {
+  function buildThemeFields(fields) {
     const grid = document.getElementById("theme-grid");
     if (!grid) return;
-    grid.innerHTML = THEME_FIELDS.map(({ key, label }) => `
+    THEME_FIELDS = Array.isArray(fields) ? fields : [];
+    let html = "";
+    let lastGroup = null;
+    THEME_FIELDS.forEach(({ key, label, group }) => {
+      if (group && group !== lastGroup) {
+        html += `<div class="theme-group-title">${group}</div>`;
+        lastGroup = group;
+      }
+      html += `
       <label class="theme-field">
         <span>${label}</span>
         <span class="row">
           <input type="color" id="theme-color-${key}" data-key="${key}" value="#000000">
           <input type="text" id="theme-text-${key}" data-key="${key}" spellcheck="false" maxlength="7">
         </span>
-      </label>`).join("");
+      </label>`;
+    });
+    grid.innerHTML = html;
     grid.querySelectorAll('input[type="color"]').forEach((el) => {
       el.addEventListener("input", () => {
         const text = document.getElementById("theme-text-" + el.dataset.key);
@@ -379,6 +390,7 @@
       const r = await fetch("/api/admin/theme");
       const data = await r.json();
       if (!data.ok) throw new Error(data.error || "Load failed");
+      buildThemeFields(data.fields || []);
       syncThemeInputs(data.theme || data.defaults || {});
     } catch (e) {
       if (msg) {
@@ -388,8 +400,6 @@
       }
     }
   }
-
-  buildThemeFields();
 
   document.getElementById("theme-save").onclick = async () => {
     const msg = document.getElementById("theme-msg");

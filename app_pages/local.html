@@ -14,15 +14,24 @@
     --accent: #1e3a8a;
     --accent-soft: #fff1e6;
     --bar: #2563eb;
+    --bar-track: #eceae6;
     --link: #1d4ed8;
+    --link-hover: #1e40af;
     --panel-head: #1e3a5f;
     --panel-head-text: #dbeafe;
+    --table-head: #f5f5f4;
     --wash-a: #dbeafe;
     --wash-b: #fff1e6;
     --row-complete: #dbeafe;
     --row-partial: #ffedd5;
     --row-none-need: #fecaca;
     --row-none-ok: #fde68a;
+    --badge-text: #1e40af;
+    --badge-bg: #dbeafe;
+    --badge-border: #93c5fd;
+    --chip-bg: #eff6ff;
+    --chip-border: #93c5fd;
+    --chip-text: #1e40af;
   }
   * { box-sizing: border-box; }
   body {
@@ -115,7 +124,7 @@
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.72rem; color: var(--muted);
   }
-  .bar-track { height: 8px; background: #eceae6; overflow: hidden; }
+  .bar-track { height: 8px; background: var(--bar-track); overflow: hidden; }
   .bar-fill { height: 100%; background: var(--bar); }
 
   .list-panel { min-width: 0; }
@@ -167,7 +176,7 @@
   th {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.65rem; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--muted); background: #f5f5f4; white-space: normal;
+    color: var(--muted); background: var(--table-head); white-space: normal;
     position: sticky; top: 0; z-index: 1;
     line-height: 1.25;
   }
@@ -326,7 +335,7 @@
     overflow-wrap: anywhere;
     word-break: break-word;
   }
-  a.file-link:hover { color: #145c45; }
+  a.file-link:hover { color: var(--link-hover); }
   .file-cell {
     display: flex;
     flex-direction: column;
@@ -472,9 +481,9 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #1e40af;
-    background: #dbeafe;
-    border: 1px solid #93c5fd;
+    color: var(--badge-text);
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
     padding: 0.1rem 0.35rem;
     line-height: 1.2;
     white-space: nowrap;
@@ -3263,17 +3272,14 @@ function applyModeFromConfig(cfg) {
     }
   }
   applyContentUpdated(cfg);
-  if (typeof applyTheme === "function") applyTheme(cfg.theme, cfg.themeCssVars);
-  else if (cfg.theme) {
-    const map = cfg.themeCssVars || {
-      accent: "--accent", accentSoft: "--accent-soft", link: "--link", bar: "--bar",
-      panelHead: "--panel-head", panelHeadText: "--panel-head-text",
-      bg: "--bg", washA: "--wash-a", washB: "--wash-b",
-    };
-    Object.keys(map).forEach((key) => {
+  if (cfg.theme) {
+    const map = cfg.themeCssVars || {};
+    const keys = Object.keys(map).length ? Object.keys(map) : Object.keys(cfg.theme);
+    keys.forEach((key) => {
+      const cssVar = map[key] || ("--" + key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()));
       const val = cfg.theme[key];
       if (typeof val === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val.trim())) {
-        document.documentElement.style.setProperty(map[key], val.trim());
+        document.documentElement.style.setProperty(cssVar, val.trim());
       }
     });
   }

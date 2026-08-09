@@ -104,28 +104,41 @@ THEME_FILE = (PUBLISH / "theme.json") if USE_DATA_LAYOUT else (BASE / "theme.jso
 RENDER_PUSH_STATE_FILE = BASE / "render_push_state.json"
 
 # Public portal CSS variables editable from Render /admin
-DEFAULT_THEME = {
-    "accent": "#1e3a8a",
-    "accentSoft": "#fff1e6",
-    "link": "#1d4ed8",
-    "bar": "#2563eb",
-    "panelHead": "#1e3a5f",
-    "panelHeadText": "#dbeafe",
-    "bg": "#fffaf5",
-    "washA": "#dbeafe",
-    "washB": "#fff1e6",
-}
-THEME_CSS_VARS = {
-    "accent": "--accent",
-    "accentSoft": "--accent-soft",
-    "link": "--link",
-    "bar": "--bar",
-    "panelHead": "--panel-head",
-    "panelHeadText": "--panel-head-text",
-    "bg": "--bg",
-    "washA": "--wash-a",
-    "washB": "--wash-b",
-}
+# (key, css var, default hex, admin label, group)
+_THEME_SPEC = (
+    ("accent", "--accent", "#1e3a8a", "Titles & numbers", "Brand"),
+    ("accentSoft", "--accent-soft", "#fff1e6", "Stat card / soft accent", "Brand"),
+    ("link", "--link", "#1d4ed8", "Links", "Brand"),
+    ("linkHover", "--link-hover", "#1e40af", "Link hover", "Brand"),
+    ("bar", "--bar", "#2563eb", "Progress bars", "Brand"),
+    ("barTrack", "--bar-track", "#eceae6", "Progress bar track", "Brand"),
+    ("panelHead", "--panel-head", "#1e3a5f", "Section headers", "Chrome"),
+    ("panelHeadText", "--panel-head-text", "#dbeafe", "Section header text", "Chrome"),
+    ("tableHead", "--table-head", "#f5f5f4", "Table column headers", "Chrome"),
+    ("ink", "--ink", "#1c1917", "Body text", "Page"),
+    ("muted", "--muted", "#57534e", "Muted text", "Page"),
+    ("line", "--line", "#e8e4df", "Borders / dividers", "Page"),
+    ("bg", "--bg", "#fffaf5", "Page background", "Page"),
+    ("panel", "--panel", "#ffffff", "Panel background", "Page"),
+    ("washA", "--wash-a", "#dbeafe", "Background wash A", "Page"),
+    ("washB", "--wash-b", "#fff1e6", "Background wash B", "Page"),
+    ("rowComplete", "--row-complete", "#dbeafe", "Complete rows", "List rows"),
+    ("rowPartial", "--row-partial", "#ffedd5", "Partial rows", "List rows"),
+    ("rowNoneNeed", "--row-none-need", "#fecaca", "No content + need yes rows", "List rows"),
+    ("rowNoneOk", "--row-none-ok", "#fde68a", "No content + need no rows", "List rows"),
+    ("badgeText", "--badge-text", "#1e40af", "Updated badge text", "Badges"),
+    ("badgeBg", "--badge-bg", "#dbeafe", "Updated badge background", "Badges"),
+    ("badgeBorder", "--badge-border", "#93c5fd", "Updated badge border", "Badges"),
+    ("chipBg", "--chip-bg", "#eff6ff", "Appended-files chip background", "Badges"),
+    ("chipBorder", "--chip-border", "#93c5fd", "Appended-files chip border", "Badges"),
+    ("chipText", "--chip-text", "#1e40af", "Appended-files chip text", "Badges"),
+)
+DEFAULT_THEME = {key: default for key, _var, default, _label, _group in _THEME_SPEC}
+THEME_CSS_VARS = {key: var for key, var, _default, _label, _group in _THEME_SPEC}
+THEME_FIELDS = [
+    {"key": key, "label": label, "group": group, "cssVar": var}
+    for key, var, _default, label, group in _THEME_SPEC
+]
 _HEX_RE = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
 STATUS_FILE = (
     (PUBLISH / "metrics_status.json") if USE_DATA_LAYOUT else (BASE / "metrics_status.json")
@@ -1231,6 +1244,7 @@ def api_config():
             "theme": load_theme(),
             "themeDefaults": dict(DEFAULT_THEME),
             "themeCssVars": dict(THEME_CSS_VARS),
+            "themeFields": list(THEME_FIELDS),
         }
     )
 
@@ -2037,7 +2051,15 @@ def api_admin_sync():
 @app.get("/api/theme")
 @require_viewer_auth
 def api_theme_get():
-    return jsonify({"ok": True, "theme": load_theme(), "defaults": dict(DEFAULT_THEME)})
+    return jsonify(
+        {
+            "ok": True,
+            "theme": load_theme(),
+            "defaults": dict(DEFAULT_THEME),
+            "cssVars": dict(THEME_CSS_VARS),
+            "fields": list(THEME_FIELDS),
+        }
+    )
 
 
 @app.get("/api/admin/theme")
@@ -2049,6 +2071,7 @@ def api_admin_theme_get():
             "theme": load_theme(),
             "defaults": dict(DEFAULT_THEME),
             "cssVars": dict(THEME_CSS_VARS),
+            "fields": list(THEME_FIELDS),
         }
     )
 
