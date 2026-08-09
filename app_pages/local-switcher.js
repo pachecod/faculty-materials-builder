@@ -67,7 +67,7 @@
       }
       #pop-local-switcher .pop-toggle a:hover { color: #e7e5e4; }
       #pop-local-switcher .pop-toggle a.is-active {
-        background: #e8f0ec; color: #14532d;
+        background: #fff1e6; color: #1e3a8a;
       }
       #pop-local-switcher .pop-toggle a.is-active[data-mode="render"] {
         background: #1e3a5f; color: #dbeafe;
@@ -81,10 +81,15 @@
       }
       #pop-local-switcher .pop-sub a:hover { border-color: #44403c; color: #fff; }
       #pop-local-switcher .pop-sub a.is-active {
-        border-color: #86efac; color: #bbf7d0;
+        border-color: #93c5fd; color: #bfdbfe;
       }
       #pop-local-switcher .pop-caption {
         margin: 0; color: #78716c; font-size: 0.65rem; letter-spacing: 0.02em;
+      }
+      /* Full-screen PDF/Reader must not sit under the sticky local chrome */
+      body.viewer-open #pop-local-switcher,
+      body.reader-open #pop-local-switcher {
+        display: none !important;
       }
     `;
     document.head.appendChild(style);

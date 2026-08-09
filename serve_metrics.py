@@ -82,7 +82,9 @@ SITE_PASSWORD = VIEW_PASSWORD  # back-compat alias
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 ADMIN_SYNC_TOKEN = os.environ.get("ADMIN_SYNC_TOKEN", "").strip()
+RENDER_SYNC_URL = os.environ.get("RENDER_SYNC_URL", "").strip().rstrip("/")
 PORT = int(os.environ.get("PORT", "8765"))
+_LAST_CONTENT_PACK: Path | None = None
 
 _pub_env = os.environ.get("PUBLISH_DATA_ROOT", "").strip()
 USE_DATA_LAYOUT = bool(_pub_env)
@@ -286,6 +288,14 @@ def require_edit(fn):
     return wrapper
 
 
+def admin_sync_token_ok() -> bool:
+    """True when request carries a valid ADMIN_SYNC_TOKEN header."""
+    if not ADMIN_SYNC_TOKEN:
+        return False
+    token = (request.headers.get("X-Admin-Token") or "").strip()
+    return bool(token) and hmac.compare_digest(token, ADMIN_SYNC_TOKEN)
+
+
 def require_admin(fn):
     """Viewer-management ops (import, site access) — not content authoring."""
     @wraps(fn)
@@ -297,6 +307,25 @@ def require_admin(fn):
                 return redirect("/admin/login")
             return jsonify({"ok": False, "error": "Admin only"}), 403
         if is_production() and not ADMIN_PASSWORD:
+            return jsonify({"ok": False, "error": "ADMIN_PASSWORD not configured"}), 503
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+def require_admin_or_sync_token(fn):
+    """Admin session, or X-Admin-Token for machine push from local → Render."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if admin_sync_token_ok():
+            return fn(*args, **kwargs)
+        if not can_manage_viewer():
+            if is_production() and not is_admin_session():
+                if request.path.startswith("/api/"):
+                    return jsonify({"ok": False, "error": "Admin login required"}), 401
+                return redirect("/admin/login")
+            return jsonify({"ok": False, "error": "Admin only"}), 403
+        if is_production() and not ADMIN_PASSWORD and not admin_sync_token_ok():
             return jsonify({"ok": False, "error": "ADMIN_PASSWORD not configured"}), 503
         return fn(*args, **kwargs)
 
@@ -836,22 +865,25 @@ def _login_html(
         "*,*::before,*::after{box-sizing:border-box}"
         "html{-webkit-text-size-adjust:100%}"
         "body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#1c1917;"
-        "background:#fafaf9;margin:0;min-height:100dvh;"
+        "background:radial-gradient(1200px 600px at 10% -10%,#dbeafe 0%,transparent 55%),"
+        "radial-gradient(900px 500px at 100% 0%,#fff1e6 0%,transparent 50%),#fffaf5;"
+        "margin:0;min-height:100dvh;"
         "padding:max(1.25rem,env(safe-area-inset-top)) "
         "max(1rem,env(safe-area-inset-right)) "
         "max(1.5rem,env(safe-area-inset-bottom)) "
         "max(1rem,env(safe-area-inset-left))}"
         ".shell{max-width:24rem;margin:0 auto;width:100%}"
-        "h1{font-size:clamp(1.35rem,5vw,1.75rem);line-height:1.2;margin:0 0 .65rem}"
+        "h1{font-size:clamp(1.35rem,5vw,1.75rem);line-height:1.2;margin:0 0 .65rem;"
+        "color:#1e3a8a}"
         ".blurb{color:#57534e;font-size:.95rem;line-height:1.45;margin:0 0 1rem;text-wrap:pretty}"
         "label{display:block;font-size:.85rem;font-weight:600;margin-top:.75rem;color:#44403c}"
         "input,button{font:inherit;width:100%;margin:.35rem 0;box-sizing:border-box;"
         "border-radius:8px;border:1px solid #d6d3d1}"
         "input{padding:.75rem .8rem;font-size:1rem;background:#fff}"
         "button{padding:.8rem 1rem;font-size:1rem;font-weight:600;cursor:pointer;"
-        "background:#0f3d2e;color:#fff;border-color:#0f3d2e;margin-top:.85rem;"
+        "background:#1e3a8a;color:#fff;border-color:#1e3a8a;margin-top:.85rem;"
         "min-height:2.75rem}"
-        "button:hover{background:#14532d}"
+        "button:hover{background:#1e40af}"
         ".err{color:#b91c1c;margin:.75rem 0 0;font-size:.9rem}"
         ".modal-backdrop{position:fixed;inset:0;background:rgba(28,25,23,.55);"
         "display:flex;align-items:center;justify-content:center;z-index:50;"
@@ -1077,8 +1109,19 @@ def api_config():
             "localSurfaces": can_edit(),
             "pdfRebuildAvailable": _pdf_toolchain_ok()[0] if can_edit() else False,
             "contentPackExportAvailable": can_edit(),
+            "renderPushConfigured": bool(
+                can_edit() and RENDER_SYNC_URL and ADMIN_SYNC_TOKEN
+            ),
+            "renderSyncUrl": RENDER_SYNC_URL if can_edit() and RENDER_SYNC_URL else "",
         }
     )
+
+
+@app.get("/vendor/reader/<path:subpath>")
+@require_viewer_auth
+def reader_vendor_assets(subpath: str):
+    """marked + DOMPurify for Reader View."""
+    return send_from_directory(BASE / "vendor" / "reader", subpath)
 
 
 @app.get("/pdfs/<path:subpath>")
@@ -1154,6 +1197,89 @@ def api_packet():
     if not pkt:
         return jsonify({"ok": False, "error": "Unknown packet"}), 404
     return jsonify({"ok": True, "packet": pkt, "attachments": list_attachments(pkt)})
+
+
+@app.get("/api/reader")
+@require_viewer_auth
+def api_reader_get():
+    """Read-only packet markdown + attachments for Reader View (local + Render)."""
+    pdf = request.args.get("pdf") or ""
+    pkt = packet_by_pdf(pdf)
+    if not pkt:
+        return jsonify({"ok": False, "error": "Unknown packet"}), 404
+    edit_md = pkt.get("editMd") or ""
+    content = ""
+    missing = False
+    if edit_md:
+        try:
+            path = safe_under(CONTENT_ROOT, edit_md)
+        except ValueError:
+            return jsonify({"ok": False, "error": "Invalid markdown path"}), 400
+        if path.is_file():
+            content = path.read_text(encoding="utf-8")
+        else:
+            missing = True
+    else:
+        missing = True
+    atts = list_attachments(pkt)
+    # Only list PDF attachments in reader (skip teaching_examples.md as openable PDF)
+    att_out = [
+        {
+            "rel": a["rel"],
+            "name": a["name"],
+            "root": a["root"],
+            "pages": a["pages"],
+            "size": a.get("size"),
+            "bookmarkTitle": a.get("bookmarkTitle") or a["name"],
+            "isPdf": a["name"].lower().endswith(".pdf"),
+        }
+        for a in atts
+    ]
+    return jsonify(
+        {
+            "ok": True,
+            "pdf": pkt.get("reviewRel") or pdf,
+            "name": pkt.get("name") or Path(pdf).name,
+            "title": Path(pkt.get("name") or pdf).stem.replace("_", " "),
+            "path": edit_md,
+            "content": content,
+            "missingMarkdown": missing,
+            "attachments": att_out,
+            "hasAttachments": any(a["isPdf"] for a in att_out),
+        }
+    )
+
+
+@app.get("/api/attachments/file")
+@require_viewer_auth
+def api_attachments_file():
+    """Serve an individual attachment PDF for a packet (viewer-safe)."""
+    pdf = (request.args.get("pdf") or "").strip()
+    rel = (request.args.get("rel") or "").strip().lstrip("/")
+    if not pdf or not rel or ".." in Path(rel).parts:
+        return jsonify({"ok": False, "error": "Invalid request"}), 400
+    pkt = packet_by_pdf(pdf)
+    if not pkt:
+        return jsonify({"ok": False, "error": "Unknown packet"}), 404
+    roots = pkt.get("attachmentRoots") or []
+    # rel must live under one of the packet's attachment roots
+    allowed = False
+    for root_rel in roots:
+        root_norm = root_rel.strip().strip("/")
+        if rel == root_norm or rel.startswith(root_norm + "/"):
+            allowed = True
+            break
+    if not allowed:
+        return jsonify({"ok": False, "error": "Attachment not in this packet"}), 403
+    try:
+        path = safe_under(CONTENT_ROOT, rel)
+    except ValueError:
+        return jsonify({"ok": False, "error": "Invalid path"}), 400
+    if not path.is_file():
+        return jsonify({"ok": False, "error": "File not found"}), 404
+    if path.suffix.lower() != ".pdf":
+        return jsonify({"ok": False, "error": "Only PDF attachments can be opened"}), 400
+    return send_from_directory(path.parent, path.name)
 
 
 @app.get("/api/md")
@@ -1908,13 +2034,12 @@ def _apply_content_pack_extract(stage: Path) -> dict:
     return stats
 
 
-@app.post("/api/build-content-pack")
-@require_edit
-def api_build_content_pack():
-    """Local edit only: build a Render import zip and return it for download."""
+def _run_build_content_pack() -> tuple[Path | None, str | None, str]:
+    """Build content pack zip. Returns (path, error, log)."""
+    global _LAST_CONTENT_PACK
     script = BASE / "scripts" / "build_content_pack.sh"
     if not script.is_file():
-        return jsonify({"ok": False, "error": "build_content_pack.sh missing"}), 500
+        return None, "build_content_pack.sh missing", ""
     out_dir = BASE / "publish"
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -1930,20 +2055,131 @@ def api_build_content_pack():
             timeout=60 * 20,
         )
     except subprocess.TimeoutExpired:
-        return jsonify({"ok": False, "error": "Content pack build timed out"}), 504
+        return None, "Content pack build timed out", ""
     except Exception as exc:
-        return jsonify({"ok": False, "error": f"Content pack build failed: {exc}"}), 500
+        return None, f"Content pack build failed: {exc}", ""
+    log = ((proc.stderr or "") + "\n" + (proc.stdout or "")).strip()
     if proc.returncode != 0 or not out_path.is_file():
-        detail = ((proc.stderr or "") + "\n" + (proc.stdout or "")).strip()[-1500:]
-        return jsonify(
-            {"ok": False, "error": "Content pack build failed", "log": detail}
-        ), 500
+        return None, "Content pack build failed", log[-1500:]
+    _LAST_CONTENT_PACK = out_path
+    return out_path, None, log
+
+
+@app.post("/api/build-content-pack")
+@require_edit
+def api_build_content_pack():
+    """Local edit only: build a Render import zip and return it for download."""
+    out_path, err, log = _run_build_content_pack()
+    if err or not out_path:
+        return jsonify({"ok": False, "error": err or "Build failed", "log": log}), (
+            504 if err and "timed out" in err else 500
+        )
     return send_file(
         out_path,
         mimetype="application/zip",
         as_attachment=True,
         download_name=out_path.name,
     )
+
+
+@app.post("/api/push-content-pack")
+@require_edit
+def api_push_content_pack():
+    """Local edit only: build (or reuse) content pack and POST it to Render import."""
+    if not RENDER_SYNC_URL or not ADMIN_SYNC_TOKEN:
+        return jsonify(
+            {
+                "ok": False,
+                "error": (
+                    "Set RENDER_SYNC_URL and ADMIN_SYNC_TOKEN in local .env "
+                    "(matching ADMIN_SYNC_TOKEN on Render)."
+                ),
+            }
+        ), 400
+    data = request.get_json(silent=True) or {}
+    rebuild = data.get("rebuild", True)
+    wipe = bool(data.get("wipe"))
+    use_last = bool(data.get("useLast")) and not rebuild
+
+    pack_path: Path | None = None
+    build_log = ""
+    if use_last and _LAST_CONTENT_PACK and _LAST_CONTENT_PACK.is_file():
+        pack_path = _LAST_CONTENT_PACK
+    else:
+        pack_path, err, build_log = _run_build_content_pack()
+        if err or not pack_path:
+            return jsonify(
+                {"ok": False, "error": err or "Build failed", "log": build_log}
+            ), 500
+
+    url = f"{RENDER_SYNC_URL}/api/admin/import-content"
+    try:
+        import urllib.request
+
+        boundary = "----PopContentPackBoundary9f2a"
+        body = bytearray()
+        body.extend(
+            (
+                f"--{boundary}\r\n"
+                f'Content-Disposition: form-data; name="wipe"\r\n\r\n'
+                f'{"1" if wipe else "0"}\r\n'
+            ).encode()
+        )
+        file_bytes = pack_path.read_bytes()
+        body.extend(
+            (
+                f"--{boundary}\r\n"
+                f'Content-Disposition: form-data; name="file"; '
+                f'filename="{pack_path.name}"\r\n'
+                f"Content-Type: application/zip\r\n\r\n"
+            ).encode()
+        )
+        body.extend(file_bytes)
+        body.extend(f"\r\n--{boundary}--\r\n".encode())
+        req = urllib.request.Request(
+            url,
+            data=bytes(body),
+            method="POST",
+            headers={
+                "Content-Type": f"multipart/form-data; boundary={boundary}",
+                "X-Admin-Token": ADMIN_SYNC_TOKEN,
+            },
+        )
+        with urllib.request.urlopen(req, timeout=60 * 30) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+        try:
+            payload = json.loads(raw)
+        except Exception:
+            payload = {"ok": True, "raw": raw}
+        if not payload.get("ok", True):
+            return jsonify(
+                {
+                    "ok": False,
+                    "error": payload.get("error") or "Remote import failed",
+                    "remote": payload,
+                    "buildLog": build_log[-800:] if build_log else "",
+                    "pack": pack_path.name,
+                }
+            ), 502
+        return jsonify(
+            {
+                "ok": True,
+                "pack": pack_path.name,
+                "bytes": pack_path.stat().st_size,
+                "remote": payload,
+                "buildLog": build_log[-800:] if build_log else "",
+                "url": RENDER_SYNC_URL,
+            }
+        )
+    except Exception as exc:
+        return jsonify(
+            {
+                "ok": False,
+                "error": f"Upload to Render failed: {exc}",
+                "pack": pack_path.name if pack_path else None,
+                "buildLog": build_log[-800:] if build_log else "",
+            }
+        ), 502
 
 
 def _clear_directory_contents(path: Path) -> int:
@@ -2051,9 +2287,12 @@ def api_wipe_content():
 
 
 @app.post("/api/admin/import-content")
-@require_admin
+@require_admin_or_sync_token
 def api_import_content():
-    """Upload a content-pack zip (markdown + attachments [+ optional PDFs])."""
+    """Upload a content-pack zip (markdown + attachments [+ optional PDFs]).
+
+    Auth: admin session, or X-Admin-Token (ADMIN_SYNC_TOKEN) for local → Render push.
+    """
     global _import_state
     f = request.files.get("file") or request.files.get("pack")
     if not f or not f.filename:

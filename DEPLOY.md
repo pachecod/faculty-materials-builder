@@ -42,26 +42,40 @@ Only then connect Render.
    - `ADMIN_PASSWORD` (Dashboard secret)
    - `SECRET_KEY` (generate)
    - Optional `VIEW_PASSWORD` bootstrap
+   - `ADMIN_SYNC_TOKEN` (long random secret; same value in local `.env` for one-click pack upload)
 3. `autoDeploy: true` so app code updates on git push (content still via import pack).
-4. First deploy can be empty â€” no PoP content yet until you import a pack.
+4. First deploy can be empty  no PoP content yet until you import a pack.
 
 ## 4. Populate content (efficient)
 
-On your Mac (local tree with content):
+On your Mac (local tree with content), either:
+
+**A. One-click upload (preferred)**
+
+1. In local `.env` set:
+   - `RENDER_SYNC_URL=https://pacheco-materials.onrender.com`
+   - `ADMIN_SYNC_TOKEN=` *(same value as on Render)*
+2. Local Admin ? **Build Render import pack** ? **Upload to Render**
+   - Optional: check wipe-before-import
+3. Pack includes markdown sources, attachment PDFs, and packet PDFs. Render imports in the background; visitors get PDF + Reader View without a manual `/admin` upload.
+
+**B. Manual zip**
 
 ```bash
 ./scripts/build_content_pack.sh
 # ? content-pack-YYYYMMDD-HHMMSS.zip (keep offline; do not commit)
 ```
 
-On Render (viewer only â€” no content editing):
-
-1. Sign in at `/admin` with `ADMIN_PASSWORD`
-2. **Import content** â€” upload the zip from local **Build Render import pack** (or `scripts/build_content_pack.sh`)
-3. To replace everything cleanly (remove orphans from older packs): check **Wipe all existing contentâ€¦ before importing**, or use **Wipe all contentâ€¦** then import
-4. Optional: **Site access** â€” set a view password for `/`
+Then on Render `/admin`: **Import content** (optionally wipe first).
 
 Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-upload a new pack anytime after local edits. Default import merges by path; use wipe when you need a full replace. App code updates = `git push` (autodeploy); disk content persists across deploys.
+
+### Reader View
+
+Public portal (and local Preview):
+
+- **Wide windows (>1100px):** packet opens as PDF; use **Reader View** for the markdown narrative + attachment PDF list.
+- **Narrow windows (?1100px CSS width):** opens **Reader View** first; **View full PDF** for the merged packet. Resizing the browser and opening again is enough to test — choice is made at click time from `window.innerWidth`.
 
 ## 5. Surfaces (Render)
 
@@ -69,8 +83,8 @@ Edit markdown and rebuild PDFs only on a local `POP_MODE=edit` install. Re-uploa
 |-----|------------|------|
 | `/` | `app_pages/portal.html` | Public view + downloads |
 | `/admin` | `app_pages/hosted-admin.html` | Import + site access only |
-| `/api/download/pdf?file=â€¦` | â€” | Single PDF download |
-| `/api/download/all` | â€” | Zip of all PDFs |
+| `/api/download/pdf?file=…` | — | Single PDF download |
+| `/api/download/all` | — | Zip of all PDFs |
 
 Local authoring uses **different** pages under `POP_MODE=edit` so local chrome cannot leak onto Render.
 

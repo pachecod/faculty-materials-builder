@@ -8,17 +8,17 @@
   :root {
     --ink: #1c1917;
     --muted: #57534e;
-    --line: #e7e5e4;
-    --bg: #fafaf9;
+    --line: #e8e4df;
+    --bg: #fffaf5;
     --panel: #ffffff;
-    --accent: #0f3d2e;
-    --accent-soft: #e8f0ec;
-    --bar: #1d6b4f;
-    --link: #0f3d2e;
-    --row-complete: #dcfce7;
-    --row-partial: #fef9c3;
+    --accent: #1e3a8a;
+    --accent-soft: #fff1e6;
+    --bar: #2563eb;
+    --link: #1d4ed8;
+    --row-complete: #dbeafe;
+    --row-partial: #ffedd5;
     --row-none-need: #fecaca;
-    --row-none-ok: #fde047;
+    --row-none-ok: #fde68a;
   }
   * { box-sizing: border-box; }
   body {
@@ -26,8 +26,8 @@
     font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     color: var(--ink);
     background:
-      radial-gradient(1200px 600px at 10% -10%, #e8f0ec 0%, transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, #f5efe6 0%, transparent 50%),
+      radial-gradient(1200px 600px at 10% -10%, #dbeafe 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #fff1e6 0%, transparent 50%),
       var(--bg);
     min-height: 100vh;
     line-height: 1.45;
@@ -197,14 +197,14 @@
     gap: 0.2rem;
     min-width: 2rem;
     padding: 0.15rem 0.4rem;
-    border: 1px solid #86efac;
+    border: 1px solid #93c5fd;
     border-radius: 999px;
-    background: #ecfdf5;
-    color: #166534;
+    background: #eff6ff;
+    color: #1e40af;
     font: 700 0.72rem/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif;
     cursor: pointer;
   }
-  .appended-btn:hover { background: #bbf7d0; }
+  .appended-btn:hover { background: #dbeafe; }
   .appended-btn.is-empty {
     border-color: #d6d3d1;
     background: #f5f5f4;
@@ -244,7 +244,7 @@
     font-size: 0.72rem;
     margin-top: 0.2rem;
   }
-  #attach-list li .att-bookmark.is-custom { color: #86efac; }
+  #attach-list li .att-bookmark.is-custom { color: #93c5fd; }
   #attach-list li .att-actions {
     display: flex; gap: .25rem; flex-wrap: wrap; margin-left: auto;
   }
@@ -279,7 +279,7 @@
   }
   #pdf-table.view-section .col-section { display: none; }
   tr.section-head td {
-    background: #1c1917;
+    background: #1e3a5f;
     color: #fafaf9;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.78rem;
@@ -461,9 +461,9 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #166534;
-    background: #bbf7d0;
-    border: 1px solid #86efac;
+    color: #1e40af;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
     padding: 0.1rem 0.35rem;
     line-height: 1.2;
     white-space: nowrap;
@@ -472,7 +472,7 @@
     width: 0.45rem;
     height: 0.45rem;
     border-radius: 50%;
-    background: #16a34a;
+    background: #2563eb;
   }
   tr.row-excluded td { opacity: 0.9; }
   select.status-select {
@@ -502,7 +502,7 @@
     position: fixed;
     inset: 0;
     z-index: 50;
-    background: #1c1917;
+    background: #0f172a;
     flex-direction: column;
   }
   #viewer.is-open { display: flex; }
@@ -551,9 +551,9 @@
   .viewer-bar button:hover,
   .viewer-bar a.bar-btn:hover { background: #57534e; }
   .viewer-bar button.primary {
-    background: #e8f0ec;
+    background: #fff1e6;
     color: var(--accent);
-    border-color: #e8f0ec;
+    border-color: #fff1e6;
     font-weight: 600;
   }
 
@@ -679,7 +679,7 @@
     margin-right: .15rem;
   }
   #md-save-status {
-    color: #86efac; font-size: .8rem; min-height: 1.1em;
+    color: #93c5fd; font-size: .8rem; min-height: 1.1em;
   }
   #md-save-status.is-error { color: #fca5a5; }
   #md-link-dialog {
@@ -804,8 +804,8 @@
   body.viewer-mode #mode-banner,
   body.local-edit #mode-banner { display: block; }
   body.local-edit #mode-banner {
-    background: #14532d;
-    color: #dcfce7;
+    background: #1e3a8a;
+    color: #dbeafe;
     font-weight: 600;
     letter-spacing: 0.01em;
   }
@@ -880,9 +880,9 @@
   }
   #local-nav a:hover { background: #292524; border-color: #78716c; }
   #local-nav a.is-active {
-    background: #e8f0ec;
-    color: #14532d;
-    border-color: #86efac;
+    background: #fff1e6;
+    color: #1e40af;
+    border-color: #93c5fd;
   }
   .list-toolbar {
     display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
@@ -1042,7 +1042,7 @@
     overflow: auto;
     color: #292524;
   }
-  .status-box.ok { border-color: #86efac; background: #f0fdf4; }
+  .status-box.ok { border-color: #93c5fd; background: #eff6ff; }
   .status-box.err { border-color: #fca5a5; background: #fef2f2; }
   .regen-form {
     display: grid;
@@ -1207,6 +1207,125 @@
     margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.4;
   }
 
+  /* Reader View — markdown reading surface */
+  #reader {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: #fafaf9;
+    flex-direction: column;
+  }
+  #reader.is-open { display: flex; }
+  body.reader-open { overflow: hidden; }
+  .reader-bar {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+    padding-top: max(0.65rem, env(safe-area-inset-top));
+    background: #1e3a8a;
+    color: #eff6ff;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.85rem;
+  }
+  .reader-bar .title {
+    flex: 1 1 12rem;
+    min-width: 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .reader-bar button,
+  .reader-bar a.bar-btn {
+    appearance: none;
+    border: 1px solid #93c5fd;
+    background: #1e40af;
+    color: #eff6ff;
+    padding: 0.4rem 0.7rem;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 6px;
+    min-height: 2.35rem;
+  }
+  .reader-bar button.primary,
+  .reader-bar a.bar-btn.primary {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #eff6ff;
+    font-weight: 600;
+  }
+  .reader-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem 1rem 2.5rem;
+    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+  }
+  .reader-article {
+    max-width: 40rem;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #1c1917;
+  }
+  .reader-article h1 { font-size: 1.55rem; line-height: 1.25; color: #1e3a8a; margin: 0 0 0.75rem; }
+  .reader-article h2 { font-size: 1.25rem; color: #1e3a8a; margin: 1.4rem 0 0.55rem; }
+  .reader-article h3 { font-size: 1.1rem; color: #1e40af; margin: 1.15rem 0 0.45rem; }
+  .reader-article p { margin: 0 0 0.85rem; }
+  .reader-article ul, .reader-article ol { margin: 0 0 0.85rem; padding-left: 1.35rem; }
+  .reader-article li { margin: 0.25rem 0; }
+  .reader-article a { color: #1e3a8a; }
+  .reader-article blockquote {
+    margin: 0 0 0.85rem; padding: 0.35rem 0 0.35rem 0.85rem;
+    border-left: 3px solid #93c5fd; color: #44403c;
+  }
+  .reader-article code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.88em; background: #fff1e6; padding: 0.1em 0.3em; border-radius: 3px;
+  }
+  .reader-article pre {
+    background: #1c1917; color: #fafaf9; padding: 0.85rem; overflow: auto;
+    border-radius: 8px; font-size: 0.85rem;
+  }
+  .reader-article pre code { background: none; color: inherit; padding: 0; }
+  .reader-empty {
+    color: #78716c; font-size: 0.95rem; margin: 1rem 0;
+  }
+  .reader-attachments {
+    max-width: 40rem;
+    margin: 2rem auto 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e7e5e4;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .reader-attachments h2 {
+    margin: 0 0 0.65rem; font-size: 1rem; color: #1e3a8a;
+  }
+  .reader-attachments .hint { margin: 0 0 0.75rem; }
+  .reader-att-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+  .reader-att-list li { margin: 0; }
+  .reader-att-list button {
+    width: 100%; text-align: left;
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 0.85rem; border: 1px solid #e7e5e4; border-radius: 8px;
+    background: #fff; color: #1c1917; font: inherit; cursor: pointer;
+    min-height: 2.75rem;
+  }
+  .reader-att-list button:hover { border-color: #93c5fd; background: #eff6ff; }
+  .reader-att-list .att-name { font-weight: 600; color: #1e3a8a; word-break: break-word; }
+  .reader-att-list .att-meta { color: #78716c; font-size: 0.78rem; white-space: nowrap; }
+  @media (max-width: 900px) {
+    .reader-scroll { padding-left: max(0.85rem, env(safe-area-inset-left)); padding-right: max(0.85rem, env(safe-area-inset-right)); }
+    .reader-article { font-size: 1.08rem; }
+    .reader-bar .title { flex: 1 1 100%; white-space: normal; }
+  }
+
 </style>
 </head>
 <body class="viewer-mode" data-shell="portal">
@@ -1322,6 +1441,7 @@
     <div class="viewer-bar">
       <button type="button" class="primary" id="back-to-list">← Back to list</button>
       <div class="title" id="viewer-title">PDF</div>
+      <button type="button" class="bar-btn" id="btn-reader-view" title="Read the markdown narrative in the browser">Reader View</button>
       <button type="button" class="bar-btn" id="btn-preview" title="Show PDF preview">Preview</button>
       <button type="button" class="bar-btn edit-only" id="btn-edit" title="Edit source markdown">Edit</button>
       <button type="button" class="folder-btn icon-btn" id="btn-reveal-pdf" title="Open containing folder for this PDF in Finder" aria-label="Open containing folder for this PDF in Finder"></button>
@@ -1413,6 +1533,25 @@
     </div>
   </div>
 
+  <div id="reader" aria-hidden="true">
+    <div class="reader-bar">
+      <button type="button" class="primary" id="reader-back">← Back to list</button>
+      <div class="title" id="reader-title">Reader</div>
+      <button type="button" id="reader-open-pdf">View full PDF</button>
+      <a class="bar-btn" id="reader-download-pdf" href="#" download>Download PDF</a>
+    </div>
+    <div class="reader-scroll">
+      <article class="reader-article" id="reader-article"></article>
+      <section class="reader-attachments" id="reader-attachments" hidden>
+        <h2>Attachments</h2>
+        <p class="hint">These open as PDFs (same files appended into the full packet).</p>
+        <ul class="reader-att-list" id="reader-att-list"></ul>
+      </section>
+    </div>
+  </div>
+
+<script src="/vendor/reader/marked.min.js"></script>
+<script src="/vendor/reader/purify.min.js"></script>
 <script>
 const METRICS = {
   pdfExport: {
@@ -1923,6 +2062,14 @@ function attrEsc(s) {
     .replace(/</g, "&lt;");
 }
 
+function htmlEsc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function folderBtnHtml({ pdf, rel, title }) {
   const tip = title || "Open containing folder in Finder";
   const attrs = [];
@@ -1932,7 +2079,9 @@ function folderBtnHtml({ pdf, rel, title }) {
 }
 
 function previewBtnHtml(file, name) {
-  const tip = "Preview this PDF";
+  const tip = prefersReaderFirst()
+    ? "Open Reader View (narrow window)"
+    : "Preview this PDF";
   return `<button type="button" class="icon-btn" data-preview-pdf="${attrEsc(file)}" data-name="${attrEsc(name)}" title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${EYE_ICON_SVG}</button>`;
 }
 
@@ -2337,7 +2486,39 @@ window.rawPdfUrl = rawPdfUrl;
 window.pdfUrl = pdfUrl;
 window.usesViewerPdfs = usesViewerPdfs;
 
+let READER_FILE = "";
+let READER_NAME = "";
+let VIEWER_FILE = "";
+let VIEWER_NAME = "";
+
+/** Reader-first below this CSS width (resize the window to test). Also touch ≤1024. */
+const READER_FIRST_MAX_WIDTH = 1100;
+
+/** Reader-first for narrow viewports (CSS px) and touch phones — not UA sniffing. */
+function prefersReaderFirst() {
+  const w = window.innerWidth || document.documentElement.clientWidth || 0;
+  if (w > 0 && w <= READER_FIRST_MAX_WIDTH) return true;
+  try {
+    if (window.matchMedia(`(max-width: ${READER_FIRST_MAX_WIDTH}px)`).matches) return true;
+    // Real phones often report coarse pointer even if width is quirky in testing
+    if (window.matchMedia("(pointer: coarse)").matches && w <= 1024) return true;
+  } catch (e) {}
+  return false;
+}
+window.__popPrefersReaderFirst = prefersReaderFirst;
+
+function packetDisplayName(file, name) {
+  if (name) return name;
+  const inv = (typeof LAST_INVENTORY !== "undefined" && LAST_INVENTORY && LAST_INVENTORY.pdfs) || [];
+  const row = inv.find(r => r.file === file) || METRICS.pdfExport.pdfs.find(r => r.file === file);
+  return row ? row.name : (file.split("/").pop() || file);
+}
+
 function openViewer(file, name, { pushHash = true } = {}) {
+  closeReader({ clearHash: false });
+  name = packetDisplayName(file, name);
+  VIEWER_FILE = file;
+  VIEWER_NAME = name;
   const url = pdfUrl(file);
   const viewer = document.getElementById("viewer");
   const frame = document.getElementById("viewer-frame");
@@ -2361,30 +2542,143 @@ function openViewer(file, name, { pushHash = true } = {}) {
   if (pushHash && location.hash !== hash) history.pushState({ view: file }, "", hash);
 }
 
-function closeViewer() {
+function closeViewer({ clearHash = true } = {}) {
   const viewer = document.getElementById("viewer");
   const frame = document.getElementById("viewer-frame");
   viewer.classList.remove("is-open");
   viewer.setAttribute("aria-hidden", "true");
   document.body.classList.remove("viewer-open");
   frame.src = "about:blank";
+  VIEWER_FILE = "";
+  VIEWER_NAME = "";
   if (typeof window.__popClearCurrentPdf === "function") {
     window.__popClearCurrentPdf();
   }
-  if (location.hash.startsWith("#view=")) {
+  if (clearHash && location.hash.startsWith("#view=")) {
     history.pushState({}, "", location.pathname + location.search);
   }
 }
 
+function renderMarkdownHtml(md) {
+  const parse = (typeof marked !== "undefined" && (marked.parse || marked.marked))
+    ? (marked.parse || marked.marked)
+    : null;
+  if (!parse) {
+    return "<pre class=\"reader-empty\"></pre>".replace(
+      "></pre>",
+      ">" + String(md || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])) + "</pre>"
+    );
+  }
+  const dirty = parse(md || "");
+  if (typeof DOMPurify !== "undefined") return DOMPurify.sanitize(dirty);
+  return dirty;
+}
+
+async function openReader(file, name, { pushHash = true } = {}) {
+  closeViewer({ clearHash: false });
+  name = packetDisplayName(file, name);
+  READER_FILE = file;
+  READER_NAME = name;
+  const reader = document.getElementById("reader");
+  const article = document.getElementById("reader-article");
+  const attSec = document.getElementById("reader-attachments");
+  const attList = document.getElementById("reader-att-list");
+  document.getElementById("reader-title").textContent = name;
+  const dl = document.getElementById("reader-download-pdf");
+  if (dl) {
+    dl.href = "/api/download/pdf?file=" + encodeURIComponent(file);
+    dl.setAttribute("download", name || "packet.pdf");
+  }
+  article.innerHTML = "<p class=\"reader-empty\">Loading…</p>";
+  attSec.hidden = true;
+  attList.innerHTML = "";
+  reader.classList.add("is-open");
+  reader.setAttribute("aria-hidden", "false");
+  document.body.classList.add("reader-open");
+  const hash = "#read=" + encodeURIComponent(file);
+  if (pushHash && location.hash !== hash) history.pushState({ read: file }, "", hash);
+
+  try {
+    const res = await fetch("/api/reader?pdf=" + encodeURIComponent(file));
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
+    if (data.missingMarkdown || !data.content) {
+      article.innerHTML = "<p class=\"reader-empty\">No markdown source is available for this packet on this server. Use <strong>View full PDF</strong> instead.</p>";
+    } else {
+      article.innerHTML = renderMarkdownHtml(data.content);
+    }
+    const pdfAtts = (data.attachments || []).filter(a => a.isPdf);
+    if (pdfAtts.length) {
+      attSec.hidden = false;
+      attList.innerHTML = pdfAtts.map(a => `
+        <li>
+          <button type="button" data-att-rel="${attrEsc(a.rel)}" data-att-name="${attrEsc(a.name)}">
+            <span class="att-name">${htmlEsc(a.bookmarkTitle || a.name)}</span>
+            <span class="att-meta">${fmt(a.pages || 0)} pg</span>
+          </button>
+        </li>`).join("");
+    }
+  } catch (err) {
+    article.innerHTML = `<p class="reader-empty">Could not load Reader View: ${htmlEsc(String(err.message || err))}</p>`;
+  }
+}
+
+function closeReader({ clearHash = true } = {}) {
+  const reader = document.getElementById("reader");
+  if (!reader) return;
+  reader.classList.remove("is-open");
+  reader.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("reader-open");
+  READER_FILE = "";
+  READER_NAME = "";
+  if (clearHash && location.hash.startsWith("#read=")) {
+    history.pushState({}, "", location.pathname + location.search);
+  }
+}
+
+function openPacket(file, name, opts) {
+  if (prefersReaderFirst()) openReader(file, name, opts);
+  else openViewer(file, name, opts);
+}
+
+function openAttachmentPdf(packetFile, rel, name) {
+  const apiPath = "/api/attachments/file?pdf=" + encodeURIComponent(packetFile)
+    + "&rel=" + encodeURIComponent(rel);
+  const url = PDFJS_VIEWER + "?file=" + encodeURIComponent(apiPath) + PDF_VIEW_HASH;
+  closeReader({ clearHash: false });
+  const viewer = document.getElementById("viewer");
+  const frame = document.getElementById("viewer-frame");
+  document.getElementById("viewer-title").textContent = name || rel.split("/").pop();
+  document.getElementById("open-external").href = apiPath;
+  const dl = document.getElementById("btn-download-pdf");
+  if (dl) {
+    dl.href = apiPath;
+    dl.setAttribute("download", name || "attachment.pdf");
+  }
+  frame.src = url;
+  viewer.classList.add("is-open");
+  viewer.setAttribute("aria-hidden", "false");
+  document.body.classList.add("viewer-open");
+  if (typeof window.__popSetCurrentPdf === "function") {
+    window.__popSetCurrentPdf(packetFile);
+  }
+}
+
 function syncViewerFromHash() {
+  const read = location.hash.match(/^#read=(.+)$/);
+  if (read) {
+    const file = decodeURIComponent(read[1]);
+    openReader(file, packetDisplayName(file), { pushHash: false });
+    return;
+  }
   const m = location.hash.match(/^#view=(.+)$/);
   if (!m) {
     if (document.getElementById("viewer").classList.contains("is-open")) closeViewer();
+    if (document.getElementById("reader").classList.contains("is-open")) closeReader();
     return;
   }
   const file = decodeURIComponent(m[1]);
-  const row = METRICS.pdfExport.pdfs.find(r => r.file === file);
-  openViewer(file, row ? row.name : file.split("/").pop(), { pushHash: false });
+  openViewer(file, packetDisplayName(file), { pushHash: false });
 }
 
 function renderPdfExport(data) {
@@ -2498,7 +2792,8 @@ function wireListFilters() {
       e.stopPropagation();
       const file = previewBtn.getAttribute("data-preview-pdf");
       const name = previewBtn.getAttribute("data-name") || file.split("/").pop();
-      openViewer(file, name);
+      // Same width rule as the file name — eye is not a PDF-only force.
+      openPacket(file, name);
       return;
     }
     const editBtn = e.target.closest("[data-edit-pdf]");
@@ -2531,9 +2826,20 @@ function wireListFilters() {
       return;
     }
     const a = e.target.closest("a.file-link");
-    if (!a) return;
-    e.preventDefault();
-    openViewer(a.dataset.file, a.dataset.name);
+    if (a) {
+      e.preventDefault();
+      openPacket(a.dataset.file, a.dataset.name);
+      return;
+    }
+    // Tap/click on the file cell (but not action buttons) also opens the packet
+    const fileCell = e.target.closest("td.file");
+    if (fileCell && !e.target.closest("button, a, select")) {
+      const link = fileCell.querySelector("a.file-link");
+      if (link) {
+        e.preventDefault();
+        openPacket(link.dataset.file, link.dataset.name);
+      }
+    }
   });
   tbody.addEventListener("change", (e) => {
     const sel = e.target.closest("select.status-select");
@@ -2544,6 +2850,32 @@ function wireListFilters() {
 
 document.getElementById("back-to-list").addEventListener("click", () => {
   closeViewer();
+});
+
+document.getElementById("btn-reader-view").addEventListener("click", () => {
+  const file = VIEWER_FILE
+    || decodeURIComponent(((location.hash.match(/^#view=(.+)$/) || [])[1] || ""));
+  if (!file) return;
+  openReader(file, VIEWER_NAME || packetDisplayName(file));
+});
+
+document.getElementById("reader-back").addEventListener("click", () => {
+  closeReader();
+});
+
+document.getElementById("reader-open-pdf").addEventListener("click", () => {
+  if (!READER_FILE) return;
+  openViewer(READER_FILE, READER_NAME || packetDisplayName(READER_FILE));
+});
+
+document.getElementById("reader-att-list").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-att-rel]");
+  if (!btn || !READER_FILE) return;
+  openAttachmentPdf(
+    READER_FILE,
+    btn.getAttribute("data-att-rel"),
+    btn.getAttribute("data-att-name")
+  );
 });
 
 window.addEventListener("popstate", syncViewerFromHash);

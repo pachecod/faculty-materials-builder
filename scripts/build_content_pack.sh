@@ -63,6 +63,9 @@ for sub in (
 
 copied = 0
 missing = []
+markdown_files: list[str] = []
+attachment_pdfs = 0
+packet_pdfs = 0
 for rel in sorted(paths, key=lambda p: str(p)):
     src = root / rel
     if not src.exists():
@@ -71,20 +74,53 @@ for rel in sorted(paths, key=lambda p: str(p)):
     dest = stage / rel
     if src.is_dir():
         shutil.copytree(src, dest, dirs_exist_ok=True)
-        copied += sum(1 for _ in dest.rglob("*") if _.is_file())
+        for f in dest.rglob("*"):
+            if not f.is_file():
+                continue
+            copied += 1
+            suf = f.suffix.lower()
+            rel_s = f.relative_to(stage).as_posix()
+            if suf == ".md":
+                markdown_files.append(rel_s)
+            elif suf == ".pdf":
+                if rel_s.startswith("0_Drafts/_official/") or rel_s.startswith("0_Drafts/_pdf_review/"):
+                    packet_pdfs += 1
+                else:
+                    attachment_pdfs += 1
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dest)
         copied += 1
+        suf = src.suffix.lower()
+        rel_s = Path(rel).as_posix()
+        if suf == ".md":
+            markdown_files.append(rel_s)
+        elif suf == ".pdf":
+            if rel_s.startswith("0_Drafts/_official/") or rel_s.startswith("0_Drafts/_pdf_review/"):
+                packet_pdfs += 1
+            else:
+                attachment_pdfs += 1
+
+# Also count packet registry editMd explicitly for manifest clarity
+reg_md = sorted({(p.get("editMd") or "") for p in reg.get("packets", []) if p.get("editMd")})
 
 meta = {
-    "version": 1,
+    "version": 2,
     "kind": "pop-content-pack",
     "filesCopied": copied,
     "missing": missing,
+    "markdownFiles": sorted(set(markdown_files)),
+    "markdownFileCount": len(set(markdown_files)),
+    "registryMarkdownCount": len(reg_md),
+    "attachmentPdfCount": attachment_pdfs,
+    "packetPdfCount": packet_pdfs,
 }
 (stage / "content_pack_manifest.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
 print(f"Staged {copied} files; missing {len(missing)}")
+print(
+    f"Manifest: markdown={meta['markdownFileCount']} "
+    f"attachmentPdfs={attachment_pdfs} packetPdfs={packet_pdfs}"
+)
 if missing[:20]:
     print("Missing (first 20):", *missing[:20], sep="\n  ")
 PY
