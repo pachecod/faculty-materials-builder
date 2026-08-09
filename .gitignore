@@ -73,6 +73,10 @@ render_push_state.json
 theme.json
 publish/theme.json
 
+# Runtime portal behavior settings (Reader link clicks, etc.)
+portal_settings.json
+publish/portal_settings.json
+
 # Local data-root mirrors
 /data/
 

@@ -100,8 +100,27 @@ CONTENT_UPDATED_FILE = (
     (PUBLISH / "content_updated.json") if USE_DATA_LAYOUT else (BASE / "content_updated.json")
 )
 THEME_FILE = (PUBLISH / "theme.json") if USE_DATA_LAYOUT else (BASE / "theme.json")
+PORTAL_SETTINGS_FILE = (
+    (PUBLISH / "portal_settings.json") if USE_DATA_LAYOUT else (BASE / "portal_settings.json")
+)
 # Local-only fingerprint of last successful Upload to Render
 RENDER_PUSH_STATE_FILE = BASE / "render_push_state.json"
+
+# Reader View link click behavior (extensible — add values here for new options)
+READER_LINK_BEHAVIORS = (
+    {
+        "id": "new_tab",
+        "label": "Open in New Tab",
+        "hint": "Links leave the Reader and open in a new browser tab.",
+    },
+    {
+        "id": "same_tab",
+        "label": "Open in Same Tab",
+        "hint": "Links replace the current tab (leaves the materials site).",
+    },
+)
+DEFAULT_READER_LINK_BEHAVIOR = "new_tab"
+_READER_LINK_BEHAVIOR_IDS = {opt["id"] for opt in READER_LINK_BEHAVIORS}
 
 # Public portal CSS variables editable from Render /admin
 # (key, css var, default hex, admin label, group)
@@ -359,6 +378,43 @@ def save_theme(theme: dict) -> dict:
     }
     THEME_FILE.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return cleaned
+
+
+def default_portal_settings() -> dict:
+    return {"readerLinkBehavior": DEFAULT_READER_LINK_BEHAVIOR}
+
+
+def load_portal_settings() -> dict:
+    settings = default_portal_settings()
+    if PORTAL_SETTINGS_FILE.is_file():
+        try:
+            data = json.loads(PORTAL_SETTINGS_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                behavior = str(data.get("readerLinkBehavior") or "").strip()
+                if behavior in _READER_LINK_BEHAVIOR_IDS:
+                    settings["readerLinkBehavior"] = behavior
+        except Exception:
+            pass
+    return settings
+
+
+def save_portal_settings(updates: dict) -> dict:
+    current = load_portal_settings()
+    if "readerLinkBehavior" in updates:
+        behavior = str(updates.get("readerLinkBehavior") or "").strip()
+        if behavior not in _READER_LINK_BEHAVIOR_IDS:
+            allowed = ", ".join(sorted(_READER_LINK_BEHAVIOR_IDS))
+            raise ValueError(f"Invalid readerLinkBehavior. Allowed: {allowed}")
+        current["readerLinkBehavior"] = behavior
+    payload = {
+        **current,
+        "updatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
+    PORTAL_SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    PORTAL_SETTINGS_FILE.write_text(
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+    )
+    return current
 
 
 def view_password_hash() -> str | None:
@@ -1215,6 +1271,7 @@ def pdfjs_assets(subpath: str):
 
 @app.get("/api/config")
 def api_config():
+    portal_settings = load_portal_settings()
     return jsonify(
         {
             "mode": POP_MODE,
@@ -1245,6 +1302,11 @@ def api_config():
             "themeDefaults": dict(DEFAULT_THEME),
             "themeCssVars": dict(THEME_CSS_VARS),
             "themeFields": list(THEME_FIELDS),
+            "portalSettings": portal_settings,
+            "readerLinkBehavior": portal_settings.get(
+                "readerLinkBehavior", DEFAULT_READER_LINK_BEHAVIOR
+            ),
+            "readerLinkBehaviors": list(READER_LINK_BEHAVIORS),
         }
     )
 
@@ -2096,6 +2158,31 @@ def api_admin_theme_delete():
     return jsonify({"ok": True, "theme": load_theme()})
 
 
+@app.get("/api/admin/portal-settings")
+@require_admin
+def api_admin_portal_settings_get():
+    return jsonify(
+        {
+            "ok": True,
+            "settings": load_portal_settings(),
+            "readerLinkBehaviors": list(READER_LINK_BEHAVIORS),
+            "defaults": default_portal_settings(),
+        }
+    )
+
+
+@app.put("/api/admin/portal-settings")
+@require_admin
+def api_admin_portal_settings_put():
+    data = request.get_json(silent=True) or {}
+    incoming = data.get("settings") if isinstance(data.get("settings"), dict) else data
+    try:
+        settings = save_portal_settings(incoming or {})
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True, "settings": settings})
+
+
 @app.get("/api/admin/view-password")
 @require_admin
 def api_view_password_get():
@@ -2576,9 +2663,9 @@ def _clear_directory_contents(path: Path) -> int:
 def wipe_hosted_content() -> dict:
     """Remove imported content on the persistent data disk (Render).
 
-    Keeps site_auth.json and the /data mount itself. Refuses to run against the
-    local authoring tree (no PUBLISH_DATA_ROOT) so a mistaken click cannot delete
-    the Mac working copy.
+    Keeps site_auth.json, theme.json, portal_settings.json, and the /data mount.
+    Refuses to run against the local authoring tree (no PUBLISH_DATA_ROOT) so a
+    mistaken click cannot delete the Mac working copy.
     """
     if not USE_DATA_LAYOUT:
         raise RuntimeError(

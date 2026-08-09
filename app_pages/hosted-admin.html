@@ -126,6 +126,35 @@
     color: var(--muted);
   }
   .theme-group-title:first-child { margin-top: 0; }
+  .behavior-options {
+    display: grid;
+    gap: 0.55rem;
+  }
+  .behavior-option {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .behavior-option:has(input:checked) {
+    border-color: #93c5fd;
+    background: #eff6ff;
+  }
+  .behavior-option input {
+    margin-top: 0.2rem;
+  }
+  .behavior-option .label {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .behavior-option .hint {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+  }
 </style>
 </head>
 <body>
@@ -133,7 +162,7 @@
   <div class="wrap">
     <header>
       <h1>PoP hosted admin</h1>
-      <p class="hint" id="surface-hint">Manage the public view password, colors, and import content packs.</p>
+      <p class="hint" id="surface-hint">Manage the public view password, Reader behavior, colors, and import content packs.</p>
     </header>
     <div class="tools-grid">
       <section class="panel" id="site-access">
@@ -160,6 +189,19 @@
           </div>
         </div>
         <div class="status-box" id="view-pw-msg" hidden></div>
+      </section>
+
+      <section class="panel" id="reader-behavior">
+        <h2>Reader View links</h2>
+        <p class="hint">
+          When a visitor clicks a link inside Reader View (markdown links), choose how it opens.
+          Default is <strong>Open in New Tab</strong>.
+        </p>
+        <div class="behavior-options" id="reader-link-options"></div>
+        <div class="theme-actions">
+          <button type="button" id="reader-behavior-save">Save link behavior</button>
+        </div>
+        <div class="status-box" id="reader-behavior-msg" hidden></div>
       </section>
 
       <section class="panel" id="portal-theme">
@@ -428,8 +470,64 @@
     if (data.ok) syncThemeInputs(data.theme);
   };
 
+  function buildReaderLinkOptions(behaviors, selected) {
+    const box = document.getElementById("reader-link-options");
+    if (!box) return;
+    const opts = Array.isArray(behaviors) && behaviors.length
+      ? behaviors
+      : [
+          { id: "new_tab", label: "Open in New Tab", hint: "Links open in a new browser tab." },
+          { id: "same_tab", label: "Open in Same Tab", hint: "Links replace the current tab." },
+        ];
+    const current = selected || "new_tab";
+    box.innerHTML = opts.map((opt) => `
+      <label class="behavior-option">
+        <input type="radio" name="reader-link-behavior" value="${opt.id}" ${opt.id === current ? "checked" : ""}>
+        <span>
+          <span class="label">${opt.label}</span>
+          <p class="hint">${opt.hint || ""}</p>
+        </span>
+      </label>`).join("");
+  }
+
+  async function refreshReaderBehavior() {
+    const msg = document.getElementById("reader-behavior-msg");
+    try {
+      const r = await fetch("/api/admin/portal-settings");
+      const data = await r.json();
+      if (!data.ok) throw new Error(data.error || "Load failed");
+      const selected = (data.settings && data.settings.readerLinkBehavior) || "new_tab";
+      buildReaderLinkOptions(data.readerLinkBehaviors || [], selected);
+    } catch (e) {
+      buildReaderLinkOptions([], "new_tab");
+      if (msg) {
+        msg.hidden = false;
+        msg.className = "status-box err";
+        msg.textContent = "Could not load Reader link settings: " + (e.message || e);
+      }
+    }
+  }
+
+  document.getElementById("reader-behavior-save").onclick = async () => {
+    const msg = document.getElementById("reader-behavior-msg");
+    const picked = document.querySelector('input[name="reader-link-behavior"]:checked');
+    const behavior = picked ? picked.value : "new_tab";
+    const r = await fetch("/api/admin/portal-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ readerLinkBehavior: behavior }),
+    });
+    const data = await r.json();
+    msg.hidden = false;
+    msg.className = "status-box " + (data.ok ? "ok" : "err");
+    msg.textContent = data.ok
+      ? "Saved. Hard-refresh the public site (or reopen Reader View) to apply."
+      : (data.error || "Save failed");
+  };
+
   await refreshPw();
   await refreshStorage();
+  await refreshReaderBehavior();
   await refreshTheme();
 })();
 </script>

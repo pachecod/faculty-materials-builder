@@ -2674,6 +2674,37 @@ function closeViewer({ clearHash = true } = {}) {
   }
 }
 
+function readerLinkBehavior() {
+  const fromWindow = window.__popReaderLinkBehavior;
+  if (fromWindow) return String(fromWindow);
+  try {
+    if (typeof APP !== "undefined" && APP && APP.readerLinkBehavior) {
+      return String(APP.readerLinkBehavior);
+    }
+  } catch (e) {}
+  return "new_tab";
+}
+
+function applyReaderLinkBehavior(root) {
+  if (!root) return;
+  const mode = readerLinkBehavior();
+  root.querySelectorAll("a[href]").forEach((a) => {
+    const href = (a.getAttribute("href") || "").trim();
+    if (!href || href.startsWith("#") || href.toLowerCase().startsWith("javascript:")) {
+      a.removeAttribute("target");
+      a.removeAttribute("rel");
+      return;
+    }
+    if (mode === "same_tab") {
+      a.removeAttribute("target");
+      a.removeAttribute("rel");
+    } else {
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+    }
+  });
+}
+
 function renderMarkdownHtml(md) {
   const parse = (typeof marked !== "undefined" && (marked.parse || marked.marked))
     ? (marked.parse || marked.marked)
@@ -2685,7 +2716,9 @@ function renderMarkdownHtml(md) {
     );
   }
   const dirty = parse(md || "");
-  if (typeof DOMPurify !== "undefined") return DOMPurify.sanitize(dirty);
+  if (typeof DOMPurify !== "undefined") {
+    return DOMPurify.sanitize(dirty, { ADD_ATTR: ["target", "rel"] });
+  }
   return dirty;
 }
 
@@ -2721,6 +2754,7 @@ async function openReader(file, name, { pushHash = true } = {}) {
       article.innerHTML = "<p class=\"reader-empty\">No markdown source is available for this packet on this server. Use <strong>View full PDF</strong> instead.</p>";
     } else {
       article.innerHTML = renderMarkdownHtml(data.content);
+      applyReaderLinkBehavior(article);
     }
     const pdfAtts = (data.attachments || []).filter(a => a.isPdf);
     if (pdfAtts.length) {
@@ -3272,6 +3306,7 @@ function applyModeFromConfig(cfg) {
     }
   }
   applyContentUpdated(cfg);
+  window.__popReaderLinkBehavior = cfg.readerLinkBehavior || "new_tab";
   if (cfg.theme) {
     const map = cfg.themeCssVars || {};
     const keys = Object.keys(map).length ? Object.keys(map) : Object.keys(cfg.theme);
