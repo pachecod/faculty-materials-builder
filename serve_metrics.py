@@ -808,13 +808,43 @@ def _login_html(
         else ""
     )
     pw_autofocus = "" if with_username else " autofocus"
+    modal_html = ""
+    if with_username:
+        modal_html = (
+            '<div id="login-notice" class="modal-backdrop" role="dialog" '
+            'aria-modal="true" aria-labelledby="login-notice-title">'
+            '<div class="modal">'
+            '<h2 id="login-notice-title">Updated sign-in</h2>'
+            "<p>For security and convenience, this site has been updated so that "
+            "the user name and password are the same. If you received a password, "
+            "<strong>enter the password you received in BOTH the user name and "
+            "the password fields.</strong> Then tell your password manager to save it.</p>"
+            '<button type="button" id="login-notice-ok">Got it</button>'
+            "</div></div>"
+            "<script>"
+            "document.getElementById('login-notice-ok').onclick=function(){"
+            "document.getElementById('login-notice').hidden=true;"
+            "var u=document.querySelector('input[name=username]'); if(u) u.focus();"
+            "};"
+            "</script>"
+        )
     html = (
         "<!doctype html><html><head><meta charset=utf-8>"
         f"<title>{title}</title>"
         "<style>body{font-family:system-ui;max-width:24rem;margin:4rem auto;padding:0 1rem}"
         "label{display:block;font-size:.85rem;margin-top:.65rem}"
         "input,button{font:inherit;padding:.5rem;width:100%;margin:.35rem 0;box-sizing:border-box}"
-        ".err{color:#b91c1c}</style></head><body>"
+        ".err{color:#b91c1c}"
+        ".modal-backdrop{position:fixed;inset:0;background:rgba(28,25,23,.55);"
+        "display:flex;align-items:center;justify-content:center;padding:1rem;z-index:50}"
+        ".modal-backdrop[hidden]{display:none}"
+        ".modal{background:#fff;color:#1c1917;max-width:26rem;width:100%;"
+        "border-radius:10px;padding:1.25rem 1.35rem;box-shadow:0 12px 40px rgba(0,0,0,.25)}"
+        ".modal h2{margin:0 0 .65rem;font-size:1.15rem}"
+        ".modal p{margin:0 0 1rem;line-height:1.45;font-size:.95rem}"
+        ".modal button{margin:0}"
+        "</style></head><body>"
+        f"{modal_html}"
         f"<h1>{title}</h1>"
         f"<p>{blurb}</p>"
         f"<form method=post action={action}>"
