@@ -1289,6 +1289,148 @@
     .reader-bar .title { flex: 1 1 100%; white-space: normal; }
   }
 
+  #reader-embed-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: max(0.65rem, env(safe-area-inset-top)) max(0.65rem, env(safe-area-inset-right)) max(0.65rem, env(safe-area-inset-bottom)) max(0.65rem, env(safe-area-inset-left));
+    background: rgba(15, 23, 42, 0.55);
+  }
+  #reader-embed-modal[hidden] { display: none !important; }
+  .reader-embed-card {
+    display: flex;
+    flex-direction: column;
+    width: min(1100px, 100%);
+    height: min(92vh, 100%);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .reader-embed-bar {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    background: var(--accent);
+    color: var(--panel-head-text);
+  }
+  .reader-embed-bar .title {
+    min-width: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .reader-embed-bar #reader-embed-close { justify-self: start; }
+  .reader-embed-bar #reader-embed-external { justify-self: end; }
+  .reader-embed-bar a,
+  .reader-embed-bar button {
+    appearance: none;
+    border: 1px solid var(--badge-border);
+    background: var(--link-hover);
+    color: var(--panel-head-text);
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .reader-embed-bar button.primary {
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    border-color: var(--chip-bg);
+  }
+  .reader-embed-frame-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #f5f5f4;
+  }
+  #reader-embed-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+  .reader-embed-note {
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(28, 25, 23, 0.88);
+    color: #fafaf9;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    pointer-events: none;
+  }
+  .reader-embed-note[hidden] { display: none !important; }
+
+  #reader-embed-blocked-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 13000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(28, 25, 23, 0.55);
+  }
+  #reader-embed-blocked-modal[hidden] { display: none !important; }
+  .reader-embed-blocked-card {
+    width: min(24rem, 100%);
+    background: #fffaf5;
+    color: #1c1917;
+    border: 1px solid #e8e4df;
+    border-radius: 10px;
+    padding: 1.15rem 1.25rem 1.05rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .reader-embed-blocked-card p {
+    margin: 0 0 1rem;
+    font-size: 0.98rem;
+    line-height: 1.45;
+  }
+  .reader-embed-blocked-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  .reader-embed-blocked-actions button {
+    font: inherit;
+    font-weight: 700;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid #d6d3d1;
+    cursor: pointer;
+  }
+  #reader-embed-blocked-return {
+    background: #fff;
+    color: #1c1917;
+  }
+  #reader-embed-blocked-ok {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
 </style>
 </head>
 <body data-shell="local">
@@ -1666,6 +1808,32 @@
         <p class="hint">These open as PDFs (same files appended into the full packet).</p>
         <ul class="reader-att-list" id="reader-att-list"></ul>
       </section>
+    </div>
+  </div>
+
+  <div id="reader-embed-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="reader-embed-title">
+    <div class="reader-embed-card">
+      <div class="reader-embed-bar">
+        <button type="button" class="primary" id="reader-embed-close">Return to File</button>
+        <div class="title" id="reader-embed-title">Linked page</div>
+        <a id="reader-embed-external" href="#" target="_blank" rel="noopener noreferrer">Open in Tab</a>
+      </div>
+      <div class="reader-embed-frame-wrap">
+        <iframe id="reader-embed-frame" title="Embedded linked page"></iframe>
+        <p class="reader-embed-note" id="reader-embed-note" hidden>
+          If this stays blank, the site blocks embedding. Use Open in Tab.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="reader-embed-blocked-modal" hidden aria-hidden="true" role="alertdialog" aria-modal="true" aria-describedby="reader-embed-blocked-body">
+    <div class="reader-embed-blocked-card">
+      <p id="reader-embed-blocked-body">Content must be opened in new tab.</p>
+      <div class="reader-embed-blocked-actions">
+        <button type="button" id="reader-embed-blocked-return">Return to File</button>
+        <button type="button" id="reader-embed-blocked-ok">OK</button>
+      </div>
     </div>
   </div>
 
@@ -2693,14 +2861,167 @@ function applyReaderLinkBehavior(root) {
     if (!href || href.startsWith("#") || href.toLowerCase().startsWith("javascript:")) {
       a.removeAttribute("target");
       a.removeAttribute("rel");
+      a.removeAttribute("data-reader-link");
       return;
     }
+    a.setAttribute("data-reader-link", mode);
     if (mode === "same_tab") {
+      a.removeAttribute("target");
+      a.removeAttribute("rel");
+    } else if (mode === "embedded") {
       a.removeAttribute("target");
       a.removeAttribute("rel");
     } else {
       a.setAttribute("target", "_blank");
       a.setAttribute("rel", "noopener noreferrer");
+    }
+  });
+}
+
+function resolveReaderLinkUrl(href) {
+  const raw = (href || "").trim();
+  if (!raw) return "";
+  const lower = raw.toLowerCase();
+  if (lower.startsWith("javascript:") || lower.startsWith("mailto:") || lower.startsWith("tel:")) {
+    return "";
+  }
+  try {
+    return new URL(raw, window.location.href).href;
+  } catch (e) {
+    return "";
+  }
+}
+
+function closeReaderEmbed() {
+  const modal = document.getElementById("reader-embed-modal");
+  const frame = document.getElementById("reader-embed-frame");
+  const note = document.getElementById("reader-embed-note");
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  if (frame) frame.src = "about:blank";
+  if (note) note.hidden = true;
+  document.body.classList.remove("reader-embed-open");
+}
+
+function openReaderEmbed(url) {
+  const modal = document.getElementById("reader-embed-modal");
+  const frame = document.getElementById("reader-embed-frame");
+  const title = document.getElementById("reader-embed-title");
+  const external = document.getElementById("reader-embed-external");
+  const note = document.getElementById("reader-embed-note");
+  if (!modal || !frame || !url) return;
+  if (title) title.textContent = url;
+  if (external) external.href = url;
+  if (note) {
+    note.hidden = false;
+    window.setTimeout(() => { if (note) note.hidden = true; }, 4500);
+  }
+  frame.src = url;
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("reader-embed-open");
+  const closeBtn = document.getElementById("reader-embed-close");
+  if (closeBtn) closeBtn.focus();
+}
+
+function openReaderLinkInNewTab(url) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function closeReaderEmbedBlocked() {
+  const modal = document.getElementById("reader-embed-blocked-modal");
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  modal.dataset.url = "";
+}
+
+function promptReaderEmbedBlocked(url) {
+  const modal = document.getElementById("reader-embed-blocked-modal");
+  const okBtn = document.getElementById("reader-embed-blocked-ok");
+  if (!modal) {
+    openReaderLinkInNewTab(url);
+    return;
+  }
+  modal.dataset.url = url || "";
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  if (okBtn) okBtn.focus();
+}
+
+async function openReaderLinkEmbeddedOrTab(url) {
+  try {
+    const r = await fetch("/api/reader/embed-check?url=" + encodeURIComponent(url));
+    const data = await r.json();
+    if (data && data.ok && data.canEmbed === false) {
+      promptReaderEmbedBlocked(url);
+      return;
+    }
+  } catch (e) {}
+  openReaderEmbed(url);
+}
+
+function wireReaderEmbedOnce() {
+  if (window.__popReaderEmbedWired) return;
+  window.__popReaderEmbedWired = true;
+  const article = document.getElementById("reader-article");
+  if (article) {
+    article.addEventListener("click", (e) => {
+      if (readerLinkBehavior() !== "embedded") return;
+      const a = e.target.closest("a[href]");
+      if (!a || !article.contains(a)) return;
+      const url = resolveReaderLinkUrl(a.getAttribute("href"));
+      if (!url) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openReaderLinkEmbeddedOrTab(url);
+    });
+  }
+  const closeBtn = document.getElementById("reader-embed-close");
+  const modal = document.getElementById("reader-embed-modal");
+  if (closeBtn) closeBtn.addEventListener("click", () => closeReaderEmbed());
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeReaderEmbed();
+    });
+  }
+  const blocked = document.getElementById("reader-embed-blocked-modal");
+  const blockedOk = document.getElementById("reader-embed-blocked-ok");
+  const blockedReturn = document.getElementById("reader-embed-blocked-return");
+  if (blockedOk) {
+    blockedOk.addEventListener("click", () => {
+      const url = (blocked && blocked.dataset.url) || "";
+      closeReaderEmbedBlocked();
+      if (url) openReaderLinkInNewTab(url);
+    });
+  }
+  if (blockedReturn) {
+    blockedReturn.addEventListener("click", () => closeReaderEmbedBlocked());
+  }
+  if (blocked) {
+    blocked.addEventListener("click", (e) => {
+      if (e.target === blocked) closeReaderEmbedBlocked();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const blockedModal = document.getElementById("reader-embed-blocked-modal");
+    if (blockedModal && !blockedModal.hidden) {
+      e.preventDefault();
+      closeReaderEmbedBlocked();
+      return;
+    }
+    const m = document.getElementById("reader-embed-modal");
+    if (m && !m.hidden) {
+      e.preventDefault();
+      closeReaderEmbed();
     }
   });
 }
@@ -2773,6 +3094,7 @@ async function openReader(file, name, { pushHash = true } = {}) {
 }
 
 function closeReader({ clearHash = true } = {}) {
+  closeReaderEmbed();
   const reader = document.getElementById("reader");
   if (!reader) return;
   reader.classList.remove("is-open");
@@ -3009,8 +3331,11 @@ document.getElementById("btn-reader-view").addEventListener("click", () => {
 });
 
 document.getElementById("reader-back").addEventListener("click", () => {
+  closeReaderEmbed();
   closeReader();
 });
+
+wireReaderEmbedOnce();
 
 document.getElementById("reader-open-pdf").addEventListener("click", () => {
   if (!READER_FILE) return;

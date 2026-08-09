@@ -20,18 +20,23 @@ from __future__ import annotations
 import hashlib
 import hmac
 import io
+import ipaddress
 import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
 import threading
+import urllib.error
+import urllib.request
 import zipfile
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import (
     Flask,
@@ -117,6 +122,14 @@ READER_LINK_BEHAVIORS = (
         "id": "same_tab",
         "label": "Open in Same Tab",
         "hint": "Links replace the current tab (leaves the materials site).",
+    },
+    {
+        "id": "embedded",
+        "label": "Open in Embedded window",
+        "hint": (
+            "Links open in a modal browser window over Reader View. "
+            "Some sites block embedding and may show a blank frame."
+        ),
     },
 )
 DEFAULT_READER_LINK_BEHAVIOR = "new_tab"
@@ -1391,6 +1404,164 @@ def api_packet():
     if not pkt:
         return jsonify({"ok": False, "error": "Unknown packet"}), 404
     return jsonify({"ok": True, "packet": pkt, "attachments": list_attachments(pkt)})
+
+
+def _host_is_public_http(url: str) -> tuple[str | None, str | None]:
+    """Validate http(s) URL for embed-check. Returns (normalized_url, error)."""
+    raw = (url or "").strip()
+    if not raw or len(raw) > 2000:
+        return None, "Invalid URL"
+    try:
+        parsed = urlparse(raw)
+    except Exception:
+        return None, "Invalid URL"
+    if parsed.scheme not in {"http", "https"}:
+        return None, "Only http/https URLs can be embedded"
+    if not parsed.netloc:
+        return None, "Invalid URL"
+    host = (parsed.hostname or "").lower()
+    if not host or host in {"localhost", "127.0.0.1", "::1"}:
+        return None, "Local URLs cannot be checked for embedding"
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except Exception:
+        # DNS failure — still allow client to try / fall back
+        return raw, None
+    for info in infos:
+        ip_str = info[4][0]
+        try:
+            ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+        ):
+            return None, "Private or local network URLs are not allowed"
+    return raw, None
+
+
+def _csp_frame_ancestors_blocks_embed(csp: str) -> bool | None:
+    """True if CSP frame-ancestors blocks cross-origin embed; None if unset."""
+    if not csp:
+        return None
+    for part in csp.split(";"):
+        part = part.strip()
+        if not part.lower().startswith("frame-ancestors"):
+            continue
+        tokens = [t.strip("'\"") for t in part.split()[1:]]
+        if not tokens or any(t.lower() == "none" for t in tokens):
+            return True
+        # '*' allows any embedder; anything else ('self' / host list) won't include us
+        if "*" in tokens:
+            return False
+        return True
+    return None
+
+
+def check_url_embeddable(url: str) -> dict:
+    """Best-effort: inspect response headers for framing policy."""
+    normalized, err = _host_is_public_http(url)
+    if err and not normalized:
+        return {"ok": True, "canEmbed": False, "reason": err, "checked": False}
+    target = normalized or url
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (compatible; PoPMaterialsEmbedCheck/1.0; +local)"
+        ),
+        "Accept": "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
+    }
+    final_url = target
+    xfo = ""
+    csp = ""
+    status = None
+    try:
+        req = urllib.request.Request(target, method="HEAD", headers=headers)
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            status = getattr(resp, "status", None) or resp.getcode()
+            final_url = resp.geturl() or target
+            xfo = (resp.headers.get("X-Frame-Options") or "").strip()
+            csp = (
+                resp.headers.get("Content-Security-Policy")
+                or resp.headers.get("Content-Security-Policy-Report-Only")
+                or ""
+            ).strip()
+    except Exception:
+        try:
+            req = urllib.request.Request(target, method="GET", headers=headers)
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                status = getattr(resp, "status", None) or resp.getcode()
+                final_url = resp.geturl() or target
+                xfo = (resp.headers.get("X-Frame-Options") or "").strip()
+                csp = (
+                    resp.headers.get("Content-Security-Policy")
+                    or resp.headers.get("Content-Security-Policy-Report-Only")
+                    or ""
+                ).strip()
+                # Don't download the body
+                try:
+                    resp.read(64)
+                except Exception:
+                    pass
+        except Exception as exc:
+            return {
+                "ok": True,
+                "canEmbed": False,
+                "reason": f"Could not reach URL ({exc.__class__.__name__})",
+                "checked": False,
+                "url": target,
+            }
+
+    xfo_u = xfo.upper()
+    if "DENY" in xfo_u:
+        return {
+            "ok": True,
+            "canEmbed": False,
+            "reason": "X-Frame-Options: DENY",
+            "checked": True,
+            "url": final_url,
+            "status": status,
+        }
+    if "SAMEORIGIN" in xfo_u:
+        return {
+            "ok": True,
+            "canEmbed": False,
+            "reason": "X-Frame-Options: SAMEORIGIN",
+            "checked": True,
+            "url": final_url,
+            "status": status,
+        }
+
+    csp_block = _csp_frame_ancestors_blocks_embed(csp)
+    if csp_block is True:
+        return {
+            "ok": True,
+            "canEmbed": False,
+            "reason": "Content-Security-Policy frame-ancestors blocks embedding",
+            "checked": True,
+            "url": final_url,
+            "status": status,
+        }
+
+    return {
+        "ok": True,
+        "canEmbed": True,
+        "reason": "No framing block detected in headers",
+        "checked": True,
+        "url": final_url,
+        "status": status,
+    }
+
+
+@app.get("/api/reader/embed-check")
+@require_viewer_auth
+def api_reader_embed_check():
+    """Probe whether a URL is likely embeddable in an iframe (header check)."""
+    url = request.args.get("url") or ""
+    return jsonify(check_url_embeddable(url))
 
 
 @app.get("/api/reader")
