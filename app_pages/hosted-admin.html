@@ -186,7 +186,7 @@
     msg.hidden = false;
     msg.className = "status-box " + (data.ok ? "ok" : "err");
     msg.textContent = data.ok
-      ? "Saved. Visitors use this same value for both username and password on /login ù not for /admin."
+      ? "Saved. Visitors use this same value for both username and password on /login ó not for /admin."
       : (data.error || "Save failed");
     if (data.ok) input.value = "";
     await refreshPw();
