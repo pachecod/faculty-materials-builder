@@ -33,6 +33,36 @@
     --chip-border: #93c5fd;
     --chip-text: #1e40af;
   }
+  /* View-mode dark palette (on body so it wins over themed :root inline vars) */
+  html.dark-mode body {
+    color-scheme: dark;
+    --ink: #e7e5e4;
+    --muted: #a8a29e;
+    --line: #3f3f46;
+    --bg: #0c0a09;
+    --panel: #18181b;
+    --accent: #93c5fd;
+    --accent-soft: #1e293b;
+    --bar: #3b82f6;
+    --bar-track: #27272a;
+    --link: #93c5fd;
+    --link-hover: #bfdbfe;
+    --panel-head: #1e3a5f;
+    --panel-head-text: #dbeafe;
+    --table-head: #27272a;
+    --wash-a: #1e293b;
+    --wash-b: #292524;
+    --row-complete: #1e3a5f;
+    --row-partial: #44403c;
+    --row-none-need: #7f1d1d;
+    --row-none-ok: #713f12;
+    --badge-text: #bfdbfe;
+    --badge-bg: #1e3a5f;
+    --badge-border: #3b82f6;
+    --chip-bg: #1e3a5f;
+    --chip-border: #3b82f6;
+    --chip-text: #bfdbfe;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -47,6 +77,49 @@
   }
   .wrap { max-width: 1280px; margin: 0 auto; padding: 1.75rem 1.25rem 3rem; }
   header { margin-bottom: 1.25rem; }
+  .page-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .page-header-row h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .color-mode-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-top: 0.15rem;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  .color-mode-toggle:hover {
+    border-color: var(--badge-border);
+    color: var(--accent);
+  }
+  .color-mode-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .color-mode-toggle svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: block;
+  }
+  .color-mode-toggle .icon-sun { display: none; }
+  html.dark-mode .color-mode-toggle .icon-moon { display: none; }
+  html.dark-mode .color-mode-toggle .icon-sun { display: block; }
+  body:not(.viewer-mode) .color-mode-toggle { display: none; }
   h1 {
     font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0 0 0.3rem;
     letter-spacing: -0.02em; color: var(--accent);
@@ -1703,7 +1776,119 @@
     color: #fff;
   }
 
+  /* Dark mode: surfaces that still use hard-coded light colors */
+  html.dark-mode #reader {
+    background: var(--bg);
+  }
+  html.dark-mode .list-filters select,
+  html.dark-mode select.status-select,
+  html.dark-mode .icon-btn,
+  html.dark-mode .folder-btn {
+    background: var(--panel);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  html.dark-mode .icon-btn:hover,
+  html.dark-mode .folder-btn:hover {
+    background: var(--table-head);
+    color: var(--ink);
+    border-color: var(--muted);
+  }
+  html.dark-mode #pdf-loading .pdf-loading-card {
+    background: var(--panel);
+    color: var(--ink);
+  }
+  html.dark-mode .reader-att-list button {
+    background: var(--panel);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  html.dark-mode .reader-att-list button:hover {
+    background: var(--chip-bg);
+    border-color: var(--badge-border);
+  }
+  html.dark-mode #reader-embed-blocked-return {
+    background: var(--panel);
+    color: var(--ink);
+  }
+  /* Reader/viewer chrome: keep dark navy bars + readable buttons in dark mode */
+  html.dark-mode .reader-bar {
+    background: #1e3a5f;
+    color: #eff6ff;
+  }
+  html.dark-mode .reader-bar .title {
+    color: #eff6ff;
+  }
+  html.dark-mode .reader-bar button,
+  html.dark-mode .reader-bar a.bar-btn {
+    background: #1e40af;
+    border-color: #93c5fd;
+    color: #eff6ff;
+  }
+  html.dark-mode .reader-bar button:hover,
+  html.dark-mode .reader-bar a.bar-btn:hover {
+    background: #1d4ed8;
+    color: #fff;
+  }
+  html.dark-mode .reader-bar button.primary,
+  html.dark-mode .reader-bar a.bar-btn.primary {
+    background: #2563eb;
+    color: #eff6ff;
+    border-color: #93c5fd;
+    font-weight: 600;
+  }
+  html.dark-mode .viewer-bar button.primary {
+    background: #2563eb;
+    color: #eff6ff;
+    border-color: #93c5fd;
+  }
+  html.dark-mode .view-mode-label {
+    color: rgba(255, 255, 255, 0.92);
+  }
+  html.dark-mode .view-mode-tabs {
+    background: rgba(0, 0, 0, 0.28);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+  html.dark-mode .view-mode-tabs .view-mode-tab {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+  html.dark-mode .view-mode-tabs .view-mode-tab.is-active,
+  html.dark-mode .view-mode-tabs .view-mode-tab.is-active:hover {
+    background: #eff6ff !important;
+    color: #1e3a8a !important;
+  }
+  html.dark-mode .reader-empty {
+    color: var(--muted);
+  }
+  html.dark-mode .reader-embed-card {
+    background: var(--panel);
+    color: var(--ink);
+  }
+  @media (max-width: 900px) {
+    .color-mode-toggle {
+      width: 3rem;
+      height: 3rem;
+    }
+    .color-mode-toggle svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    html.dark-mode .list-filters-shell.is-open .list-filters {
+      background: var(--panel);
+      border-color: var(--line);
+    }
+  }
+
 </style>
+<script>
+(function () {
+  try {
+    if (localStorage.getItem("pop-color-mode") === "dark") {
+      document.documentElement.classList.add("dark-mode");
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body class="viewer-mode" data-shell="portal">
   <div id="pdf-loading" role="status" aria-live="polite" aria-busy="true">
@@ -1714,7 +1899,18 @@
   <div id="mode-banner">Read-only portal — Preview and download. Admins use /admin for import and site access.</div>
 <div class="wrap" id="dashboard">
     <header>
-      <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
+      <div class="page-header-row">
+        <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
+        <button type="button" class="color-mode-toggle" id="btn-color-mode" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </button>
+      </div>
       <p id="content-updated" hidden></p>
     </header>
 
@@ -3775,6 +3971,37 @@ function applyTheme(theme, cssVars) {
   });
 }
 
+function isDarkMode() {
+  return document.documentElement.classList.contains("dark-mode");
+}
+
+function syncColorModeToggle() {
+  const btn = document.getElementById("btn-color-mode");
+  if (!btn) return;
+  const dark = isDarkMode();
+  const tip = dark
+    ? "Currently in: Dark Mode. Click or tap for Light Mode."
+    : "Currently in: Light Mode. Click or tap for Dark Mode.";
+  btn.setAttribute("aria-pressed", dark ? "true" : "false");
+  btn.setAttribute("aria-label", tip);
+  btn.title = tip;
+}
+
+function setDarkMode(on) {
+  document.documentElement.classList.toggle("dark-mode", !!on);
+  try {
+    localStorage.setItem("pop-color-mode", on ? "dark" : "light");
+  } catch (e) {}
+  syncColorModeToggle();
+}
+
+function wireColorModeToggle() {
+  const btn = document.getElementById("btn-color-mode");
+  if (!btn) return;
+  syncColorModeToggle();
+  btn.addEventListener("click", () => setDarkMode(!isDarkMode()));
+}
+
 function applyModeFromConfig(cfg) {
   if (!cfg) return;
   document.body.classList.add("viewer-mode");
@@ -3806,6 +4033,7 @@ function applyModeFromConfig(cfg) {
     wireFolderDump();
     wireRegenerate();
     wireListFilters();
+    wireColorModeToggle();
     const inv = await loadInventory();
     renderPdfExport(inv);
     syncViewerFromHash();
