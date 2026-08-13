@@ -120,6 +120,28 @@
   html.dark-mode .color-mode-toggle .icon-moon { display: none; }
   html.dark-mode .color-mode-toggle .icon-sun { display: block; }
   body:not(.viewer-mode) .color-mode-toggle { display: none; }
+  .viewer-bar .color-mode-toggle,
+  .reader-bar .color-mode-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-top: 0;
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #eff6ff;
+    box-shadow: none;
+  }
+  .viewer-bar .color-mode-toggle:hover,
+  .reader-bar .color-mode-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #fff;
+  }
+  .viewer-bar .color-mode-toggle svg,
+  .reader-bar .color-mode-toggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
   h1 {
     font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0 0 0.3rem;
     letter-spacing: -0.02em; color: var(--accent);
@@ -1865,11 +1887,15 @@
     color: var(--ink);
   }
   @media (max-width: 900px) {
-    .color-mode-toggle {
+    .color-mode-toggle,
+    .viewer-bar .color-mode-toggle,
+    .reader-bar .color-mode-toggle {
       width: 3rem;
       height: 3rem;
     }
-    .color-mode-toggle svg {
+    .color-mode-toggle svg,
+    .viewer-bar .color-mode-toggle svg,
+    .reader-bar .color-mode-toggle svg {
       width: 1.5rem;
       height: 1.5rem;
     }
@@ -1901,7 +1927,7 @@
     <header>
       <div class="page-header-row">
         <h1>Dan Pacheco - PoP Renewal #3 Materials, Submitted Aug. 15 2026</h1>
-        <button type="button" class="color-mode-toggle" id="btn-color-mode" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
+        <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
           </svg>
@@ -2039,6 +2065,15 @@
       <button type="button" class="bar-btn edit-only" id="btn-promote" data-tip="Save as official — not saved yet.">Save as official</button>
       <a class="bar-btn" id="btn-download-pdf" href="#" download>Download PDF</a>
       <a class="bar-btn" id="open-external" href="#" target="_blank" rel="noopener">Open in new tab</a>
+      <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
+        </svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
     </div>
     <div id="viewer-body">
       <iframe id="viewer-frame" title="PDF viewer"></iframe>
@@ -2134,6 +2169,15 @@
         </div>
       </div>
       <a class="bar-btn" id="reader-download-pdf" href="#" download>Download PDF</a>
+      <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
+        </svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
     </div>
     <div class="reader-scroll">
       <article class="reader-article" id="reader-article"></article>
@@ -3975,16 +4019,20 @@ function isDarkMode() {
   return document.documentElement.classList.contains("dark-mode");
 }
 
-function syncColorModeToggle() {
-  const btn = document.getElementById("btn-color-mode");
-  if (!btn) return;
-  const dark = isDarkMode();
-  const tip = dark
+function colorModeTip() {
+  return isDarkMode()
     ? "Currently in: Dark Mode. Click or tap for Light Mode."
     : "Currently in: Light Mode. Click or tap for Dark Mode.";
-  btn.setAttribute("aria-pressed", dark ? "true" : "false");
-  btn.setAttribute("aria-label", tip);
-  btn.title = tip;
+}
+
+function syncColorModeToggle() {
+  const tip = colorModeTip();
+  const dark = isDarkMode();
+  document.querySelectorAll(".color-mode-toggle").forEach((btn) => {
+    btn.setAttribute("aria-pressed", dark ? "true" : "false");
+    btn.setAttribute("aria-label", tip);
+    btn.title = tip;
+  });
 }
 
 function setDarkMode(on) {
@@ -3996,10 +4044,12 @@ function setDarkMode(on) {
 }
 
 function wireColorModeToggle() {
-  const btn = document.getElementById("btn-color-mode");
-  if (!btn) return;
   syncColorModeToggle();
-  btn.addEventListener("click", () => setDarkMode(!isDarkMode()));
+  document.querySelectorAll(".color-mode-toggle").forEach((btn) => {
+    if (btn.dataset.colorModeWired) return;
+    btn.dataset.colorModeWired = "1";
+    btn.addEventListener("click", () => setDarkMode(!isDarkMode()));
+  });
 }
 
 function applyModeFromConfig(cfg) {
