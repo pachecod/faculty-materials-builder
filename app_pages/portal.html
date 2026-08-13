@@ -125,7 +125,7 @@
     width: 2.5rem;
     height: 2.5rem;
     margin-top: 0;
-    margin-left: auto;
+    margin-left: 0;
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.3);
     color: #eff6ff;
@@ -533,13 +533,13 @@
   .icon-btn svg,
   .folder-btn svg { width: .78rem; height: .78rem; display: block; pointer-events: none; }
   .viewer-bar .folder-btn {
-    width: 2rem;
-    height: 2rem;
-    background: #44403c;
-    border-color: #57534e;
-    color: #e7e5e4;
+    width: 2.35rem;
+    height: 2.35rem;
+    background: var(--link-hover);
+    border-color: var(--badge-border);
+    color: var(--panel-head-text);
   }
-  .viewer-bar .folder-btn:hover { background: #57534e; color: #fff; }
+  .viewer-bar .folder-btn:hover { background: #1d4ed8; color: #fff; }
   #attach-list li .att-actions .folder-btn {
     width: 1.5rem;
     height: 1.5rem;
@@ -702,7 +702,7 @@
     font-size: 0.75rem; color: var(--muted);
   }
 
-  /* In-page PDF viewer */
+  /* In-page PDF viewer — chrome matches Reader bar */
   #viewer {
     display: none;
     position: fixed;
@@ -716,32 +716,115 @@
   .viewer-bar {
     flex: 0 0 auto;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.65rem 1rem;
-    background: #292524;
-    color: #fafaf9;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+    padding-top: max(0.65rem, env(safe-area-inset-top));
+    background: var(--accent);
+    color: var(--panel-head-text);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.85rem;
     position: relative;
   }
-  .viewer-bar .title {
-    flex: 1;
+  .viewer-bar-main {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
     min-width: 0;
+    width: 100%;
+  }
+  .viewer-bar-tools {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    flex: 0 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+  .viewer-title-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .viewer-bar .title,
+  .viewer-bar button.title {
+    max-width: 100%;
+    min-width: 0;
+    font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
+    border: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    font: inherit;
+    padding: 0.15rem 0.2rem !important;
+    margin: 0;
+    cursor: default;
+    border-radius: 0;
+    min-height: 0;
+    box-shadow: none;
+  }
+  .viewer-title-tip {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.4rem);
+    transform: translateX(-50%);
+    z-index: 50;
+    width: min(22rem, calc(100vw - 1.5rem));
+    max-width: calc(100vw - 1.5rem);
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.95);
+    color: #f8fafc;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    box-sizing: border-box;
+  }
+  .viewer-title-tip[hidden] { display: none !important; }
+  .viewer-title-tip::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: rgba(15, 23, 42, 0.95);
+  }
+  @media (min-width: 1101px) {
+    .viewer-bar {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    .viewer-bar .title { text-align: left; }
+    .viewer-bar .view-mode-control {
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
   }
   .viewer-bar button,
   .viewer-bar a.bar-btn {
     appearance: none;
-    border: 1px solid #57534e;
-    background: #44403c;
-    color: #fafaf9;
-    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--badge-border);
+    background: var(--link-hover);
+    color: var(--panel-head-text);
+    padding: 0.4rem 0.7rem;
     font: inherit;
     cursor: pointer;
     text-decoration: none;
+    border-radius: 6px;
+    min-height: 2.35rem;
   }
   .viewer-bar .bar-btn {
     display: inline-flex;
@@ -756,11 +839,15 @@
     pointer-events: none;
   }
   .viewer-bar button:hover,
-  .viewer-bar a.bar-btn:hover { background: #57534e; }
-  .viewer-bar button.primary {
-    background: var(--accent-soft);
-    color: var(--accent);
-    border-color: var(--accent-soft);
+  .viewer-bar a.bar-btn:hover {
+    background: #1d4ed8;
+    color: #fff;
+  }
+  .viewer-bar button.primary,
+  .viewer-bar a.bar-btn.primary {
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    border-color: var(--chip-bg);
     font-weight: 600;
   }
   .view-mode-control {
@@ -817,10 +904,6 @@
   }
   /* Narrow / phone: put View tabs on their own centered row so they don't collide */
   @media (max-width: 1100px) {
-    .viewer-bar,
-    .reader-bar {
-      flex-wrap: wrap;
-    }
     .view-mode-control {
       position: static;
       left: auto;
@@ -830,6 +913,12 @@
       justify-content: center;
       margin: 0.2rem 0 0;
       padding-top: 0.15rem;
+    }
+    .reader-bar .view-mode-control,
+    .viewer-bar .view-mode-control {
+      order: 0;
+      margin: 0;
+      width: 100%;
     }
     .view-mode-tabs {
       flex: 1 1 auto;
@@ -1458,25 +1547,42 @@
     .icon-btn svg,
     .folder-btn svg { width: 1rem; height: 1rem; }
     .viewer-bar {
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      padding: 0.55rem 0.6rem;
-      padding-top: max(0.55rem, env(safe-area-inset-top));
-    }
-    .viewer-bar .title {
-      order: -1;
-      flex: 1 1 100%;
-      white-space: normal;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      padding-left: max(0.75rem, env(safe-area-inset-left), env(safe-area-inset-right));
+      padding-right: max(0.75rem, env(safe-area-inset-left), env(safe-area-inset-right));
     }
     .viewer-bar button,
     .viewer-bar a.bar-btn {
-      min-height: 2.4rem;
-      padding: 0.45rem 0.65rem;
-      font-size: 0.8rem;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.78rem;
+      min-height: 2.15rem;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .viewer-bar .title,
+    .viewer-bar button.title {
+      max-width: 100%;
+      min-width: 0;
+      white-space: nowrap;
+      font-size: 0.78rem;
+      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .viewer-title-wrap.is-open .title {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .viewer-bar .color-mode-toggle,
+    .viewer-bar #open-external {
+      display: none !important;
+    }
+    body.viewer-mode .viewer-bar #btn-attach,
+    body.viewer-mode .viewer-bar #btn-reveal-pdf {
+      display: none !important;
+    }
+    .viewer-bar-tools {
+      flex: 0 0 auto;
+      flex-wrap: nowrap;
     }
     #viewer-body {
       flex-direction: column;
@@ -1533,8 +1639,8 @@
   .reader-bar {
     flex: 0 0 auto;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.45rem;
     padding: 0.65rem 0.85rem;
     padding-top: max(0.65rem, env(safe-area-inset-top));
@@ -1544,13 +1650,82 @@
     font-size: 0.85rem;
     position: relative;
   }
-  .reader-bar .title {
-    flex: 1 1 12rem;
+  .reader-bar-main {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    width: 100%;
+  }
+  .reader-title-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .reader-bar .title,
+  .reader-bar button.title {
+    max-width: 100%;
     min-width: 0;
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
+    border: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    font: inherit;
+    padding: 0.15rem 0.2rem !important;
+    margin: 0;
+    cursor: default;
+    border-radius: 0;
+    min-height: 0;
+    box-shadow: none;
+  }
+  .reader-title-tip {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.4rem);
+    transform: translateX(-50%);
+    z-index: 50;
+    width: min(22rem, calc(100vw - 1.5rem));
+    max-width: calc(100vw - 1.5rem);
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.95);
+    color: #f8fafc;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    box-sizing: border-box;
+  }
+  .reader-title-tip[hidden] { display: none !important; }
+  .reader-title-tip::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: rgba(15, 23, 42, 0.95);
+  }
+  @media (min-width: 1101px) {
+    .reader-bar {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    .reader-bar .title { text-align: left; }
+    .reader-bar .view-mode-control {
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
   }
   .reader-bar button,
   .reader-bar a.bar-btn {
@@ -1635,9 +1810,37 @@
   .reader-att-list .att-name { font-weight: 600; color: var(--accent); word-break: break-word; }
   .reader-att-list .att-meta { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
   @media (max-width: 900px) {
-    .reader-scroll { padding-left: max(0.85rem, env(safe-area-inset-left)); padding-right: max(0.85rem, env(safe-area-inset-right)); }
+    .reader-bar {
+      padding-left: max(0.75rem, env(safe-area-inset-left), env(safe-area-inset-right));
+      padding-right: max(0.75rem, env(safe-area-inset-left), env(safe-area-inset-right));
+    }
+    .reader-bar button,
+    .reader-bar a.bar-btn {
+      padding: 0.35rem 0.55rem;
+      font-size: 0.78rem;
+      min-height: 2.15rem;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .reader-bar .title {
+      max-width: 100%;
+      min-width: 0;
+      white-space: nowrap;
+      font-size: 0.78rem;
+      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reader-title-wrap.is-open .title {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .reader-bar .color-mode-toggle { display: none; }
+    .reader-scroll {
+      padding-left: max(1.15rem, env(safe-area-inset-left), env(safe-area-inset-right));
+      padding-right: max(1.15rem, env(safe-area-inset-left), env(safe-area-inset-right));
+    }
     .reader-article { font-size: 1.08rem; }
-    .reader-bar .title { flex: 1 1 100%; white-space: normal; }
   }
 
   #reader-embed-modal {
@@ -1843,10 +2046,27 @@
     border-color: #93c5fd;
     font-weight: 600;
   }
-  html.dark-mode .viewer-bar button.primary {
+  html.dark-mode .viewer-bar {
+    background: #1e3a8a;
+    color: #eff6ff;
+  }
+  html.dark-mode .viewer-bar button,
+  html.dark-mode .viewer-bar a.bar-btn {
+    border-color: #93c5fd;
+    background: #1e40af;
+    color: #eff6ff;
+  }
+  html.dark-mode .viewer-bar button:hover,
+  html.dark-mode .viewer-bar a.bar-btn:hover {
+    background: #1d4ed8;
+    color: #fff;
+  }
+  html.dark-mode .viewer-bar button.primary,
+  html.dark-mode .viewer-bar a.bar-btn.primary {
     background: #2563eb;
     color: #eff6ff;
     border-color: #93c5fd;
+    font-weight: 600;
   }
   html.dark-mode .view-mode-label {
     color: rgba(255, 255, 255, 0.92);
@@ -2042,8 +2262,31 @@
 
   <div id="viewer" aria-hidden="true">
     <div class="viewer-bar">
-      <button type="button" class="primary" id="back-to-list">← Back to list</button>
-      <div class="title" id="viewer-title">PDF</div>
+      <div class="viewer-bar-main">
+        <button type="button" class="primary" id="back-to-list">← Back to list</button>
+        <div class="viewer-title-wrap" id="viewer-title-wrap">
+          <button type="button" class="title" id="viewer-title" aria-expanded="false" aria-controls="viewer-title-tip">PDF</button>
+          <div class="viewer-title-tip" id="viewer-title-tip" role="tooltip" hidden></div>
+        </div>
+        <div class="viewer-bar-tools">
+          <button type="button" class="bar-btn edit-only" id="btn-edit" title="Edit source markdown">Edit</button>
+          <button type="button" class="folder-btn icon-btn" id="btn-reveal-pdf" title="Open containing folder for this PDF in Finder" aria-label="Open containing folder for this PDF in Finder"></button>
+          <button type="button" class="bar-btn" id="btn-attach" title="Show files appended into this packet PDF after the markdown narrative">Appended files</button>
+          <button type="button" class="bar-btn edit-only" id="btn-rebuild" title="Regenerate the full working PDF for this packet (markdown + appendices) into _pdf_review. Does not mark it official.">Rebuild preview</button>
+          <button type="button" class="bar-btn edit-only" id="btn-promote" data-tip="Save as official — not saved yet.">Save as official</button>
+          <a class="bar-btn" id="btn-download-pdf" href="#" download>Download PDF</a>
+          <a class="bar-btn" id="open-external" href="#" target="_blank" rel="noopener">Open in new tab</a>
+          <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
+            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
+            </svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+          </button>
+        </div>
+      </div>
       <div class="view-mode-control" aria-label="View mode">
         <span class="view-mode-label">View:</span>
         <div class="view-mode-tabs" role="tablist" aria-label="View mode">
@@ -2051,22 +2294,6 @@
           <button type="button" role="tab" class="view-mode-tab" id="btn-preview" data-view-mode="pdf" aria-selected="false" title="Show the full PDF">PDF</button>
         </div>
       </div>
-      <button type="button" class="bar-btn edit-only" id="btn-edit" title="Edit source markdown">Edit</button>
-      <button type="button" class="folder-btn icon-btn" id="btn-reveal-pdf" title="Open containing folder for this PDF in Finder" aria-label="Open containing folder for this PDF in Finder"></button>
-      <button type="button" class="bar-btn" id="btn-attach" title="Show files appended into this packet PDF after the markdown narrative">Appended files</button>
-      <button type="button" class="bar-btn edit-only" id="btn-rebuild" title="Regenerate the full working PDF for this packet (markdown + appendices) into _pdf_review. Does not mark it official.">Rebuild preview</button>
-      <button type="button" class="bar-btn edit-only" id="btn-promote" data-tip="Save as official — not saved yet.">Save as official</button>
-      <a class="bar-btn" id="btn-download-pdf" href="#" download>Download PDF</a>
-      <a class="bar-btn" id="open-external" href="#" target="_blank" rel="noopener">Open in new tab</a>
-      <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
-        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
-        </svg>
-        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-        </svg>
-      </button>
     </div>
     <div id="viewer-body">
       <iframe id="viewer-frame" title="PDF viewer"></iframe>
@@ -2152,8 +2379,23 @@
 
   <div id="reader" aria-hidden="true">
     <div class="reader-bar">
-      <button type="button" class="primary" id="reader-back">← Back to list</button>
-      <div class="title" id="reader-title">Reader</div>
+      <div class="reader-bar-main">
+        <button type="button" class="primary" id="reader-back">← Back to list</button>
+        <div class="reader-title-wrap" id="reader-title-wrap">
+          <button type="button" class="title" id="reader-title" aria-expanded="false" aria-controls="reader-title-tip">Reader</button>
+          <div class="reader-title-tip" id="reader-title-tip" role="tooltip" hidden></div>
+        </div>
+        <a class="bar-btn" id="reader-download-pdf" href="#" download>Download PDF</a>
+        <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </button>
+      </div>
       <div class="view-mode-control" aria-label="View mode">
         <span class="view-mode-label">View:</span>
         <div class="view-mode-tabs" role="tablist" aria-label="View mode">
@@ -2161,16 +2403,6 @@
           <button type="button" role="tab" class="view-mode-tab" id="reader-open-pdf" data-view-mode="pdf" aria-selected="false" title="Show the full PDF">PDF</button>
         </div>
       </div>
-      <a class="bar-btn" id="reader-download-pdf" href="#" download>Download PDF</a>
-      <button type="button" class="color-mode-toggle" aria-pressed="false" aria-label="Currently in: Light Mode. Click or tap for Dark Mode." title="Currently in: Light Mode. Click or tap for Dark Mode.">
-        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/>
-        </svg>
-        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-        </svg>
-      </button>
     </div>
     <div class="reader-scroll">
       <article class="reader-article" id="reader-article"></article>
@@ -3195,7 +3427,20 @@ function openViewer(file, name, { pushHash = true } = {}) {
   const url = pdfUrl(file);
   const viewer = document.getElementById("viewer");
   const frame = document.getElementById("viewer-frame");
-  document.getElementById("viewer-title").textContent = name;
+  const titleEl = document.getElementById("viewer-title");
+  const tipEl = document.getElementById("viewer-title-tip");
+  const displayTitle = String(name || "").replace(/\.pdf$/i, "");
+  const fullTitle = name || displayTitle;
+  if (titleEl) {
+    titleEl.textContent = displayTitle;
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      titleEl.title = fullTitle;
+    } else {
+      titleEl.removeAttribute("title");
+    }
+  }
+  if (tipEl) tipEl.textContent = fullTitle;
+  setBarTitleTipOpen("viewer", false);
   syncViewModeTabs("pdf");
   refreshPromoteButton(file);
   document.getElementById("open-external").href = rawPdfUrl(file) + "#navpanes=1";
@@ -3217,6 +3462,7 @@ function openViewer(file, name, { pushHash = true } = {}) {
 }
 
 function closeViewer({ clearHash = true } = {}) {
+  setBarTitleTipOpen("viewer", false);
   const viewer = document.getElementById("viewer");
   const frame = document.getElementById("viewer-frame");
   viewer.classList.remove("is-open");
@@ -3458,7 +3704,19 @@ async function openReader(file, name, { pushHash = true } = {}) {
   const article = document.getElementById("reader-article");
   const attSec = document.getElementById("reader-attachments");
   const attList = document.getElementById("reader-att-list");
-  document.getElementById("reader-title").textContent = name;
+  const titleEl = document.getElementById("reader-title");
+  const tipEl = document.getElementById("reader-title-tip");
+  const displayTitle = String(name || "").replace(/\.pdf$/i, "");
+  const fullTitle = name || displayTitle;
+  titleEl.textContent = displayTitle;
+  if (tipEl) tipEl.textContent = fullTitle;
+  setBarTitleTipOpen("reader", false);
+  // Desktop hover still gets a native tooltip; touch uses the tap bubble.
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    titleEl.title = fullTitle;
+  } else {
+    titleEl.removeAttribute("title");
+  }
   syncViewModeTabs("reader");
   const dl = document.getElementById("reader-download-pdf");
   if (dl) {
@@ -3500,8 +3758,78 @@ async function openReader(file, name, { pushHash = true } = {}) {
   }
 }
 
+function setBarTitleTipOpen(prefix, open) {
+  const wrap = document.getElementById(prefix + "-title-wrap");
+  const titleEl = document.getElementById(prefix + "-title");
+  const tip = document.getElementById(prefix + "-title-tip");
+  if (!wrap || !titleEl || !tip) return;
+  const on = !!open && !!(tip.textContent || "").trim();
+  wrap.classList.toggle("is-open", on);
+  tip.hidden = !on;
+  titleEl.setAttribute("aria-expanded", on ? "true" : "false");
+  if (on) {
+    const rect = titleEl.getBoundingClientRect();
+    const tipW = Math.min(352, Math.max(160, window.innerWidth - 24));
+    const left = Math.max(12, Math.min(rect.left + rect.width / 2 - tipW / 2, window.innerWidth - tipW - 12));
+    tip.style.position = "fixed";
+    tip.style.left = `${Math.round(left)}px`;
+    tip.style.top = `${Math.round(rect.bottom + 6)}px`;
+    tip.style.width = `${Math.round(tipW)}px`;
+    tip.style.transform = "none";
+  } else {
+    tip.style.position = "";
+    tip.style.left = "";
+    tip.style.top = "";
+    tip.style.width = "";
+    tip.style.transform = "";
+  }
+}
+
+function setReaderTitleTipOpen(open) {
+  setBarTitleTipOpen("reader", open);
+}
+
+function wireBarTitleTip(prefix, scrollSelector) {
+  const titleEl = document.getElementById(prefix + "-title");
+  const tip = document.getElementById(prefix + "-title-tip");
+  const wrap = document.getElementById(prefix + "-title-wrap");
+  if (!titleEl || !tip || !wrap || titleEl.dataset.tipWired) return;
+  titleEl.dataset.tipWired = "1";
+
+  titleEl.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const touchy = window.matchMedia("(hover: none), (pointer: coarse), (max-width: 900px)").matches;
+    if (!touchy) return;
+    setBarTitleTipOpen(prefix, tip.hidden);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (wrap.contains(e.target)) return;
+    setBarTitleTipOpen(prefix, false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setBarTitleTipOpen(prefix, false);
+  });
+  if (scrollSelector) {
+    const scroll = document.querySelector(scrollSelector);
+    if (scroll) {
+      scroll.addEventListener("scroll", () => setBarTitleTipOpen(prefix, false), { passive: true });
+    }
+  }
+}
+
+function wireReaderTitleTip() {
+  wireBarTitleTip("reader", "#reader .reader-scroll");
+}
+
+function wireViewerTitleTip() {
+  wireBarTitleTip("viewer", null);
+}
+
 function closeReader({ clearHash = true } = {}) {
   closeReaderEmbed();
+  setBarTitleTipOpen("reader", false);
   const reader = document.getElementById("reader");
   if (!reader) return;
   reader.classList.remove("is-open");
@@ -3526,7 +3854,19 @@ function openAttachmentPdf(packetFile, rel, name) {
   closeReader({ clearHash: false });
   const viewer = document.getElementById("viewer");
   const frame = document.getElementById("viewer-frame");
-  document.getElementById("viewer-title").textContent = name || rel.split("/").pop();
+  {
+    const titleEl = document.getElementById("viewer-title");
+    const tipEl = document.getElementById("viewer-title-tip");
+    const fullTitle = name || rel.split("/").pop() || "Attachment";
+    const displayTitle = String(fullTitle).replace(/\.pdf$/i, "");
+    if (titleEl) {
+      titleEl.textContent = displayTitle;
+      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) titleEl.title = fullTitle;
+      else titleEl.removeAttribute("title");
+    }
+    if (tipEl) tipEl.textContent = fullTitle;
+    setBarTitleTipOpen("viewer", false);
+  }
   document.getElementById("open-external").href = apiPath;
   const dl = document.getElementById("btn-download-pdf");
   if (dl) {
@@ -3767,6 +4107,8 @@ document.getElementById("reader-back").addEventListener("click", () => {
 });
 
 wireReaderEmbedOnce();
+wireReaderTitleTip();
+wireViewerTitleTip();
 
 document.getElementById("reader-open-pdf").addEventListener("click", () => {
   if (!READER_FILE) return;
