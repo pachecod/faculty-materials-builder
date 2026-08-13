@@ -408,11 +408,19 @@
   }
   .file-name-row {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
-    gap: 0.3rem;
+    gap: 0.45rem;
     min-width: 0;
     max-width: 100%;
+  }
+  .file-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    min-width: 0;
+    flex: 1 1 auto;
   }
   .icon-btn,
   .folder-btn {
@@ -452,9 +460,11 @@
   }
   .file-name-row .row-actions {
     display: inline-flex;
+    flex-direction: row;
     align-items: center;
     gap: 0.2rem;
     flex: 0 0 auto;
+    padding-top: 0.1rem;
   }
   th.order-col,
   td.order-col {
@@ -2635,7 +2645,7 @@ function htmlEsc(s) {
 }
 
 function folderBtnHtml({ pdf, rel, title }) {
-  const tip = title || "Open containing folder in Finder";
+  const tip = title || "Locate on computer";
   const attrs = [];
   if (pdf) attrs.push(`data-reveal-pdf="${attrEsc(pdf)}"`);
   if (rel) attrs.push(`data-reveal-rel="${attrEsc(rel)}"`);
@@ -2643,14 +2653,12 @@ function folderBtnHtml({ pdf, rel, title }) {
 }
 
 function previewBtnHtml(file, name) {
-  const tip = prefersReaderFirst()
-    ? "Open Reader View"
-    : "Preview this PDF";
+  const tip = "View";
   return `<button type="button" class="icon-btn" data-preview-pdf="${attrEsc(file)}" data-name="${attrEsc(name)}" title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${EYE_ICON_SVG}</button>`;
 }
 
 function editBtnHtml(file, name) {
-  const tip = "Edit source markdown";
+  const tip = "Edit";
   return `<button type="button" class="icon-btn edit-only" data-edit-pdf="${attrEsc(file)}" data-name="${attrEsc(name)}" title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${PENCIL_ICON_SVG}</button>`;
 }
 
@@ -2859,14 +2867,16 @@ function pdfRowHtml(r, { showSection = true } = {}) {
         <div class="file-cell">
           ${(updated || officialMark) ? `<div class="file-badges">${updated}${officialMark}</div>` : ""}
           <div class="file-name-row">
-            <a class="file-link" href="${url}" data-file="${r.file}" data-name="${esc(r.name)}"
-               title="${esc(r.sourceAbs || r.sourceRel || r.name)}">${r.name}</a>
-            ${r.excludeFromPageTotal ? '<span class="excl-note">(excluded from total)</span>' : ""}
             <span class="row-actions">
               ${previewBtnHtml(r.file, r.name)}
               ${editBtnHtml(r.file, r.name)}
-              ${folderBtnHtml({ pdf: r.file, title: "Open containing folder for this PDF in Finder" })}
+              ${folderBtnHtml({ pdf: r.file, title: "Locate on computer" })}
             </span>
+            <div class="file-title-block">
+              <a class="file-link" href="${url}" data-file="${r.file}" data-name="${esc(r.name)}"
+                 title="${esc(r.sourceAbs || r.sourceRel || r.name)}">${r.name}</a>
+              ${r.excludeFromPageTotal ? '<span class="excl-note">(excluded from total)</span>' : ""}
+            </div>
           </div>
         </div>
       </td>
