@@ -77,6 +77,27 @@
     margin: 0 0 0.75rem;
     color: var(--accent);
   }
+  .list-panel .list-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.35rem;
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.35;
+  }
+  .list-panel .list-heading-title {
+    white-space: nowrap;
+  }
+  .list-panel .list-heading-hint {
+    margin: 0;
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: var(--muted);
+    flex: 1 1 10rem;
+  }
   .hero-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -132,7 +153,7 @@
     border-top: 1px solid var(--line);
     margin: 0.75rem -1rem -1rem;
   }
-  .list-filters {
+  .list-filters-shell {
     display: flex;
     flex-wrap: wrap;
     gap: 0.55rem 0.75rem;
@@ -140,6 +161,32 @@
     margin: 0.65rem 0 0;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.78rem;
+  }
+  .list-filters-summary,
+  .list-filters {
+    display: contents;
+  }
+  .filters-show,
+  .filters-close {
+    appearance: none;
+    border: 0;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .filters-show:hover,
+  .filters-close:hover { color: var(--link-hover); }
+  .filters-show,
+  .filters-close,
+  .list-filters-bar {
+    display: none;
   }
   .list-filters label {
     display: grid;
@@ -157,6 +204,7 @@
   .filter-count {
     margin-left: auto;
     align-self: center;
+    order: 100;
     color: var(--muted);
     font-size: 0.72rem;
     white-space: nowrap;
@@ -1232,11 +1280,51 @@
       gap: 0.45rem;
     }
     .stat .n { font-size: 1.35rem; }
+    .list-filters-shell {
+      display: block;
+    }
+    .list-filters-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .filters-show {
+      display: inline-block;
+      min-height: 2.5rem;
+      padding: 0.45rem 0;
+      font-size: 1rem;
+    }
+    .list-filters-shell.is-open .filters-show {
+      display: none;
+    }
     .list-filters {
-      display: grid;
+      display: none;
       grid-template-columns: 1fr 1fr;
       gap: 0.55rem;
       align-items: stretch;
+      margin-top: 0.35rem;
+      padding: 0.75rem;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .list-filters-shell.is-open .list-filters {
+      display: grid;
+    }
+    .list-filters-bar {
+      display: none;
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+      margin: 0 0 0.15rem;
+    }
+    .list-filters-shell.is-open .list-filters-bar {
+      display: flex;
+    }
+    .list-filters-shell.is-open .filters-close {
+      display: inline-block;
+      min-height: 2.25rem;
+      padding: 0.35rem 0;
+      font-size: 1rem;
     }
     .list-filters label {
       min-width: 0;
@@ -1249,7 +1337,7 @@
     }
     .filter-count {
       margin-left: 0;
-      grid-column: 1 / -1;
+      order: 0;
     }
     .list-toolbar .bar-btn {
       display: inline-flex;
@@ -1323,7 +1411,7 @@
     .hint-mobile { display: none; }
   }
   @media (max-width: 480px) {
-    .list-filters {
+    .list-filters-shell.is-open .list-filters {
       grid-template-columns: 1fr;
     }
     body.viewer-mode #pdf-table col.col-pages,
@@ -1646,47 +1734,57 @@
       </aside>
 
       <section class="panel list-panel" id="metric-pdf-export">
-        <h2>PDF list</h2>
-        <p class="hint">
-          <span class="hint-desktop">Click a file name to view here. Hover a file name to see its source markdown path. Scroll the page to browse the full list.</span>
-          <span class="hint-mobile">Tap a file name to open it. Scroll to browse the full list.</span>
-        </p>
+        <h2 class="list-heading">
+          <span class="list-heading-title">Submitted File List</span><span aria-hidden="true">:</span>
+          <span class="list-heading-hint">
+            <span class="hint-desktop">Click a file name to view here. Hover a file name to see its source markdown path. Scroll the page to browse the full list.</span>
+            <span class="hint-mobile">Tap a file name to open it. Scroll to browse the full list.</span>
+          </span>
+        </h2>
         <div class="list-toolbar">
           <span class="hint" id="empty-pdf-hint" hidden>No PDFs published yet.</span>
         </div>
-        <div class="list-filters" id="list-filters">
-          <label>Show
-            <select id="filter-show" aria-label="Show filter">
-              <option value="all" selected>Show all</option>
-              <option value="updated">Updated</option>
-              <option value="row-complete">Green — Complete</option>
-              <option value="row-partial">Yellow — Partial</option>
-              <option value="row-none-need">Red — No Content + Need Yes</option>
-              <option value="row-none-ok">Amber — No Content + Need No</option>
-            </select>
-          </label>
-          <label class="edit-only need-col">Need Content
-            <select id="filter-need" aria-label="Need Content filter">
-              <option value="all" selected>All</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </label>
-          <label class="edit-only level-col">Level of Content
-            <select id="filter-level" aria-label="Level of Content filter">
-              <option value="all" selected>All</option>
-              <option value="Complete">Complete</option>
-              <option value="Partial">Partial</option>
-              <option value="No Content">No Content</option>
-            </select>
-          </label>
-          <label>View
-            <select id="filter-view" aria-label="List view">
-              <option value="list">List</option>
-              <option value="section" selected>By section</option>
-            </select>
-          </label>
-          <span class="filter-count" id="filter-count"></span>
+        <div class="list-filters-shell" id="list-filters-shell">
+          <div class="list-filters-summary">
+            <button type="button" class="filters-show" id="btn-filters-show" aria-expanded="false" aria-controls="list-filters">Show Filters</button>
+            <span class="filter-count" id="filter-count"></span>
+          </div>
+          <div class="list-filters" id="list-filters">
+            <div class="list-filters-bar">
+              <button type="button" class="filters-close" id="btn-filters-close">Hide Filters</button>
+            </div>
+            <label>Show
+              <select id="filter-show" aria-label="Show filter">
+                <option value="all" selected>Show all</option>
+                <option value="updated">Updated</option>
+                <option value="row-complete">Green — Complete</option>
+                <option value="row-partial">Yellow — Partial</option>
+                <option value="row-none-need">Red — No Content + Need Yes</option>
+                <option value="row-none-ok">Amber — No Content + Need No</option>
+              </select>
+            </label>
+            <label class="edit-only need-col">Need Content
+              <select id="filter-need" aria-label="Need Content filter">
+                <option value="all" selected>All</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+            <label class="edit-only level-col">Level of Content
+              <select id="filter-level" aria-label="Level of Content filter">
+                <option value="all" selected>All</option>
+                <option value="Complete">Complete</option>
+                <option value="Partial">Partial</option>
+                <option value="No Content">No Content</option>
+              </select>
+            </label>
+            <label>View
+              <select id="filter-view" aria-label="List view">
+                <option value="list">List</option>
+                <option value="section" selected>By section</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div class="table-wrap">
           <table id="pdf-table">
@@ -3280,12 +3378,24 @@ async function saveRowStatus(name, field, value, selectEl) {
   }
 }
 
+function setListFiltersOpen(open) {
+  const shell = document.getElementById("list-filters-shell");
+  const showBtn = document.getElementById("btn-filters-show");
+  if (!shell || !showBtn) return;
+  shell.classList.toggle("is-open", !!open);
+  showBtn.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
 function wireListFilters() {
   ["filter-show", "filter-need", "filter-level", "filter-view"].forEach(id => {
     document.getElementById(id).addEventListener("change", () => {
       if (LAST_INVENTORY) renderPdfRows(LAST_INVENTORY.pdfs);
     });
   });
+  const showBtn = document.getElementById("btn-filters-show");
+  const closeBtn = document.getElementById("btn-filters-close");
+  if (showBtn) showBtn.addEventListener("click", () => setListFiltersOpen(true));
+  if (closeBtn) closeBtn.addEventListener("click", () => setListFiltersOpen(false));
   const tbody = document.getElementById("pdf-tbody");
   tbody.addEventListener("click", (e) => {
     const orderBtn = e.target.closest("[data-order-pdf]");
