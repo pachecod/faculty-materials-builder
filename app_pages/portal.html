@@ -537,6 +537,7 @@
     color: #fafaf9;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.85rem;
+    position: relative;
   }
   .viewer-bar .title {
     flex: 1;
@@ -575,6 +576,85 @@
     color: var(--accent);
     border-color: var(--accent-soft);
     font-weight: 600;
+  }
+  .view-mode-control {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+  .view-mode-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+  }
+  .view-mode-tabs {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: stretch;
+    padding: 2px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    gap: 2px;
+  }
+  .view-mode-tabs .view-mode-tab {
+    appearance: none;
+    border: none !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    padding: 0.35rem 0.85rem;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border-radius: 6px;
+    min-height: 2.1rem;
+    line-height: 1.2;
+  }
+  .view-mode-tabs .view-mode-tab:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #fff !important;
+  }
+  .view-mode-tabs .view-mode-tab.is-active,
+  .view-mode-tabs .view-mode-tab.is-active:hover {
+    background: #fff !important;
+    color: #1e3a8a !important;
+  }
+  /* Narrow / phone: put View tabs on their own centered row so they don't collide */
+  @media (max-width: 1100px) {
+    .viewer-bar,
+    .reader-bar {
+      flex-wrap: wrap;
+    }
+    .view-mode-control {
+      position: static;
+      left: auto;
+      transform: none;
+      flex: 1 1 100%;
+      order: 30;
+      justify-content: center;
+      margin: 0.2rem 0 0;
+      padding-top: 0.15rem;
+    }
+    .view-mode-tabs {
+      flex: 1 1 auto;
+      max-width: 18rem;
+    }
+    .view-mode-tabs .view-mode-tab {
+      flex: 1 1 0;
+      text-align: center;
+      min-width: 0;
+      padding-left: 0.55rem;
+      padding-right: 0.55rem;
+    }
   }
 
   /* Viewer body: PDF + resizable side panel */
@@ -1260,6 +1340,7 @@
     color: var(--panel-head-text);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.85rem;
+    position: relative;
   }
   .reader-bar .title {
     flex: 1 1 12rem;
@@ -1614,8 +1695,13 @@
     <div class="viewer-bar">
       <button type="button" class="primary" id="back-to-list">← Back to list</button>
       <div class="title" id="viewer-title">PDF</div>
-      <button type="button" class="bar-btn" id="btn-reader-view" title="Read the markdown narrative in the browser">Reader View</button>
-      <button type="button" class="bar-btn" id="btn-preview" title="Show PDF preview">Preview</button>
+      <div class="view-mode-control" aria-label="View mode">
+        <span class="view-mode-label">View:</span>
+        <div class="view-mode-tabs" role="tablist" aria-label="View mode">
+          <button type="button" role="tab" class="view-mode-tab" id="btn-reader-view" data-view-mode="reader" aria-selected="false" title="Read the markdown narrative">Reader</button>
+          <button type="button" role="tab" class="view-mode-tab" id="btn-preview" data-view-mode="pdf" aria-selected="false" title="Show the full PDF">PDF</button>
+        </div>
+      </div>
       <button type="button" class="bar-btn edit-only" id="btn-edit" title="Edit source markdown">Edit</button>
       <button type="button" class="folder-btn icon-btn" id="btn-reveal-pdf" title="Open containing folder for this PDF in Finder" aria-label="Open containing folder for this PDF in Finder"></button>
       <button type="button" class="bar-btn" id="btn-attach" title="Show files appended into this packet PDF after the markdown narrative">Appended files</button>
@@ -1710,7 +1796,13 @@
     <div class="reader-bar">
       <button type="button" class="primary" id="reader-back">← Back to list</button>
       <div class="title" id="reader-title">Reader</div>
-      <button type="button" id="reader-open-pdf">View full PDF</button>
+      <div class="view-mode-control" aria-label="View mode">
+        <span class="view-mode-label">View:</span>
+        <div class="view-mode-tabs" role="tablist" aria-label="View mode">
+          <button type="button" role="tab" class="view-mode-tab" id="reader-tab-reader" data-view-mode="reader" aria-selected="true" title="Read the markdown narrative">Reader</button>
+          <button type="button" role="tab" class="view-mode-tab" id="reader-open-pdf" data-view-mode="pdf" aria-selected="false" title="Show the full PDF">PDF</button>
+        </div>
+      </div>
       <a class="bar-btn" id="reader-download-pdf" href="#" download>Download PDF</a>
     </div>
     <div class="reader-scroll">
@@ -2279,7 +2371,7 @@ function folderBtnHtml({ pdf, rel, title }) {
 
 function previewBtnHtml(file, name) {
   const tip = prefersReaderFirst()
-    ? "Open Reader View (narrow window)"
+    ? "Open Reader View"
     : "Preview this PDF";
   return `<button type="button" class="icon-btn" data-preview-pdf="${attrEsc(file)}" data-name="${attrEsc(name)}" title="${attrEsc(tip)}" aria-label="${attrEsc(tip)}">${EYE_ICON_SVG}</button>`;
 }
@@ -2690,19 +2782,9 @@ let READER_NAME = "";
 let VIEWER_FILE = "";
 let VIEWER_NAME = "";
 
-/** Reader-first below this CSS width (resize the window to test). Also touch ≤1024. */
-const READER_FIRST_MAX_WIDTH = 1100;
-
-/** Reader-first for narrow viewports (CSS px) and touch phones — not UA sniffing. */
+/** Public viewer always opens Reader View first (any screen size). Preview PDF via toolbar. */
 function prefersReaderFirst() {
-  const w = window.innerWidth || document.documentElement.clientWidth || 0;
-  if (w > 0 && w <= READER_FIRST_MAX_WIDTH) return true;
-  try {
-    if (window.matchMedia(`(max-width: ${READER_FIRST_MAX_WIDTH}px)`).matches) return true;
-    // Real phones often report coarse pointer even if width is quirky in testing
-    if (window.matchMedia("(pointer: coarse)").matches && w <= 1024) return true;
-  } catch (e) {}
-  return false;
+  return true;
 }
 window.__popPrefersReaderFirst = prefersReaderFirst;
 
@@ -2722,6 +2804,7 @@ function openViewer(file, name, { pushHash = true } = {}) {
   const viewer = document.getElementById("viewer");
   const frame = document.getElementById("viewer-frame");
   document.getElementById("viewer-title").textContent = name;
+  syncViewModeTabs("pdf");
   refreshPromoteButton(file);
   document.getElementById("open-external").href = rawPdfUrl(file) + "#navpanes=1";
   const dl = document.getElementById("btn-download-pdf");
@@ -2966,6 +3049,14 @@ function renderMarkdownHtml(md) {
   return dirty;
 }
 
+function syncViewModeTabs(mode) {
+  document.querySelectorAll(".view-mode-tab").forEach((btn) => {
+    const on = btn.getAttribute("data-view-mode") === mode;
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+}
+
 async function openReader(file, name, { pushHash = true } = {}) {
   closeViewer({ clearHash: false });
   name = packetDisplayName(file, name);
@@ -2976,6 +3067,7 @@ async function openReader(file, name, { pushHash = true } = {}) {
   const attSec = document.getElementById("reader-attachments");
   const attList = document.getElementById("reader-att-list");
   document.getElementById("reader-title").textContent = name;
+  syncViewModeTabs("reader");
   const dl = document.getElementById("reader-download-pdf");
   if (dl) {
     dl.href = "/api/download/pdf?file=" + encodeURIComponent(file);
@@ -4668,8 +4760,19 @@ function applyModeFromConfig(cfg) {
     const editBtn = document.getElementById("btn-edit");
     const revealPdfBtn = document.getElementById("btn-reveal-pdf");
     if (previewBtn) {
-      previewBtn.innerHTML = EYE_ICON_SVG + "<span>Preview</span>";
+      if (!previewBtn.classList.contains("view-mode-tab")) {
+        previewBtn.innerHTML = EYE_ICON_SVG + "<span>Preview</span>";
+      }
       previewBtn.onclick = () => {
+        const file = currentPdf
+          || (typeof VIEWER_FILE !== "undefined" && VIEWER_FILE)
+          || (typeof READER_FILE !== "undefined" && READER_FILE)
+          || "";
+        const readerEl = document.getElementById("reader");
+        if (file && readerEl && readerEl.classList.contains("is-open")) {
+          openViewer(file, packetDisplayName(file));
+          return;
+        }
         showPreviewOnly();
         if (currentPdf) frame.src = pdfUrl(currentPdf);
       };
