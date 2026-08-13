@@ -36,7 +36,7 @@
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: var(--ink);
     background:
       radial-gradient(1200px 600px at 10% -10%, var(--wash-a) 0%, transparent 55%),
@@ -465,6 +465,30 @@
     width: 4.5rem !important;
     max-width: 4.5rem !important;
   }
+  /* List / nav UI stays sans; report body stays serif (.reader-article) */
+  body.viewer-mode #pdf-table {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  body.viewer-mode #pdf-table a.file-link {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  body.viewer-mode #pdf-table tr.section-head td {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  body.viewer-mode #pdf-table tr.section-head .section-head-meta {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
   .excl-note {
     flex: 0 0 auto;
     font-size: 0.68rem;
@@ -588,10 +612,11 @@
     z-index: 2;
   }
   .view-mode-label {
+    font: inherit;
     font-weight: 600;
-    font-size: 0.82rem;
-    letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    letter-spacing: normal;
+    color: rgba(255, 255, 255, 0.92);
     white-space: nowrap;
   }
   .view-mode-tabs {
@@ -608,15 +633,15 @@
     appearance: none;
     border: none !important;
     background: transparent !important;
-    color: rgba(255, 255, 255, 0.88) !important;
-    padding: 0.35rem 0.85rem;
+    color: rgba(255, 255, 255, 0.92) !important;
+    padding: 0.35rem 0.7rem;
     font: inherit;
     font-weight: 600;
-    font-size: 0.82rem;
-    letter-spacing: 0.02em;
+    font-size: 0.85rem;
+    letter-spacing: normal;
     cursor: pointer;
     border-radius: 6px;
-    min-height: 2.1rem;
+    min-height: 2.35rem;
     line-height: 1.2;
   }
   .view-mode-tabs .view-mode-tab:hover {
@@ -1381,6 +1406,7 @@
   .reader-article {
     max-width: 40rem;
     margin: 0 auto;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     font-size: 1.05rem;
     line-height: 1.65;
     color: var(--ink);
